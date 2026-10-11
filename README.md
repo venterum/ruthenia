@@ -1,6 +1,6 @@
-<img src="docs/branding/ruthenia-icon-512.png" width="96" align="left" alt="Ruthenia Store icon">
+<img src="docs/branding/ruthenia-icon-512-rounded.png" width="96" align="left" alt="Ruthenia Store icon">
 
-# Ruthenia Store
+### Ruthenia Store
 
 [![License](https://ziadoua.github.io/m3-Markdown-Badges/badges/LicenceGPLv3/licencegplv31.svg)](LICENSE)
 [![Kotlin](https://ziadoua.github.io/m3-Markdown-Badges/badges/Kotlin/kotlin1.svg)](https://kotlinlang.org)
@@ -92,3 +92,5 @@ The same screens in Russian are in [README.ru.md](README.ru.md) (`docs/screensho
 GPL-3.0-or-later. See [LICENSE](LICENSE).
 
 The network layer builds on analysis of [Obtainium](https://github.com/ImranR98/Obtainium) (GPL-3.0), file `lib/app_sources/rustore.dart`.
+
+*Ruthenia store is not affiliated with RuStore or VK.*

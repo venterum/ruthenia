@@ -1,6 +1,6 @@
-<img src="docs/branding/ruthenia-icon-512.png" width="96" align="right" alt="Иконка Ruthenia Store">
+<img src="docs/branding/ruthenia-icon-512-rounded.png" width="96" align="left" alt="Ruthenia Store icon">
 
-# Ruthenia Store
+### Ruthenia Store
 
 [![License](https://ziadoua.github.io/m3-Markdown-Badges/badges/LicenceGPLv3/licencegplv31.svg)](LICENSE)
 [![Kotlin](https://ziadoua.github.io/m3-Markdown-Badges/badges/Kotlin/kotlin1.svg)](https://kotlinlang.org)
@@ -92,3 +92,5 @@ Ruthenia Store позволяет устанавливать и обновлят
 GPL-3.0-or-later. См. [LICENSE](LICENSE).
 
 Логика сетевого слоя опирается на анализ [Obtainium](https://github.com/ImranR98/Obtainium) (GPL-3.0), файл `lib/app_sources/rustore.dart`.
+
+*Ruthenia store не афелирован с RuStore или VK.*
