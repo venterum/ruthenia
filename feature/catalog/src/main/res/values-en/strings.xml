@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="common_back">Back</string>
+    <string name="common_clear">Clear</string>
+    <string name="common_error_title">Something went wrong</string>
+    <string name="common_retry">Retry</string>
+
+    <string name="home_search_hint">Search RuStore</string>
+    <string name="home_categories_title">Categories</string>
+    <string name="categories_selections_title">Collections</string>
+    <string name="categories_selections_source">From RuStore</string>
+    <string name="home_updates_banner_hint">Open the library to update</string>
+    <string name="apps_profile">Device profile</string>
+    <string name="apps_about">About</string>
+
+    <string name="games_title">Games</string>
+    <string name="games_error">Couldn\'t load games.</string>
+    <string name="games_section_popular">Popular games</string>
+    <string name="games_genre_arcade">Arcade</string>
+    <string name="games_genre_puzzle">Puzzles</string>
+    <string name="games_genre_strategy">Strategy</string>
+    <string name="games_genre_racing">Racing</string>
+    <string name="games_genre_shooter">Shooters</string>
+    <string name="games_genre_simulator">Simulators</string>
+
+    <plurals name="home_updates_banner">
+        <item quantity="one">%d app has an update</item>
+        <item quantity="other">%d apps have updates</item>
+    </plurals>
+    <string name="home_home_error">Couldn\'t load recommendations.</string>
+    <string name="home_search_empty_title">Nothing found</string>
+    <string name="home_search_empty_text">Try another name or package name.</string>
+    <string name="home_search_recent">Recent searches</string>
+    <string name="home_search_clear_history">Clear history</string>
+    <string name="home_see_all">All</string>
+    <string name="collection_title">Collection</string>
+    <string name="home_footer_privacy">Anonymous, no trackers, no ads</string>
+    <string name="home_footer_disclaimer">Ruthenia Store is not affiliated with RuStore / VK.</string>
+
+    <string name="featured_editorial">Editor\'s choice</string>
+    <string name="featured_rank">#%1$d</string>
+</resources>

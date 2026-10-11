@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Ruthenia Store — an open, private client for installing and updating apps.
+  Copyright (C) 2026 Ruthenia Store contributors
+  SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<resources>
+    <!-- Window background in dark theme: matches the surface so the cold
+         start does not flash white. -->
+    <color name="window_background">#FF191C1C</color>
+</resources>

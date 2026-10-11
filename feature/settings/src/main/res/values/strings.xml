@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="common_back">Назад</string>
+    <string name="common_cancel">Отмена</string>
+
+    <string name="settings_title">Настройки</string>
+    <string name="settings_section_appearance">Оформление</string>
+    <string name="settings_theme">Тема</string>
+    <string name="theme_system">Системная</string>
+    <string name="theme_light">Светлая</string>
+    <string name="theme_dark">Тёмная</string>
+    <string name="settings_dynamic_color">Динамические цвета Material You</string>
+    <string name="settings_dynamic_color_desc">Палитра берётся из обоев (Android 12+).</string>
+    <string name="settings_accent">Акцентный цвет</string>
+    <string name="settings_accent_dynamic_hint">Сейчас цветом управляет системная тема Material You — выключите динамические цвета, чтобы выбрать свой.</string>
+    <string name="settings_language">Язык</string>
+    <string name="settings_language_system">Системный</string>
+    <string name="settings_language_ru">Русский</string>
+    <string name="settings_language_en">English</string>
+    <string name="settings_navbar_style">Панель навигации</string>
+    <string name="settings_navbar_floating">Плавающая</string>
+    <string name="settings_navbar_normal">Обычная</string>
+    <string name="settings_icon_shape">Форма иконок приложений</string>
+    <string name="settings_icon_shape_circle">Круглые</string>
+    <string name="settings_icon_shape_rounded">Скруглённые</string>
+    <string name="settings_icon_shape_square">Квадратные</string>
+    <string name="settings_section_catalog">Каталог</string>
+    <string name="settings_games_page">Страница «Игры»</string>
+    <string name="settings_games_page_desc">Показывать вкладку с играми. Выключение не влияет на поиск и разделы каталога.</string>
+    <string name="settings_section_updates">Обновления</string>
+    <string name="settings_background_checks">Фоновая проверка обновлений</string>
+    <string name="settings_background_checks_desc">Периодически сверяет версии и уведомляет о доступных обновлениях.</string>
+    <string name="settings_interval">Интервал проверки</string>
+    <string name="settings_interval_hours">%1$d ч</string>
+    <string name="settings_wifi_only">Только по Wi-Fi</string>
+    <string name="settings_wifi_only_desc">Не расходовать мобильный трафик на проверки и загрузки.</string>
+    <string name="settings_section_sources">Источники в библиотеке</string>
+    <string name="settings_show_gplay">Приложения из Google Play</string>
+    <string name="settings_show_gplay_desc">Показывать в библиотеке то, что установлено из Google Play. Обновить такие приложения через RuStore обычно нельзя.</string>
+    <string name="settings_show_sideload">Установленные вручную</string>
+    <string name="settings_show_sideload_desc">Показывать APK, поставленные вручную, через файловый менеджер или adb.</string>
+    <string name="settings_section_downloads">Загрузки APK</string>
+    <string name="settings_export_folder">Папка для сохранения APK</string>
+    <string name="settings_export_folder_none">Папка не выбрана.</string>
+    <string name="settings_export_folder_selected">Выбрана папка «%1$s».</string>
+    <string name="settings_choose_folder">Выбрать</string>
+
+    <string name="settings_section_backup">Данные</string>
+    <string name="settings_backup_export">Резервная копия</string>
+    <string name="settings_backup_export_desc">Сохранить библиотеку и настройки в JSON-файл.</string>
+    <string name="settings_backup_export_action">Экспорт</string>
+    <string name="settings_backup_import">Восстановление</string>
+    <string name="settings_backup_import_desc">Заменить библиотеку и настройки данными из файла.</string>
+    <string name="settings_backup_import_action">Импорт</string>
+    <string name="settings_backup_exported">Копия сохранена.</string>
+    <string name="settings_backup_imported">Данные восстановлены из копии.</string>
+    <string name="settings_backup_failed">Не удалось обработать файл копии.</string>
+
+    <string name="settings_section_install">Установка</string>
+    <string name="settings_auto_install">Автоустановка после загрузки</string>
+    <string name="settings_auto_install_desc">Сразу после скачивания открывать системное подтверждение установки. Диалог Android остаётся обязательным.</string>
+    <string name="settings_verify_signature">Проверять подпись APK</string>
+    <string name="settings_verify_signature_desc">Отказываться от установки, если подпись скачанного файла не совпадает с установленным приложением.</string>
+    <string name="settings_verify_signature_off_title">Отключить проверку подписи?</string>
+    <string name="settings_verify_signature_off_message">Без сверки подписи приложение установит скачанный файл, даже если он подписан другим ключом. Это ослабляет защиту от подмены APK и не рекомендуется.</string>
+    <string name="settings_verify_signature_off_confirm">Отключить</string>
+
+    <string name="settings_shizuku">Тихая установка (Shizuku)</string>
+    <string name="settings_shizuku_desc">Устанавливать скачанные APK без системного диалога через Shizuku или Sui. Приложение получит права уровня shell; проверка подписи остаётся.</string>
+    <string name="settings_shizuku_status">Состояние</string>
+    <string name="settings_shizuku_status_not_installed">Shizuku не установлен</string>
+    <string name="settings_shizuku_status_not_running">Shizuku установлен, но не запущен</string>
+    <string name="settings_shizuku_status_permission">Нужно разрешение Shizuku</string>
+    <string name="settings_shizuku_status_ready">Готово к тихой установке</string>
+    <string name="settings_shizuku_grant">Разрешить</string>
+    <string name="settings_shizuku_open">Открыть Shizuku</string>
+    <string name="settings_shizuku_warning_title">Включить тихую установку?</string>
+    <string name="settings_shizuku_warning_message">Shizuku даёт приложению права уровня shell (ADB) — установка будет проходить без системного диалога. Подпись APK всё равно проверяется. Включайте, только если понимаете риск: такие права позволяют приложению глубже вмешиваться в систему.</string>
+    <string name="settings_shizuku_warning_confirm">Включить</string>
+
+    <string name="settings_section_security">Безопасность</string>
+    <string name="settings_certs">Сертификаты RuStore</string>
+    <string name="settings_certs_source_bundled">Используется встроенный набор pin-хэшей.</string>
+    <string name="settings_certs_source_refreshed">Обновлено %1$s.</string>
+    <string name="settings_certs_update">Обновить</string>
+    <string name="settings_certs_reset">Сбросить к встроенным</string>
+    <string name="settings_certs_reset_desc">Вернуть pin-хэши, вшитые в приложение.</string>
+    <string name="settings_certs_reset_action">Сбросить</string>
+    <string name="settings_certs_updated">Сертификаты обновлены. Изменения применятся при следующем запуске.</string>
+    <string name="settings_certs_failed">Не удалось обновить сертификаты. Проверьте соединение и попробуйте ещё раз.</string>
+    <string name="settings_certs_reset_done">Восстановлен встроенный набор сертификатов.</string>
+
+    <string name="settings_section_privacy">Приватность</string>
+    <string name="settings_privacy_what">Что уходит в сеть</string>
+    <string name="settings_privacy_what_desc">Честное описание всех сетевых обращений приложения и разрешений.</string>
+    <string name="settings_open">Открыть</string>
+    <string name="settings_diagnostics">Локальная диагностика</string>
+    <string name="settings_diagnostics_desc">Выключена по умолчанию. Логи никуда не отправляются автоматически.</string>
+    <string name="settings_section_about">О приложении</string>
+    <string name="settings_about_name">Ruthenia Store</string>
+    <string name="settings_about_desc">Неофициальный клиент каталога RuStore. Не аффилирован с RuStore/VK. Лицензия GPL-3.0.</string>
+    <string name="settings_trademark">Товарные знаки принадлежат их правообладателям. Упоминание RuStore — только факт совместимости.</string>
+
+    <string name="about_title">О приложении</string>
+    <string name="about_version_short">v%1$s</string>
+    <string name="about_description">Открытый клиент каталога RuStore: установка и обновление приложений без аналитики, рекламы и аккаунта.</string>
+    <string name="about_section_legal">Правовая информация</string>
+    <string name="about_privacy">Приватность</string>
+    <string name="about_privacy_desc">Что уходит в сеть и какие есть разрешения</string>
+    <string name="about_license">Лицензия</string>
+    <string name="about_license_desc">GPL-3.0-or-later. Исходный код открыт.</string>
+    <string name="about_license_text">Ruthenia Store — свободное программное обеспечение под лицензией GNU GPL-3.0-or-later.\n\nСетевой слой реализован самостоятельно, но с опорой на анализ открытого проекта Obtainium (GPL-3.0).\n\nТоварные знаки принадлежат их правообладателям. Упоминание RuStore — только факт совместимости.</string>
+    <string name="about_copied">Скопировано в буфер обмена</string>
+    <string name="about_logo">Логотип Ruthenia Store</string>
+
+    <string name="privacy_title">Приватность</string>
+    <string name="privacy_expand">Развернуть</string>
+    <string name="privacy_collapse">Свернуть</string>
+
+    <string name="privacy_short_title">Коротко</string>
+    <string name="privacy_short_body">Ruthenia Store не собирает аналитику, не показывает рекламу, не требует аккаунта RuStore и не передаёт ваши данные третьим лицам. Всё, что уходит в сеть, — это запросы к API самого RuStore и разовая загрузка официальных сертификатов Минцифры при ручном обновлении в настройках, без которых поиск и скачивание невозможны.</string>
+
+    <string name="privacy_hosts_title">Какие хосты используются</string>
+    <string name="privacy_hosts_body">• backapi.rustore.ru — поиск, домашняя лента, сведения о приложении, приложения разработчика, ссылки на файлы.\n• api.rustore.ru — получение одноразового nonce для подписи запросов.\n• static-m.rustore.ru и static.rustore.ru — скачивание APK и загрузка иконок.\n• gu-st.ru — официальные сертификаты Russian Trusted CA (Минцифры), только при ручном обновлении сертификатов в настройках.\n\nДругих сетевых обращений нет. Проверяется прокси-перехватом.</string>
+
+    <string name="privacy_transfer_title">Что именно передаётся</string>
+    <string name="privacy_transfer_body">Заголовки устройства (модель, версия Android, язык, ABI), тип устройства и User-Agent в формате RuStore. Они статические и одинаковы для всех пользователей — по ним нельзя отличить одно устройство от другого.\n\ndeviceId — случайный и эфемерный: генерируется заново при каждом запуске, не связан с рекламным идентификатором Android и не сохраняется на диск.\n\nПодпись запросов (X-Client-Signature) считается локально через HMAC-SHA256 и нужна RuStore, чтобы отвечать на защищённые эндпоинты.\n\nДомашняя лента не персонализируется: её секции собираются из фиксированных общих запросов (например, «банк», «госуслуги»), а подборка «Рекомендуем» — из заранее заданного списка приложений внутри APK. Профиль поведения не строится.</string>
+
+    <string name="privacy_import_title">Поиск установленных приложений</string>
+    <string name="privacy_import_body">Список установленных приложений читается через PackageManager только локально и только когда вы сами нажали «Найти мои приложения в RuStore».\n\nВ сеть при этом уходят лишь package name проверяемых приложений — по одному запросу на приложение, чтобы узнать его версию в каталоге. Названия, значки и любые другие данные из списка установленного наружу не передаются и остаются на устройстве.\n\nПеред установкой обновления подпись скачанного APK сверяется с подписью установленного приложения: сборка из другого источника не установится. Импорт можно прервать в любой момент.</string>
+
+    <string name="privacy_downloads_title">Фоновые загрузки</string>
+    <string name="privacy_downloads_body">Обновление скачивается в фоне только после того, как вы сами нажали «Обновить» в разделе обновлений библиотеки: приложение запрашивает ссылки на файлы и скачивает их с CDN RuStore. Никаких загрузок без вашего действия нет — фоновая проверка лишь сверяет номера версий.\n\nСкачанные файлы по умолчанию проверяются по подписи и устанавливаются только после системного подтверждения. Можно включить автоустановку после загрузки и отключить проверку подписи — оба пункта находятся в настройках; проверка подписи включена по умолчанию.</string>
+
+    <string name="privacy_permissions_title">Разрешения</string>
+    <string name="privacy_permissions_body">• INTERNET — единственный сетевой доступ, только к перечисленным выше хостам.\n• POST_NOTIFICATIONS — уведомления о доступных обновлениях и о прогрессе фоновой загрузки.\n• REQUEST_INSTALL_PACKAGES — установка скачанного APK через системный PackageInstaller.\n• QUERY_ALL_PACKAGES — чтобы показать список установленных приложений и их версии. Читается только локально через PackageManager и никуда не отправляется.</string>
+
+    <string name="privacy_storage_title">Что хранится на устройстве</string>
+    <string name="privacy_storage_body">• Room-база: кэш найденных приложений и список установленного через Ruthenia Store.\n• DataStore: ваши настройки (тема, интервал проверки, Wi-Fi).\n• Временные файлы скачанных APK (в том числе при фоновой загрузке) — удаляются сразу после установки.\n\nВсё это не покидает устройство. Резервное копирование приложения отключено (allowBackup=false).</string>
+
+    <string name="privacy_certs_title">Сертификаты</string>
+    <string name="privacy_certs_body">Часть инфраструктуры RuStore использует Russian Trusted Root/Sub CA. Эти публичные сертификаты уже встроены в APK, поэтому вручную устанавливать ничего не нужно. Доверие применяется только к доменам rustore.ru, а поверх него работает проверка pin-хэшей сертификатов.\n\nВ настройках есть ручное обновление сертификатов: по вашему нажатию приложение сверяет живые цепочки RuStore и официальные сертификаты Минцифры с gu-st.ru и обновляет pin-хэши. Автоматически это не происходит.</string>
+
+    <string name="privacy_never_title">Чего приложение не делает</string>
+    <string name="privacy_never_body">• Не использует сторонние SDK аналитики, крашлитиков и рекламы.\n• Не авторизуется в аккаунте RuStore и работает анонимно.\n• Не персонализирует рекомендации: домашняя лента — фиксированные запросы и список приложений, без профиля поведения.\n• Не сканирует установленные приложения без вашего действия: импорт запускается только кнопкой.\n• Не устанавливает ничего без вашего явного действия: система всегда показывает свой диалог.\n• Не ставит обновление, если подпись скачанного файла не совпадает с установленным приложением (проверка включена по умолчанию и отключается только вручную в настройках).\n• Не логирует данные в интернет — локальная диагностика выключена по умолчанию и никуда не отправляется.</string>
+</resources>

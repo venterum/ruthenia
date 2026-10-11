@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="installer_shizuku_not_ready">Shizuku недоступен</string>
+    <string name="installer_shizuku_not_connected">Служба Shizuku не подключилась</string>
+</resources>

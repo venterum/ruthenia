@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="common_back">Назад</string>
+    <string name="common_clear">Очистить</string>
+    <string name="common_error_title">Не получилось</string>
+    <string name="common_retry">Повторить</string>
+
+    <string name="home_search_hint">Поиск в RuStore</string>
+    <string name="home_categories_title">Категории</string>
+    <string name="categories_selections_title">Подборки</string>
+    <string name="categories_selections_source">От RuStore</string>
+    <string name="home_updates_banner_hint">Открыть библиотеку и обновить</string>
+    <string name="apps_profile">Профиль устройства</string>
+    <string name="apps_about">О приложении</string>
+
+    <string name="games_title">Игры</string>
+    <string name="games_error">Не удалось загрузить игры.</string>
+    <string name="games_section_popular">Популярные игры</string>
+    <string name="games_genre_arcade">Аркады</string>
+    <string name="games_genre_puzzle">Головоломки</string>
+    <string name="games_genre_strategy">Стратегии</string>
+    <string name="games_genre_racing">Гонки</string>
+    <string name="games_genre_shooter">Шутеры</string>
+    <string name="games_genre_simulator">Симуляторы</string>
+
+    <plurals name="home_updates_banner">
+        <item quantity="one">%d приложение ждёт обновления</item>
+        <item quantity="few">%d приложения ждут обновления</item>
+        <item quantity="many">%d приложений ждут обновления</item>
+        <item quantity="other">%d приложений ждут обновления</item>
+    </plurals>
+    <string name="home_home_error">Не удалось загрузить рекомендации.</string>
+    <string name="home_search_empty_title">Ничего не найдено</string>
+    <string name="home_search_empty_text">Попробуйте другое название или package name.</string>
+    <string name="home_search_recent">Недавние запросы</string>
+    <string name="home_search_clear_history">Очистить историю</string>
+    <string name="home_see_all">Все</string>
+    <string name="collection_title">Подборка</string>
+    <string name="home_footer_privacy">Анонимно, без трекеров и рекламы</string>
+    <string name="home_footer_disclaimer">Ruthenia Store не аффилирован с RuStore / VK.</string>
+
+    <string name="featured_editorial">Подборка редакции</string>
+    <string name="featured_rank">№%1$d</string>
+</resources>

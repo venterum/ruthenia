@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Ruthenia Store</string>
+    <string name="nav_apps">Приложения</string>
+    <string name="nav_search">Поиск</string>
+    <string name="nav_games">Игры</string>
+    <string name="nav_library">Библиотека</string>
+    <string name="nav_settings">Настройки</string>
+
+    <!-- Профиль устройства: локальная идентичность вместо аккаунта. -->
+    <string name="profile_subtitle">Данные хранятся только на этом устройстве. Аккаунт не нужен.</string>
+    <string name="profile_installed">Установлено</string>
+    <string name="profile_updates">Обновления</string>
+    <string name="profile_about">О приложении</string>
+    <string name="profile_privacy">Конфиденциальность</string>
+    <string name="profile_change_seal">Сменить печать</string>
+
+    <!-- Знакомство при первом запуске. -->
+    <string name="onboarding_skip">Пропустить</string>
+    <string name="onboarding_next">Далее</string>
+    <string name="onboarding_start">Начать</string>
+    <string name="onboarding_welcome_title">Добро пожаловать</string>
+    <string name="onboarding_welcome_body">Ruthenia Store — открытый клиент для установки и обновления приложений из RuStore. Без слежки, баннеров и лишнего.</string>
+    <string name="onboarding_privacy_title">Приватность по умолчанию</string>
+    <string name="onboarding_privacy_body">Ни аналитики, ни рекламных SDK. Сеть нужна только для каталога и загрузок RuStore и разовой загрузки официальных сертификатов Минцифры при ручном обновлении, а список установленных приложений читается локально.</string>
+    <string name="onboarding_install_title">Проверенная установка</string>
+    <string name="onboarding_install_body">Перед установкой подпись скачанного APK сверяется с подписью уже установленного приложения. Multi-APK и split-сборки ставятся одной сессией.</string>
+    <string name="onboarding_disclaimer_title">Неофициальный клиент</string>
+    <string name="onboarding_disclaimer_body">Проект не связан с RuStore и VK и работает поверх непубличного API. Если API изменится, приложение временно перестанет получать данные до обновления.</string>
+</resources>

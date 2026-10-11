@@ -1,0 +1,1 @@
+First release: search, home feed, app details, split-APK install in a single session, library, manual and background update checks.

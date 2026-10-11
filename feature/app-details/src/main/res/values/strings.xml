@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="common_back">Назад</string>
+    <string name="app_details_app_fallback_title">Приложение</string>
+    <string name="app_details_refresh">Обновить</string>
+    <string name="app_details_error_title">Не получилось</string>
+    <string name="app_details_load_error">Не удалось загрузить приложение.</string>
+    <string name="app_details_retry">Повторить</string>
+    <string name="app_details_installed_toast">Установлено</string>
+    <string name="app_details_open">Открыть</string>
+
+    <string name="app_details_stat_version">Версия</string>
+    <string name="app_details_stat_updated">Обновлено</string>
+    <string name="app_details_stat_size">Размер</string>
+    <string name="app_details_stat_installed">Установлено</string>
+    <string name="app_details_downloads_count">%1$s загрузок</string>
+
+    <string name="app_details_about">О приложении</string>
+    <string name="app_details_more">Ещё</string>
+    <string name="app_details_share">Поделиться</string>
+    <string name="app_details_save_apk">Сохранить APK</string>
+    <string name="app_details_uninstall">Удалить</string>
+    <string name="app_details_uninstall_title">Удалить приложение?</string>
+    <string name="app_details_uninstall_text">Приложение будет удалено с устройства. Система покажет своё подтверждение.</string>
+    <string name="app_details_uninstall_confirm">Удалить</string>
+    <string name="app_details_cancel">Отмена</string>
+    <string name="app_details_export_no_folder">Сначала выберите папку для APK в настройках.</string>
+    <string name="app_details_export_started">Сохранение APK началось — уведомление покажет готовность.</string>
+    <string name="app_details_share_text">Приложение %1$s в RuStore</string>
+
+    <string name="app_details_screenshots">Скриншоты</string>
+    <string name="app_details_screenshot_n">Скриншот %1$d</string>
+    <string name="app_details_screenshot_counter">%1$d / %2$d</string>
+    <string name="app_details_screenshot_close">Закрыть</string>
+    <string name="app_details_rating">Рейтинг</string>
+    <string name="app_details_ratings_count">%1$s оценок</string>
+    <string name="app_details_age_limit">%1$s</string>
+    <string name="app_details_website">Сайт приложения</string>
+    <string name="app_details_changelog">Что нового</string>
+    <string name="app_details_expand">Развернуть</string>
+    <string name="app_details_collapse">Свернуть</string>
+    <string name="app_details_developer_apps">Ещё от разработчика</string>
+
+    <string name="app_details_aggregated">Это агрегированная карточка: RuStore не хранит её APK, файлы поставляет внешний источник. Установка недоступна.</string>
+    <string name="app_details_offline">Нет сети — показаны сохранённые данные.</string>
+    <string name="app_details_hide_update">Не предлагать обновления</string>
+    <string name="app_details_show_update">Снова показывать обновления</string>
+    <string name="app_details_update_hidden">обновление скрыто</string>
+
+    <string name="app_details_install">Установить</string>
+    <string name="app_details_update">Обновить</string>
+    <string name="app_details_reinstall">Переустановить</string>
+    <string name="app_details_downloading_percent">Скачивание %1$d%%</string>
+    <string name="app_details_downloading">Скачивание…</string>
+    <string name="app_details_cancel_download">Отменить загрузку</string>
+    <string name="app_details_installing">Установка…</string>
+
+    <string name="app_details_files_note">Файлы скачиваются с CDN RuStore, подпись сверяется перед установкой — обновление не поставится поверх сборки из другого источника.</string>
+
+    <string name="app_details_size_mb">%1$.1f МБ</string>
+    <string name="app_details_size_kb">%1$.0f КБ</string>
+    <string name="app_details_size_b">%1$d Б</string>
+    <string name="app_details_count_millions">%1$.1f млн</string>
+    <string name="app_details_count_thousands">%1$.0f тыс.</string>
+
+    <string name="app_details_error_download">Не удалось скачать файл (HTTP %1$d).</string>
+    <string name="app_details_error_container">Архив не содержит APK.</string>
+    <string name="app_details_error_integrity">Скачанный файл повреждён: размер не совпал с каталогом. Попробуйте скачать ещё раз.</string>
+    <string name="app_details_error_session">Сессия установки прервана: %1$s</string>
+</resources>

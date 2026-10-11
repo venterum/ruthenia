@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="common_back">Back</string>
+    <string name="common_cancel">Cancel</string>
+
+    <string name="settings_title">Settings</string>
+    <string name="settings_section_appearance">Appearance</string>
+    <string name="settings_theme">Theme</string>
+    <string name="theme_system">System</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+    <string name="settings_dynamic_color">Material You dynamic colors</string>
+    <string name="settings_dynamic_color_desc">Palette is taken from your wallpaper (Android 12+).</string>
+    <string name="settings_accent">Accent color</string>
+    <string name="settings_accent_dynamic_hint">The system Material You theme currently controls the color — turn off dynamic colors to pick your own.</string>
+    <string name="settings_language">Language</string>
+    <string name="settings_language_system">System</string>
+    <string name="settings_language_ru">Русский</string>
+    <string name="settings_language_en">English</string>
+    <string name="settings_navbar_style">Navigation bar</string>
+    <string name="settings_navbar_floating">Floating</string>
+    <string name="settings_navbar_normal">Standard</string>
+    <string name="settings_icon_shape">App icon shape</string>
+    <string name="settings_icon_shape_circle">Circle</string>
+    <string name="settings_icon_shape_rounded">Rounded</string>
+    <string name="settings_icon_shape_square">Square</string>
+    <string name="settings_section_catalog">Catalog</string>
+    <string name="settings_games_page">Games page</string>
+    <string name="settings_games_page_desc">Show the games tab. Disabling it doesn\'t affect search or catalog sections.</string>
+    <string name="settings_section_updates">Updates</string>
+    <string name="settings_background_checks">Background update checks</string>
+    <string name="settings_background_checks_desc">Periodically checks versions and notifies about available updates.</string>
+    <string name="settings_interval">Check interval</string>
+    <string name="settings_interval_hours">%1$d h</string>
+    <string name="settings_wifi_only">Wi-Fi only</string>
+    <string name="settings_wifi_only_desc">Don\'t spend mobile data on checks and downloads.</string>
+    <string name="settings_section_sources">Library sources</string>
+    <string name="settings_show_gplay">Apps from Google Play</string>
+    <string name="settings_show_gplay_desc">Show apps installed from Google Play in the library. Such apps usually cannot be updated via RuStore.</string>
+    <string name="settings_show_sideload">Manually installed</string>
+    <string name="settings_show_sideload_desc">Show APKs installed manually, via a file manager or adb.</string>
+    <string name="settings_section_downloads">APK downloads</string>
+    <string name="settings_export_folder">Folder to save APKs</string>
+    <string name="settings_export_folder_none">No folder selected.</string>
+    <string name="settings_export_folder_selected">Selected folder “%1$s”.</string>
+    <string name="settings_choose_folder">Choose</string>
+
+    <string name="settings_section_backup">Data</string>
+    <string name="settings_backup_export">Backup</string>
+    <string name="settings_backup_export_desc">Save the library and settings to a JSON file.</string>
+    <string name="settings_backup_export_action">Export</string>
+    <string name="settings_backup_import">Restore</string>
+    <string name="settings_backup_import_desc">Replace the library and settings with data from a file.</string>
+    <string name="settings_backup_import_action">Import</string>
+    <string name="settings_backup_exported">Backup saved.</string>
+    <string name="settings_backup_imported">Data restored from backup.</string>
+    <string name="settings_backup_failed">Couldn\'t process the backup file.</string>
+
+    <string name="settings_section_install">Installation</string>
+    <string name="settings_auto_install">Auto-install after download</string>
+    <string name="settings_auto_install_desc">Open the system install confirmation right after a download finishes. Android\'s dialog is still required.</string>
+    <string name="settings_verify_signature">Verify APK signature</string>
+    <string name="settings_verify_signature_desc">Refuse to install when the downloaded file\'s signature doesn\'t match the installed app.</string>
+    <string name="settings_verify_signature_off_title">Disable signature verification?</string>
+    <string name="settings_verify_signature_off_message">Without signature verification the app will install a downloaded file even if it\'s signed with a different key. This weakens protection against APK substitution and is not recommended.</string>
+    <string name="settings_verify_signature_off_confirm">Disable</string>
+
+    <string name="settings_shizuku">Silent install (Shizuku)</string>
+    <string name="settings_shizuku_desc">Install downloaded APKs without the system dialog through Shizuku or Sui. The app receives shell-level access; signature verification still applies.</string>
+    <string name="settings_shizuku_status">Status</string>
+    <string name="settings_shizuku_status_not_installed">Shizuku is not installed</string>
+    <string name="settings_shizuku_status_not_running">Shizuku is installed but not running</string>
+    <string name="settings_shizuku_status_permission">Shizuku permission is required</string>
+    <string name="settings_shizuku_status_ready">Ready for silent install</string>
+    <string name="settings_shizuku_grant">Allow</string>
+    <string name="settings_shizuku_open">Open Shizuku</string>
+    <string name="settings_shizuku_warning_title">Enable silent install?</string>
+    <string name="settings_shizuku_warning_message">Shizuku grants the app shell-level (ADB) access, so installs happen without the system dialog. APK signature verification still applies. Enable only if you understand the risk: such access lets the app intervene in the system more deeply.</string>
+    <string name="settings_shizuku_warning_confirm">Enable</string>
+
+    <string name="settings_section_security">Security</string>
+    <string name="settings_certs">RuStore certificates</string>
+    <string name="settings_certs_source_bundled">Using the built-in pin set.</string>
+    <string name="settings_certs_source_refreshed">Updated %1$s.</string>
+    <string name="settings_certs_update">Update</string>
+    <string name="settings_certs_reset">Reset to built-in</string>
+    <string name="settings_certs_reset_desc">Restore the pins bundled in the app.</string>
+    <string name="settings_certs_reset_action">Reset</string>
+    <string name="settings_certs_updated">Certificates updated. Changes apply on the next launch.</string>
+    <string name="settings_certs_failed">Couldn\'t update certificates. Check your connection and try again.</string>
+    <string name="settings_certs_reset_done">Restored the built-in certificate set.</string>
+
+    <string name="settings_section_privacy">Privacy</string>
+    <string name="settings_privacy_what">What goes online</string>
+    <string name="settings_privacy_what_desc">An honest description of every network request the app makes and its permissions.</string>
+    <string name="settings_open">Open</string>
+    <string name="settings_diagnostics">Local diagnostics</string>
+    <string name="settings_diagnostics_desc">Off by default. Logs are never sent anywhere automatically.</string>
+    <string name="settings_section_about">About</string>
+    <string name="settings_about_name">Ruthenia Store</string>
+    <string name="settings_about_desc">Unofficial RuStore catalog client. Not affiliated with RuStore/VK. GPL-3.0 license.</string>
+    <string name="settings_trademark">Trademarks belong to their respective owners. Mention of RuStore only states compatibility.</string>
+
+    <string name="about_title">About</string>
+    <string name="about_version_short">v%1$s</string>
+    <string name="about_description">An open client for the RuStore catalog: install and update apps without analytics, ads, or an account.</string>
+    <string name="about_section_legal">Legal</string>
+    <string name="about_privacy">Privacy</string>
+    <string name="about_privacy_desc">What goes online and which permissions exist</string>
+    <string name="about_license">License</string>
+    <string name="about_license_desc">GPL-3.0-or-later. The source code is open.</string>
+    <string name="about_license_text">Ruthenia Store is free software under the GNU GPL-3.0-or-later license.\n\nThe network layer is implemented independently, but builds on analysis of the open-source Obtainium project (GPL-3.0).\n\nTrademarks belong to their respective owners. Mention of RuStore only states compatibility.</string>
+    <string name="about_copied">Copied to clipboard</string>
+    <string name="about_logo">Ruthenia Store logo</string>
+
+    <string name="privacy_title">Privacy</string>
+    <string name="privacy_expand">Expand</string>
+    <string name="privacy_collapse">Collapse</string>
+
+    <string name="privacy_short_title">In short</string>
+    <string name="privacy_short_body">Ruthenia Store collects no analytics, shows no ads, requires no RuStore account and does not share your data with third parties. Everything that goes over the network is a request to the RuStore API itself plus a one-off download of the official Mintsifry certificates during a manual refresh in settings — both are required for search and downloads.</string>
+
+    <string name="privacy_hosts_title">Which hosts are used</string>
+    <string name="privacy_hosts_body">• backapi.rustore.ru — search, home feed, app info, developer apps, file links.\n• api.rustore.ru — a one-off nonce for signing requests.\n• static-m.rustore.ru and static.rustore.ru — APK downloads and icon loading.\n• gu-st.ru — official Russian Trusted CA certificates (Mintsifry), only during a manual certificate refresh in settings.\n\nThere are no other network requests. You can verify this with a proxy.</string>
+
+    <string name="privacy_transfer_title">What exactly is sent</string>
+    <string name="privacy_transfer_body">Device headers (model, Android version, language, ABI), device type and a User-Agent in RuStore format. They are static and identical for every user — they cannot tell one device from another.\n\ndeviceId is random and ephemeral: it is regenerated on every launch, is not linked to the Android advertising ID and is not stored on disk.\n\nThe request signature (X-Client-Signature) is computed locally via HMAC-SHA256 and is needed by RuStore to answer protected endpoints.\n\nThe home feed is not personalised: its sections are built from fixed common queries (for example "bank", "government services"), and the "Recommended" selection comes from a predefined list of apps inside the APK. No behavioural profile is built.</string>
+
+    <string name="privacy_import_title">Scanning installed apps</string>
+    <string name="privacy_import_body">The list of installed apps is read via PackageManager strictly locally and only when you tap "Find my apps in RuStore" yourself.\n\nOnly the package names of the apps being checked go over the network — one request per app to look up its catalog version. Names, icons and any other data from the installed list are never sent out and stay on the device.\n\nBefore installing an update, the downloaded APK\'s signature is checked against the installed app: a build from another source will not install. You can cancel the import at any time.</string>
+
+    <string name="privacy_downloads_title">Background downloads</string>
+    <string name="privacy_downloads_body">An update is downloaded in the background only after you tap "Update" yourself in the library\'s updates section: the app requests file links and downloads them from the RuStore CDN. Nothing is downloaded without your action — the background check only compares version numbers.\n\nDownloaded files are verified by signature by default and installed only after system confirmation. You can enable auto-install after download and disable signature verification — both are in settings; signature verification is on by default.</string>
+
+    <string name="privacy_permissions_title">Permissions</string>
+    <string name="privacy_permissions_body">• INTERNET — the only network access, only to the hosts listed above.\n• POST_NOTIFICATIONS — notifications about available updates and background download progress.\n• REQUEST_INSTALL_PACKAGES — installing a downloaded APK via the system PackageInstaller.\n• QUERY_ALL_PACKAGES — to show the list of installed apps and their versions. Read only locally via PackageManager and never sent anywhere.</string>
+
+    <string name="privacy_storage_title">What is stored on device</string>
+    <string name="privacy_storage_body">• Room database: a cache of found apps and the list of apps installed through Ruthenia Store.\n• DataStore: your settings (theme, check interval, Wi-Fi).\n• Temporary downloaded APK files (including background downloads) — deleted right after installation.\n\nNone of this leaves the device. App backup is disabled (allowBackup=false).</string>
+
+    <string name="privacy_certs_title">Certificates</string>
+    <string name="privacy_certs_body">Part of RuStore\'s infrastructure uses the Russian Trusted Root/Sub CA. These public certificates are already bundled in the APK, so there is nothing to install manually. The trust applies only to rustore.ru domains, and certificate pin-hash verification runs on top of it.\n\nSettings include a manual certificate refresh: on your tap the app checks the live RuStore chains and the official Mintsifry certificates from gu-st.ru and updates the pin hashes. This never happens automatically.</string>
+
+    <string name="privacy_never_title">What the app never does</string>
+    <string name="privacy_never_body">• Does not use third-party analytics, crash reporting or ad SDKs.\n• Does not sign in to a RuStore account and works anonymously.\n• Does not personalise recommendations: the home feed is fixed queries and an app list, with no behavioural profile.\n• Does not scan installed apps without your action: the import starts only from a button.\n• Does not install anything without your explicit action: the system always shows its own dialog.\n• Does not install an update if the downloaded file\'s signature does not match the installed app (verification is on by default and can only be disabled manually in settings).\n• Does not log data to the internet — local diagnostics are off by default and never sent anywhere.</string>
+</resources>

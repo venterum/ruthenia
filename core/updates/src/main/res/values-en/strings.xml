@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="updates_channel_name">App updates</string>
+    <string name="updates_channel_description">Notifications about available updates for installed apps</string>
+
+    <string name="downloads_channel_name">App downloads</string>
+    <string name="downloads_channel_description">Download progress and readiness to install</string>
+
+    <plurals name="updates_available_title">
+        <item quantity="one">Update available: %d</item>
+        <item quantity="other">Updates available: %d</item>
+    </plurals>
+
+    <string name="notification_download_downloading">Downloading…</string>
+    <string name="notification_download_downloaded">Downloaded %1$d%%</string>
+    <string name="notification_download_ready">Download complete — open Ruthenia Store to install.</string>
+    <string name="notification_install_action">Install</string>
+    <string name="notification_update_arrow">%1$s → %2$s</string>
+    <string name="notification_update_new_version">New version %1$s</string>
+    <string name="notification_update_available">Update available</string>
+    <string name="notification_update_more">and %1$d more</string>
+    <string name="notification_export_done">APK saved to the selected folder.</string>
+    <string name="export_error">Couldn\'t save the APK.</string>
+
+    <string name="download_error_unknown_package">Couldn\'t identify the app.</string>
+    <string name="download_error_no_files">RuStore did not provide files for this app.</string>
+    <string name="download_error_files_missing">Downloaded files not found — download the app again.</string>
+    <string name="download_error_signature_mismatch">The downloaded file\'s signature doesn\'t match the installed app. This looks like a build from another source — installation cancelled.</string>
+    <string name="download_error_integrity">The downloaded file is corrupted: its size doesn\'t match the catalog data. Try downloading again.</string>
+    <string name="download_error_container">The downloaded archive contains no APK. Try downloading again.</string>
+    <string name="download_error_install_in_progress">This app is already being installed.</string>
+</resources>

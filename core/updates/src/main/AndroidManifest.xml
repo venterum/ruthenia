@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The module shows update notifications, so it declares the required
+  runtime permission itself. The manifest is merged into the app manifest;
+  user denial is handled in UpdateNotifications via areNotificationsEnabled().
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+</manifest>

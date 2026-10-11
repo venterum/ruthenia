@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Ruthenia Store — an open, private client for installing and updating apps.
+  Copyright (C) 2026 Ruthenia Store contributors
+  SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<resources>
+    <!-- Adaptive icon background layer: brand blue. -->
+    <color name="ic_launcher_background">#FF395CDE</color>
+    <!-- Window background on cold start: matches the theme surface, so
+         the "own" surface is visible instead of a white flash. -->
+    <color name="window_background">#FFFAFDFC</color>
+</resources>

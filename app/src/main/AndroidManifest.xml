@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Ruthenia Store — an open, private client for installing and updating apps.
+  Copyright (C) 2026 Ruthenia Store contributors
+  SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Network access is only needed for the RuStore API and its CDN. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- Group notification "updates available" (Android 13+). -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- Installing downloaded APKs via PackageInstaller (session-based API). -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+
+    <!--
+        Installed apps list: without QUERY_ALL_PACKAGES PackageManager
+        only sees packages listed in <queries>, but we need the status
+        "up to date / update available" for any installed app.
+
+        The list is read locally and only on an explicit import ("Find my
+        apps in RuStore"). Only the package names of checked apps go over the
+        network — names and other data never leave the device.
+    -->
+    <uses-permission
+        android:name="android.permission.QUERY_ALL_PACKAGES"
+        tools:ignore="QueryAllPackagesPermission" />
+
+    <!--
+        WorkManager declares these itself, but the app does not need them:
+        expedited/foreground work is not used, and the periodic check is
+        rescheduled on the next launch. WAKE_LOCK and ACCESS_NETWORK_STATE
+        are kept intentionally — without them the worker cannot run.
+    -->
+    <uses-permission
+        android:name="android.permission.RECEIVE_BOOT_COMPLETED"
+        tools:node="remove" />
+    <uses-permission
+        android:name="android.permission.FOREGROUND_SERVICE"
+        tools:node="remove" />
+
+    <application
+        android:name=".RutheniaApplication"
+        android:allowBackup="false"
+        android:enableOnBackInvokedCallback="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.Ruthenia"
+        android:usesCleartextTraffic="false">
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:launchMode="singleTop"
+            android:theme="@style/Theme.Ruthenia.Splash">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <!-- "Install" action from the ready-to-install notification. -->
+            <intent-filter>
+                <action android:name="com.vntrum.ruthenia.action.INSTALL_READY" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+
+            <!--
+                Public links to RuStore catalog pages open the app details page
+                inside Ruthenia Store (no autoVerify: the app does not claim the
+                domain, so the system will show a chooser if the original RuStore
+                is installed).
+            -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="https"
+                    android:host="www.rustore.ru"
+                    android:pathPrefix="/catalog/app/" />
+                <data
+                    android:scheme="https"
+                    android:host="rustore.ru"
+                    android:pathPrefix="/catalog/app/" />
+            </intent-filter>
+        </activity>
+
+        <!--
+            Storage for the selected locale on API < 33: AppCompat persists the
+            language choice itself and applies it on the next launch.
+        -->
+        <service
+            android:name="androidx.appcompat.app.AppLocalesMetadataHolderService"
+            android:enabled="false"
+            android:exported="false">
+            <meta-data
+                android:name="autoStoreLocales"
+                android:value="true" />
+        </service>
+
+        <!--
+            WorkManager is initialized on demand so the worker receives its
+            dependencies through Hilt (see RutheniaApplication).
+        -->
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            android:exported="false"
+            tools:node="merge">
+            <meta-data
+                android:name="androidx.work.WorkManagerInitializer"
+                android:value="androidx.startup"
+                tools:node="remove" />
+        </provider>
+
+        <!--
+            Optional silent install via Shizuku/Sui (see core:installer). The
+            provider connects to the Shizuku service; the signature-level
+            INTERACT_ACROSS_USERS_FULL permission keeps other apps out.
+        -->
+        <provider
+            android:name="rikka.shizuku.ShizukuProvider"
+            android:authorities="${applicationId}.shizuku"
+            android:multiprocess="false"
+            android:enabled="true"
+            android:exported="true"
+            android:permission="android.permission.INTERACT_ACROSS_USERS_FULL" />
+    </application>
+</manifest>

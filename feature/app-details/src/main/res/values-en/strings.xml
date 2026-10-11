@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="common_back">Back</string>
+    <string name="app_details_app_fallback_title">App</string>
+    <string name="app_details_refresh">Refresh</string>
+    <string name="app_details_error_title">Something went wrong</string>
+    <string name="app_details_load_error">Couldn\'t load the app.</string>
+    <string name="app_details_retry">Retry</string>
+    <string name="app_details_installed_toast">Installed</string>
+    <string name="app_details_open">Open</string>
+
+    <string name="app_details_stat_version">Version</string>
+    <string name="app_details_stat_updated">Updated</string>
+    <string name="app_details_stat_size">Size</string>
+    <string name="app_details_stat_installed">Installed</string>
+    <string name="app_details_downloads_count">%1$s downloads</string>
+
+    <string name="app_details_more">More</string>
+    <string name="app_details_share">Share</string>
+    <string name="app_details_save_apk">Save APK</string>
+    <string name="app_details_uninstall">Uninstall</string>
+    <string name="app_details_uninstall_title">Uninstall the app?</string>
+    <string name="app_details_uninstall_text">The app will be removed from the device. The system will show its own confirmation.</string>
+    <string name="app_details_uninstall_confirm">Uninstall</string>
+    <string name="app_details_cancel">Cancel</string>
+    <string name="app_details_export_no_folder">Choose a folder for APKs in Settings first.</string>
+    <string name="app_details_export_started">Saving the APK has started — a notification will report when it\'s done.</string>
+    <string name="app_details_share_text">%1$s on RuStore</string>
+
+    <string name="app_details_screenshots">Screenshots</string>
+    <string name="app_details_screenshot_n">Screenshot %1$d</string>
+    <string name="app_details_screenshot_counter">%1$d / %2$d</string>
+    <string name="app_details_screenshot_close">Close</string>
+    <string name="app_details_rating">Rating</string>
+    <string name="app_details_ratings_count">%1$s ratings</string>
+    <string name="app_details_age_limit">%1$s</string>
+    <string name="app_details_website">App website</string>
+    <string name="app_details_about">About this app</string>
+    <string name="app_details_changelog">What\'s new</string>
+    <string name="app_details_expand">Expand</string>
+    <string name="app_details_collapse">Collapse</string>
+    <string name="app_details_developer_apps">More from developer</string>
+
+    <string name="app_details_aggregated">This is an aggregated listing: RuStore does not host its APK, files come from an external source. Installation unavailable.</string>
+    <string name="app_details_offline">No connection — showing saved data.</string>
+    <string name="app_details_hide_update">Don\'t offer updates</string>
+    <string name="app_details_show_update">Offer updates again</string>
+    <string name="app_details_update_hidden">update hidden</string>
+
+    <string name="app_details_install">Install</string>
+    <string name="app_details_update">Update</string>
+    <string name="app_details_reinstall">Reinstall</string>
+    <string name="app_details_downloading_percent">Downloading %1$d%%</string>
+    <string name="app_details_downloading">Downloading…</string>
+    <string name="app_details_cancel_download">Cancel download</string>
+    <string name="app_details_installing">Installing…</string>
+
+    <string name="app_details_files_note">Files are downloaded from the RuStore CDN and the signature is verified before installation — an update won\'t be installed over a build from another source.</string>
+
+    <string name="app_details_size_mb">%1$.1f MB</string>
+    <string name="app_details_size_kb">%1$.0f KB</string>
+    <string name="app_details_size_b">%1$d B</string>
+    <string name="app_details_count_millions">%1$.1fM</string>
+    <string name="app_details_count_thousands">%1$.0fK</string>
+
+    <string name="app_details_error_download">Couldn\'t download the file (HTTP %1$d).</string>
+    <string name="app_details_error_container">The archive contains no APK.</string>
+    <string name="app_details_error_integrity">The downloaded file is corrupted: its size doesn\'t match the catalog. Try downloading again.</string>
+    <string name="app_details_error_session">Install session was interrupted: %1$s</string>
+</resources>

@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="common_back">Назад</string>
+    <string name="common_clear">Очистить</string>
+    <string name="common_install">Установить</string>
+    <string name="common_cancel_download">Отменить загрузку</string>
+
+    <string name="library_updates_title">Обновления</string>
+    <string name="library_updates_all_ok">Всё актуально</string>
+    <string name="library_updates_ready">%1$s · готовы</string>
+    <string name="library_apps_title">Мои приложения</string>
+    <string name="library_see_all">Все</string>
+
+    <string name="downloads_title">Загрузки</string>
+    <string name="downloads_expand">Развернуть</string>
+    <string name="downloads_collapse">Свернуть</string>
+
+    <string name="my_apps_find">Найти мои приложения</string>
+    <string name="my_apps_title">Мои приложения</string>
+    <string name="my_apps_empty_title">Здесь пока пусто</string>
+    <string name="my_apps_empty_text">Приложения, установленные через Ruthenia Store, появятся в этом списке вместе со статусом обновления. Уже установленные можно найти кнопкой выше.</string>
+    <string name="my_apps_search_hint">Поиск по названию или package name</string>
+    <string name="my_apps_filter_all">Все</string>
+    <string name="my_apps_filter_updates">Есть обновление</string>
+    <string name="my_apps_filter_uptodate">Актуальные</string>
+    <string name="my_apps_sort">Сортировка</string>
+    <string name="my_apps_sort_name">По названию</string>
+    <string name="my_apps_sort_updates">Сначала с обновлениями</string>
+    <string name="my_apps_view_list">Список</string>
+    <string name="my_apps_view_grid">Сетка</string>
+    <string name="my_apps_no_results">Ничего не найдено по этому запросу.</string>
+
+    <string name="updates_title">Обновления</string>
+    <string name="updates_empty_title">Обновлений нет</string>
+    <string name="updates_empty_text">Все приложения в библиотеке актуальны. Проверка выполняется при открытии библиотеки.</string>
+    <string name="updates_update_all">Обновить всё (%1$d)</string>
+    <string name="updates_start">Обновить</string>
+    <string name="updates_check">Проверить обновления</string>
+    <string name="updates_checking">Проверка обновлений…</string>
+    <string name="updates_hide">Скрыть обновление</string>
+    <string name="updates_more">Ещё</string>
+    <string name="updates_hidden_note">Часть обновлений скрыта — вернуть их можно в карточке приложения.</string>
+    <string name="updates_select_all">Выбрать все</string>
+    <string name="updates_clear_selection">Снять выбор</string>
+    <string name="updates_cancel_selection">Отмена</string>
+    <string name="updates_update_selected">Обновить выбранные (%1$d)</string>
+    <string name="updates_hidden_toast">Обновление скрыто</string>
+    <string name="updates_undo">Вернуть</string>
+
+    <plurals name="updates_count">
+        <item quantity="one">%d обновление</item>
+        <item quantity="few">%d обновления</item>
+        <item quantity="many">%d обновлений</item>
+        <item quantity="other">%d обновлений</item>
+    </plurals>
+
+    <string name="update_status_available">обновление</string>
+    <string name="update_status_uptodate">Актуальная версия</string>
+    <string name="update_status_unknown">нет данных</string>
+
+    <string name="update_version_arrow">%1$s → %2$s</string>
+    <string name="update_new_version">Новая версия %1$s</string>
+    <string name="update_available_generic">Доступно обновление</string>
+
+    <string name="download_queued">В очереди…</string>
+    <string name="download_queued_short">В очереди</string>
+    <string name="download_downloading">Скачивание…</string>
+    <string name="download_downloading_percent">Скачивание %1$d%%</string>
+    <string name="download_verifying">Проверка подписи…</string>
+    <string name="download_ready">Готово к установке</string>
+    <string name="download_installing">Установка…</string>
+    <string name="download_downloaded_percent">Скачано %1$d%%</string>
+    <string name="download_retry">Повторить</string>
+
+    <plurals name="download_active_count">
+        <item quantity="one">%d загрузка</item>
+        <item quantity="few">%d загрузки</item>
+        <item quantity="many">%d загрузок</item>
+        <item quantity="other">%d загрузок</item>
+    </plurals>
+
+    <plurals name="download_ready_count">
+        <item quantity="one">%d готово к установке</item>
+        <item quantity="few">%d готовы к установке</item>
+        <item quantity="many">%d готово к установке</item>
+        <item quantity="other">%d готово к установке</item>
+    </plurals>
+
+    <plurals name="download_failed_count">
+        <item quantity="one">%d с ошибкой</item>
+        <item quantity="few">%d с ошибкой</item>
+        <item quantity="many">%d с ошибкой</item>
+        <item quantity="other">%d с ошибкой</item>
+    </plurals>
+
+    <string name="download_summary_active">%1$s · %2$d%%</string>
+
+    <string name="library_import_progress">Проверено %1$d из %2$d</string>
+    <string name="library_import_reading">Читаю список установленных приложений…</string>
+    <string name="library_import_cancel">Прервать</string>
+
+    <string name="source_rustore">RuStore</string>
+    <string name="source_gplay">Google Play</string>
+    <string name="source_sideload">вручную</string>
+    <string name="source_other">другой источник</string>
+    <string name="source_unknown">источник неизвестен</string>
+
+    <string name="message_updates_none">Обновлений нет.</string>
+    <string name="message_updates_one">Доступно обновление для 1 приложения.</string>
+    <string name="message_updates_many">Доступны обновления для %1$d приложений.</string>
+    <string name="message_updates_check_failed">Не удалось проверить обновления — каталог не ответил.</string>
+    <string name="message_updates_downloading">Обновления скачиваются в фоне.</string>
+    <string name="message_installed">%1$s: установлено.</string>
+    <string name="message_import_none">В каталоге RuStore не нашлось установленных приложений.</string>
+    <string name="message_import_result">Добавлено: %1$d, обновлено записей: %2$d. Все они есть в каталоге RuStore.</string>
+    <string name="message_import_checked">Проверено всего: %1$d.</string>
+    <string name="message_import_cancelled">Импорт прерван.</string>
+</resources>

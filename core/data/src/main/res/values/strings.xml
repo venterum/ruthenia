@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="error_aggregated">Это агрегированная карточка: RuStore не хранит её APK, файлы поставляет внешний источник.</string>
+    <string name="error_no_apk">RuStore не отдал файлы для этого приложения.</string>
+    <string name="error_http_400">RuStore отклонил запрос (400).</string>
+    <string name="error_http_404">Приложение не найдено в RuStore.</string>
+    <string name="error_http_419">Защищённая сессия RuStore истекла, попробуйте ещё раз.</string>
+    <string name="error_http_429">Слишком много запросов, попробуйте позже.</string>
+    <string name="error_http_other">RuStore ответил ошибкой %1$d.</string>
+    <string name="error_session_unavailable">Не удалось открыть защищённую сессию RuStore.</string>
+    <string name="error_invalid_response">Не удалось разобрать ответ RuStore. Возможно, API изменился.</string>
+    <string name="error_network">Нет соединения с RuStore. Проверьте сеть.</string>
+    <string name="error_unknown">%1$s: %2$s</string>
+    <string name="error_no_details">нет деталей</string>
+</resources>

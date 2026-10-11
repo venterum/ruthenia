@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Ruthenia Store — an open, private client for installing and updating apps.
+  Copyright (C) 2026 Ruthenia Store contributors
+  SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- The benchmark library writes the generated profiles and traces to the
+         additional test output directory, which on API 29 needs legacy storage. -->
+    <application android:requestLegacyExternalStorage="true" />
+
+    <!-- Android 11+ package visibility: the app under test must be visible to
+         UiAutomator (startApplicationAndWait and By.res selectors). -->
+    <queries>
+        <package android:name="com.vntrum.ruthenia" />
+    </queries>
+</manifest>

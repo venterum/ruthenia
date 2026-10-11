@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="updates_channel_name">Обновления приложений</string>
+    <string name="updates_channel_description">Сообщения о доступных обновлениях установленных приложений</string>
+
+    <string name="downloads_channel_name">Загрузки приложений</string>
+    <string name="downloads_channel_description">Прогресс скачивания приложений и готовность к установке</string>
+
+    <plurals name="updates_available_title">
+        <item quantity="one">Доступно обновление: %d</item>
+        <item quantity="few">Доступны обновления: %d</item>
+        <item quantity="many">Доступно обновлений: %d</item>
+        <item quantity="other">Доступны обновления: %d</item>
+    </plurals>
+
+    <string name="notification_download_downloading">Скачивание…</string>
+    <string name="notification_download_downloaded">Скачано %1$d%%</string>
+    <string name="notification_download_ready">Загрузка завершена — откройте Ruthenia Store, чтобы установить.</string>
+    <string name="notification_install_action">Установить</string>
+    <string name="notification_update_arrow">%1$s → %2$s</string>
+    <string name="notification_update_new_version">Новая версия %1$s</string>
+    <string name="notification_update_available">Доступно обновление</string>
+    <string name="notification_update_more">и ещё %1$d</string>
+    <string name="notification_export_done">APK сохранён в выбранную папку.</string>
+    <string name="export_error">Не удалось сохранить APK.</string>
+
+    <string name="download_error_unknown_package">Не удалось определить приложение.</string>
+    <string name="download_error_no_files">RuStore не отдал файлы для этого приложения.</string>
+    <string name="download_error_files_missing">Файлы загрузки не найдены — скачайте приложение заново.</string>
+    <string name="download_error_signature_mismatch">Подпись скачанного файла не совпадает с установленным приложением. Похоже, это сборка из другого источника — установка отменена.</string>
+    <string name="download_error_integrity">Скачанный файл повреждён: его размер не совпал с данными каталога. Попробуйте скачать ещё раз.</string>
+    <string name="download_error_container">В скачанном архиве не оказалось APK. Попробуйте скачать ещё раз.</string>
+    <string name="download_error_install_in_progress">Установка этого приложения уже идёт.</string>
+</resources>

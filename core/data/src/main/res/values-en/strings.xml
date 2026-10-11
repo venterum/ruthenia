@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="error_aggregated">This is an aggregated listing: RuStore does not host its APK, files come from an external source.</string>
+    <string name="error_no_apk">RuStore did not provide files for this app.</string>
+    <string name="error_http_400">RuStore rejected the request (400).</string>
+    <string name="error_http_404">App not found on RuStore.</string>
+    <string name="error_http_419">The secure RuStore session expired, try again.</string>
+    <string name="error_http_429">Too many requests, try again later.</string>
+    <string name="error_http_other">RuStore responded with error %1$d.</string>
+    <string name="error_session_unavailable">Couldn\'t open a secure RuStore session.</string>
+    <string name="error_invalid_response">Couldn\'t parse the RuStore response. The API may have changed.</string>
+    <string name="error_network">No connection to RuStore. Check your network.</string>
+    <string name="error_unknown">%1$s: %2$s</string>
+    <string name="error_no_details">no details</string>
+</resources>

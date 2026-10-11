@@ -1,0 +1,28 @@
+Ruthenia Store is an open, private client for the RuStore catalog. It is for people who need specific apps (banks, government services, regional services) but not the full RuStore app with its weight, trackers and ads.
+
+Features
+• Catalog search by name or package name, with results loading as you scroll.
+• Home feed: "Recommended", "Getting started" and category sections.
+• App details: screenshots, description, rating, "what's new", "more from developer".
+• Download and install, including multi-APK/split builds, in one install session.
+• Library with "up to date / update available" status.
+• Background update checks via WorkManager with a grouped notification.
+• Hide individual updates and "Update all".
+• Export and import the library and settings as JSON.
+• Links like https://www.rustore.ru/catalog/app/<package> open the app screen inside Ruthenia Store.
+• The interface is fully translated into Russian and English.
+
+Privacy
+• No analytics, crash reporting or ads — none of them are in the dependencies.
+• Network access only to RuStore API and CDN domains (plus Mintsifry\'s official CA host on a manual certificate refresh).
+• deviceId is random, regenerated on every launch and never stored.
+• The installed apps list is read locally and only after you tap "Find my apps".
+• An update is installed only when the downloaded APK signature matches the installed app.
+• The downloaded file size is verified against the catalog data.
+
+Honest limitations
+• An unofficial client on top of an undocumented API: breakage is possible until an update.
+• Not affiliated with RuStore / VK.
+• Aggregated listings without a direct APK are not supported.
+
+License: GPL-3.0-or-later. Source code is available in the project repository.

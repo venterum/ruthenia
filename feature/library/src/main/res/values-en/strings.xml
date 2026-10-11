@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="common_back">Back</string>
+    <string name="common_clear">Clear</string>
+    <string name="common_install">Install</string>
+    <string name="common_cancel_download">Cancel download</string>
+
+    <string name="library_updates_title">Updates</string>
+    <string name="library_updates_all_ok">Everything is up to date</string>
+    <string name="library_updates_ready">%1$s · ready</string>
+    <string name="library_apps_title">My apps</string>
+    <string name="library_see_all">All</string>
+
+    <string name="downloads_title">Downloads</string>
+    <string name="downloads_expand">Expand</string>
+    <string name="downloads_collapse">Collapse</string>
+
+    <string name="my_apps_find">Find my apps</string>
+    <string name="my_apps_title">My apps</string>
+    <string name="my_apps_empty_title">Empty for now</string>
+    <string name="my_apps_empty_text">Apps installed via Ruthenia Store will appear here with their update status. You can find already installed ones with the button above.</string>
+    <string name="my_apps_search_hint">Search by name or package name</string>
+    <string name="my_apps_filter_all">All</string>
+    <string name="my_apps_filter_updates">Update available</string>
+    <string name="my_apps_filter_uptodate">Up to date</string>
+    <string name="my_apps_sort">Sort</string>
+    <string name="my_apps_sort_name">By name</string>
+    <string name="my_apps_sort_updates">Updates first</string>
+    <string name="my_apps_view_list">List</string>
+    <string name="my_apps_view_grid">Grid</string>
+    <string name="my_apps_no_results">Nothing matches this query.</string>
+
+    <string name="updates_title">Updates</string>
+    <string name="updates_empty_title">No updates</string>
+    <string name="updates_empty_text">All apps in the library are up to date. A check runs when the library opens.</string>
+    <string name="updates_update_all">Update all (%1$d)</string>
+    <string name="updates_start">Update</string>
+    <string name="updates_check">Check for updates</string>
+    <string name="updates_checking">Checking for updates…</string>
+    <string name="updates_hide">Hide update</string>
+    <string name="updates_more">More</string>
+    <string name="updates_hidden_note">Some updates are hidden — you can bring them back on the app screen.</string>
+    <string name="updates_select_all">Select all</string>
+    <string name="updates_clear_selection">Deselect all</string>
+    <string name="updates_cancel_selection">Cancel</string>
+    <string name="updates_update_selected">Update selected (%1$d)</string>
+    <string name="updates_hidden_toast">Update hidden</string>
+    <string name="updates_undo">Undo</string>
+
+    <plurals name="updates_count">
+        <item quantity="one">%d update</item>
+        <item quantity="other">%d updates</item>
+    </plurals>
+
+    <string name="update_status_available">update</string>
+    <string name="update_status_uptodate">Up to date</string>
+    <string name="update_status_unknown">no data</string>
+
+    <string name="update_version_arrow">%1$s → %2$s</string>
+    <string name="update_new_version">New version %1$s</string>
+    <string name="update_available_generic">Update available</string>
+
+    <string name="download_queued">Queued…</string>
+    <string name="download_queued_short">Queued</string>
+    <string name="download_downloading">Downloading…</string>
+    <string name="download_downloading_percent">Downloading %1$d%%</string>
+    <string name="download_verifying">Verifying signature…</string>
+    <string name="download_ready">Ready to install</string>
+    <string name="download_installing">Installing…</string>
+    <string name="download_downloaded_percent">Downloaded %1$d%%</string>
+    <string name="download_retry">Retry</string>
+
+    <plurals name="download_active_count">
+        <item quantity="one">%d download</item>
+        <item quantity="other">%d downloads</item>
+    </plurals>
+
+    <plurals name="download_ready_count">
+        <item quantity="one">%d ready to install</item>
+        <item quantity="other">%d ready to install</item>
+    </plurals>
+
+    <plurals name="download_failed_count">
+        <item quantity="one">%d failed</item>
+        <item quantity="other">%d failed</item>
+    </plurals>
+
+    <string name="download_summary_active">%1$s · %2$d%%</string>
+
+    <string name="library_import_progress">Checked %1$d of %2$d</string>
+    <string name="library_import_reading">Reading the list of installed apps…</string>
+    <string name="library_import_cancel">Cancel</string>
+
+    <string name="source_rustore">RuStore</string>
+    <string name="source_gplay">Google Play</string>
+    <string name="source_sideload">manually</string>
+    <string name="source_other">another source</string>
+    <string name="source_unknown">unknown source</string>
+
+    <string name="message_updates_none">No updates.</string>
+    <string name="message_updates_one">An update is available for 1 app.</string>
+    <string name="message_updates_many">Updates are available for %1$d apps.</string>
+    <string name="message_updates_check_failed">Couldn\'t check for updates — the catalog didn\'t respond.</string>
+    <string name="message_updates_downloading">Updates are downloading in the background.</string>
+    <string name="message_installed">%1$s: installed.</string>
+    <string name="message_import_none">No installed apps were found in the RuStore catalog.</string>
+    <string name="message_import_result">Added: %1$d, records updated: %2$d. All of them are in the RuStore catalog.</string>
+    <string name="message_import_checked">Total checked: %1$d.</string>
+    <string name="message_import_cancelled">Import cancelled.</string>
+</resources>
