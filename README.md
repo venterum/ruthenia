@@ -1,4 +1,4 @@
-<img src="docs/branding/ruthenia-icon-512.png" width="96" align="right" alt="Ruthenia Store icon">
+<img src="docs/branding/ruthenia-icon-512.png" width="96" align="left" alt="Ruthenia Store icon">
 
 # Ruthenia Store
 
