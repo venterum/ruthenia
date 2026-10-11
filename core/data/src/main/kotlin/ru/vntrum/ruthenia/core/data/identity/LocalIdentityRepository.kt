@@ -88,6 +88,7 @@ class LocalIdentityRepository @Inject constructor(
             preferences[Keys.EMBLEM_MOTIF] = emblem.motif
             preferences[Keys.EMBLEM_ACCENT] = emblem.accent.name
             preferences[Keys.EMBLEM_RING] = emblem.ring.name
+            preferences[Keys.EMBLEM_RING_COLOR] = emblem.ringColor.name
         }
     }
 
@@ -98,11 +99,21 @@ class LocalIdentityRepository @Inject constructor(
         val accent = this[Keys.EMBLEM_ACCENT]?.let { name ->
             AccentPalette.entries.firstOrNull { it.name == name }
         }
+        // The frame styles changed over time (the old "none" is gone), so an
+        // unknown name safely falls back to the default.
         val ring = this[Keys.EMBLEM_RING]?.let { name ->
             TokenRing.entries.firstOrNull { it.name == name }
         }
+        val ringColor = this[Keys.EMBLEM_RING_COLOR]?.let { name ->
+            AccentPalette.entries.firstOrNull { it.name == name }
+        }
         val emblem = if (motif != null && accent != null && ring != null) {
-            ProfileEmblem(motif = motif, accent = accent, ring = ring)
+            ProfileEmblem(
+                motif = motif,
+                accent = accent,
+                ring = ring,
+                ringColor = ringColor ?: accent,
+            )
         } else {
             // Installations from before the token existed fall back to the seed.
             ProfileEmblem.fromSeed(seed)
@@ -118,6 +129,7 @@ class LocalIdentityRepository @Inject constructor(
         this[Keys.EMBLEM_MOTIF] = emblem.motif
         this[Keys.EMBLEM_ACCENT] = emblem.accent.name
         this[Keys.EMBLEM_RING] = emblem.ring.name
+        this[Keys.EMBLEM_RING_COLOR] = emblem.ringColor.name
     }
 
     private object Keys {
@@ -126,5 +138,6 @@ class LocalIdentityRepository @Inject constructor(
         val EMBLEM_MOTIF = intPreferencesKey("profile_emblem_motif")
         val EMBLEM_ACCENT = stringPreferencesKey("profile_emblem_accent")
         val EMBLEM_RING = stringPreferencesKey("profile_emblem_ring")
+        val EMBLEM_RING_COLOR = stringPreferencesKey("profile_emblem_ring_color")
     }
 }

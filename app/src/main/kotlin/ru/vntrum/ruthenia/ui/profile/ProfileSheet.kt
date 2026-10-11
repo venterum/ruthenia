@@ -18,15 +18,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SheetValue
@@ -36,16 +37,17 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.vntrum.ruthenia.R
@@ -57,10 +59,8 @@ import com.vntrum.ruthenia.core.data.settings.AccentPalette
 import com.vntrum.ruthenia.core.designsystem.component.RutheniaStatCard
 import com.vntrum.ruthenia.core.designsystem.component.RutheniaToken
 import com.vntrum.ruthenia.core.designsystem.component.RutheniaTokenRing
-import com.vntrum.ruthenia.core.designsystem.component.SectionHeader
 import com.vntrum.ruthenia.core.designsystem.component.rutheniaTokenRingByName
 import com.vntrum.ruthenia.core.designsystem.haptics.rememberRutheniaHaptics
-import com.vntrum.ruthenia.core.designsystem.theme.RutheniaAccent
 import com.vntrum.ruthenia.core.designsystem.theme.primaryColor
 import com.vntrum.ruthenia.core.designsystem.theme.rutheniaAccentByName
 import java.text.DateFormat
@@ -69,8 +69,8 @@ import java.util.Date
 /**
  * The local "device token" sheet, opened from the Apps header.
  *
- * There is no account: the sheet shows the personalised token, the playful rank
- * derived from the library, two on-device counters, and shortcuts into the
+ * There is no account: the sheet shows the personalised token with its codename,
+ * two on-device counters, a button into the token setup, and shortcuts into the
  * existing destinations. Settings gives way from the header to here.
  */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -84,6 +84,7 @@ fun ProfileSheet(
     viewModel: ProfileViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    var showCustomization by rememberSaveable { mutableStateOf(false) }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -95,16 +96,23 @@ fun ProfileSheet(
         ),
         containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
     ) {
-        ProfileContent(
-            state = state,
-            onEmblemChange = viewModel::setEmblem,
-            onShuffle = viewModel::shuffleEmblem,
-            onRegenerateCodename = viewModel::regenerateCodename,
-            onOpenSettings = onOpenSettings,
-            onOpenUpdates = onOpenUpdates,
-            onOpenAbout = onOpenAbout,
-            onOpenPrivacy = onOpenPrivacy,
-        )
+        if (showCustomization) {
+            TokenCustomization(
+                emblem = state.emblem,
+                onEmblemChange = viewModel::setEmblem,
+                onBack = { showCustomization = false },
+            )
+        } else {
+            ProfileContent(
+                state = state,
+                onRandomize = viewModel::randomizeToken,
+                onCustomize = { showCustomization = true },
+                onOpenSettings = onOpenSettings,
+                onOpenUpdates = onOpenUpdates,
+                onOpenAbout = onOpenAbout,
+                onOpenPrivacy = onOpenPrivacy,
+            )
+        }
         Spacer(modifier = Modifier.height(16.dp))
     }
 }
@@ -112,18 +120,13 @@ fun ProfileSheet(
 @Composable
 private fun ProfileContent(
     state: ProfileUiState,
-    onEmblemChange: (ProfileEmblem) -> Unit,
-    onShuffle: () -> Unit,
-    onRegenerateCodename: () -> Unit,
+    onRandomize: () -> Unit,
+    onCustomize: () -> Unit,
     onOpenSettings: () -> Unit,
     onOpenUpdates: () -> Unit,
     onOpenAbout: () -> Unit,
     onOpenPrivacy: () -> Unit,
 ) {
-    val rank = state.rank
-    val accent = rutheniaAccentByName(state.emblem.accent.name)
-    val ring = rutheniaTokenRingByName(state.emblem.ring.name)
-    val rotation = tokenRotation(state.seed)
     val haptics = rememberRutheniaHaptics()
     val codename = codenameFor(
         seed = state.seed,
@@ -138,20 +141,15 @@ private fun ProfileContent(
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         TokenHero(
-            rank = rank,
-            motif = state.emblem.motif,
-            accent = accent,
-            ring = ring,
-            rotation = rotation,
+            emblem = state.emblem,
+            seed = state.seed,
             codename = codename,
             firstSeen = state.firstSeen,
-            onRegenerateCodename = {
-                haptics.tick()
-                onRegenerateCodename()
+            onRandomize = {
+                haptics.confirm()
+                onRandomize()
             },
         )
-
-        RankProgress(rank = rank, installedCount = state.installedCount)
 
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             RutheniaStatCard(
@@ -166,18 +164,21 @@ private fun ProfileContent(
             )
         }
 
-        TokenCustomization(
-            emblem = state.emblem,
-            accent = accent,
-            onEmblemChange = { emblem ->
+        OutlinedButton(
+            onClick = {
                 haptics.tick()
-                onEmblemChange(emblem)
+                onCustomize()
             },
-            onShuffle = {
-                haptics.tick()
-                onShuffle()
-            },
-        )
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.ic_tune),
+                contentDescription = null,
+                modifier = Modifier.size(18.dp),
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(stringResource(R.string.profile_customize))
+        }
 
         ProfileActions(
             onOpenSettings = onOpenSettings,
@@ -188,27 +189,28 @@ private fun ProfileContent(
     }
 }
 
-/** Hero: the token itself, the rank, the codename and the "with us since" line. */
+/**
+ * Hero: the token itself, its codename and the single randomise button — the
+ * name and the look are generated together, because the name is part of the token.
+ */
 @Composable
 private fun TokenHero(
-    rank: TokenRank,
-    motif: Int,
-    accent: RutheniaAccent,
-    ring: RutheniaTokenRing,
-    rotation: Float,
+    emblem: ProfileEmblem,
+    seed: String,
     codename: String,
     firstSeen: Long,
-    onRegenerateCodename: () -> Unit,
+    onRandomize: () -> Unit,
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         RutheniaToken(
-            motif = motif,
-            accent = accent,
-            ring = ring,
-            rotation = rotation,
+            motif = emblem.motif,
+            accent = rutheniaAccentByName(emblem.accent.name),
+            ring = rutheniaTokenRingByName(emblem.ring.name),
+            ringAccent = rutheniaAccentByName(emblem.ringColor.name),
+            rotation = tokenRotation(seed),
             size = 76.dp,
         )
         Column(
@@ -216,38 +218,11 @@ private fun TokenHero(
             verticalArrangement = Arrangement.spacedBy(2.dp),
         ) {
             Text(
-                text = stringResource(rank.titleRes),
+                text = codename,
                 style = MaterialTheme.typography.headlineSmallEmphasized,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
             )
-            // The Latin half is intentionally not translated: it is the
-            // "engraved" counterpart of the localised rank title.
-            Text(
-                text = "${rank.numeral} · ${rank.latin}",
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                letterSpacing = 2.sp,
-            )
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = codename,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f, fill = false),
-                )
-                IconButton(
-                    onClick = onRegenerateCodename,
-                    modifier = Modifier.size(28.dp),
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_refresh),
-                        contentDescription = stringResource(R.string.profile_codename_reroll),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(16.dp),
-                    )
-                }
-            }
             if (firstSeen > 0L) {
                 Text(
                     text = stringResource(
@@ -259,127 +234,176 @@ private fun TokenHero(
                 )
             }
         }
+        IconButton(onClick = onRandomize) {
+            Icon(
+                painter = painterResource(R.drawable.ic_shuffle),
+                contentDescription = stringResource(R.string.profile_randomize),
+                tint = MaterialTheme.colorScheme.primary,
+            )
+        }
     }
 }
 
-/** Progress towards the next rank, or a note that the top has been reached. */
-@Composable
-private fun RankProgress(rank: TokenRank, installedCount: Int) {
-    val next = TokenRank.next(rank)
-    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        LinearProgressIndicator(
-            progress = { TokenRank.progress(rank, installedCount) },
-            modifier = Modifier.fillMaxWidth(),
-        )
-        Text(
-            text = if (next != null) {
-                val remaining = TokenRank.appsToNext(rank, installedCount) ?: 1
-                pluralStringResource(
-                    R.plurals.profile_rank_progress,
-                    remaining,
-                    stringResource(next.titleRes),
-                    remaining,
-                )
-            } else {
-                stringResource(R.string.profile_rank_max)
-            },
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-    }
-}
-
-/** Motif, accent and ring pickers plus the reshuffle action. */
+/** The token setup, opened from the "token setup" button. */
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun TokenCustomization(
     emblem: ProfileEmblem,
-    accent: RutheniaAccent,
     onEmblemChange: (ProfileEmblem) -> Unit,
-    onShuffle: () -> Unit,
+    onBack: () -> Unit,
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        SectionHeader(
-            text = stringResource(R.string.profile_customize),
-            showAccent = true,
-            trailing = {
-                IconButton(onClick = onShuffle) {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_shuffle),
-                        contentDescription = stringResource(R.string.profile_shuffle),
-                        tint = MaterialTheme.colorScheme.primary,
-                    )
-                }
-            },
-        )
+    val haptics = rememberRutheniaHaptics()
+    val accent = rutheniaAccentByName(emblem.accent.name)
+    val ringAccent = rutheniaAccentByName(emblem.ringColor.name)
+    val ring = rutheniaTokenRingByName(emblem.ring.name)
 
-        LazyRow(
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            IconButton(onClick = onBack) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_arrow_back),
+                    contentDescription = stringResource(R.string.profile_back),
+                )
+            }
+            Text(
+                text = stringResource(R.string.profile_customize),
+                style = MaterialTheme.typography.titleLargeEmphasized,
+            )
+        }
+
+        Box(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            contentAlignment = Alignment.Center,
         ) {
-            items(TOKEN_MOTIF_VARIANTS) { index ->
-                val selected = index == emblem.motif
-                Box(
-                    modifier = Modifier
-                        .size(44.dp)
-                        .clip(CircleShape)
-                        .then(
-                            if (selected) {
-                                Modifier.border(
-                                    width = 2.dp,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    shape = CircleShape,
-                                )
-                            } else {
-                                Modifier
+            RutheniaToken(
+                motif = emblem.motif,
+                accent = accent,
+                ring = ring,
+                ringAccent = ringAccent,
+                rotation = 0f,
+                size = 104.dp,
+            )
+        }
+
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            CustomizationLabel(stringResource(R.string.profile_motif))
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                items(TOKEN_MOTIF_VARIANTS) { index ->
+                    val selected = index == emblem.motif
+                    Box(
+                        modifier = Modifier
+                            .size(44.dp)
+                            .clip(CircleShape)
+                            .then(
+                                if (selected) {
+                                    Modifier.border(
+                                        width = 2.dp,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        shape = CircleShape,
+                                    )
+                                } else {
+                                    Modifier
+                                },
+                            )
+                            .clickable {
+                                haptics.tick()
+                                onEmblemChange(emblem.copy(motif = index))
                             },
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        RutheniaToken(
+                            motif = index,
+                            accent = accent,
+                            ring = RutheniaTokenRing.THIN,
+                            ringAccent = ringAccent,
+                            rotation = 0f,
+                            size = 34.dp,
                         )
-                        .clickable { onEmblemChange(emblem.copy(motif = index)) },
-                    contentAlignment = Alignment.Center,
-                ) {
-                    RutheniaToken(
-                        motif = index,
-                        accent = accent,
-                        ring = RutheniaTokenRing.NONE,
-                        rotation = 0f,
-                        size = 34.dp,
+                    }
+                }
+            }
+        }
+
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            CustomizationLabel(stringResource(R.string.profile_color))
+            ColorDotRow(
+                selected = emblem.accent,
+                onSelect = {
+                    haptics.tick()
+                    onEmblemChange(emblem.copy(accent = it))
+                },
+            )
+        }
+
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            CustomizationLabel(stringResource(R.string.profile_ring))
+            SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+                TokenRing.entries.forEachIndexed { index, ringStyle ->
+                    SegmentedButton(
+                        selected = ringStyle == emblem.ring,
+                        onClick = {
+                            haptics.tick()
+                            onEmblemChange(emblem.copy(ring = ringStyle))
+                        },
+                        shape = SegmentedButtonDefaults.itemShape(index, TokenRing.entries.size),
+                        label = { Text(stringResource(ringStyle.labelRes())) },
                     )
                 }
             }
         }
 
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            AccentPalette.entries.forEach { palette ->
-                val paletteAccent = rutheniaAccentByName(palette.name)
-                val selected = palette == emblem.accent
-                Box(
-                    modifier = Modifier
-                        .size(32.dp)
-                        .clip(CircleShape)
-                        .background(paletteAccent.primaryColor())
-                        .border(
-                            width = if (selected) 3.dp else 1.dp,
-                            color = if (selected) {
-                                MaterialTheme.colorScheme.onSurface
-                            } else {
-                                MaterialTheme.colorScheme.outlineVariant
-                            },
-                            shape = CircleShape,
-                        )
-                        .clickable { onEmblemChange(emblem.copy(accent = palette)) },
-                )
-            }
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            CustomizationLabel(stringResource(R.string.profile_ring_color))
+            ColorDotRow(
+                selected = emblem.ringColor,
+                onSelect = {
+                    haptics.tick()
+                    onEmblemChange(emblem.copy(ringColor = it))
+                },
+            )
         }
+    }
+}
 
-        SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-            TokenRing.entries.forEachIndexed { index, ringStyle ->
-                SegmentedButton(
-                    selected = ringStyle == emblem.ring,
-                    onClick = { onEmblemChange(emblem.copy(ring = ringStyle)) },
-                    shape = SegmentedButtonDefaults.itemShape(index, TokenRing.entries.size),
-                    label = { Text(stringResource(ringStyle.labelRes())) },
-                )
-            }
+@Composable
+private fun CustomizationLabel(text: String) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.labelMedium,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+}
+
+/** The shared accent palette, as selectable dots. */
+@Composable
+private fun ColorDotRow(
+    selected: AccentPalette,
+    onSelect: (AccentPalette) -> Unit,
+) {
+    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        AccentPalette.entries.forEach { palette ->
+            val isSelected = palette == selected
+            Box(
+                modifier = Modifier
+                    .size(32.dp)
+                    .clip(CircleShape)
+                    .background(rutheniaAccentByName(palette.name).primaryColor())
+                    .border(
+                        width = if (isSelected) 3.dp else 1.dp,
+                        color = if (isSelected) {
+                            MaterialTheme.colorScheme.onSurface
+                        } else {
+                            MaterialTheme.colorScheme.outlineVariant
+                        },
+                        shape = CircleShape,
+                    )
+                    .clickable { onSelect(palette) },
+            )
         }
     }
 }
@@ -460,7 +484,7 @@ private fun ProfileActionTile(
 
 @StringRes
 private fun TokenRing.labelRes(): Int = when (this) {
-    TokenRing.NONE -> R.string.profile_ring_none
     TokenRing.THIN -> R.string.profile_ring_thin
+    TokenRing.THICK -> R.string.profile_ring_thick
     TokenRing.TEETH -> R.string.profile_ring_teeth
 }

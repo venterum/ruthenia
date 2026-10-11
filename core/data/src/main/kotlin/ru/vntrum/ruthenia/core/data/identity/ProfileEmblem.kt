@@ -7,6 +7,7 @@
 package com.vntrum.ruthenia.core.data.identity
 
 import com.vntrum.ruthenia.core.data.settings.AccentPalette
+import kotlin.random.Random
 
 /** Number of token motifs; the visual set itself lives in the design system. */
 const val TOKEN_MOTIF_VARIANTS = 8
@@ -20,15 +21,16 @@ fun tokenMotifIndex(seed: String): Int = seed.hashCode().mod(TOKEN_MOTIF_VARIANT
 /** Deterministic rotation in degrees, `0 until 360` — keeps symmetric motifs distinct. */
 fun tokenRotation(seed: String): Float = seed.hashCode().mod(360).toFloat()
 
-/** Ring style of the token. */
+/** Frame style of the token. */
 enum class TokenRing {
-    NONE,
     THIN,
+    THICK,
     TEETH,
 }
 
 /**
- * The locally chosen look of the device token: motif, accent and ring.
+ * The locally chosen look of the device token: motif, accent, frame style and
+ * frame colour.
  *
  * Stored on the device only — it is a personalisation of the local identity,
  * not an account, and never leaves the phone.
@@ -37,13 +39,29 @@ data class ProfileEmblem(
     val motif: Int,
     val accent: AccentPalette,
     val ring: TokenRing,
+    val ringColor: AccentPalette,
 ) {
     companion object {
         /** The look a fresh install starts with: derived from the identity seed. */
-        fun fromSeed(seed: String): ProfileEmblem = ProfileEmblem(
-            motif = tokenMotifIndex(seed),
-            accent = AccentPalette.entries[seed.hashCode().mod(AccentPalette.entries.size)],
-            ring = TokenRing.THIN,
+        fun fromSeed(seed: String): ProfileEmblem {
+            val accent = AccentPalette.entries[seed.hashCode().mod(AccentPalette.entries.size)]
+            return ProfileEmblem(
+                motif = tokenMotifIndex(seed),
+                accent = accent,
+                ring = TokenRing.THIN,
+                ringColor = accent,
+            )
+        }
+
+        /**
+         * A fully random look for the "new token" action. The name and the look
+         * are generated together — the name is part of the token.
+         */
+        fun random(): ProfileEmblem = ProfileEmblem(
+            motif = Random.nextInt(TOKEN_MOTIF_VARIANTS),
+            accent = AccentPalette.entries.random(),
+            ring = TokenRing.entries.random(),
+            ringColor = AccentPalette.entries.random(),
         )
     }
 }

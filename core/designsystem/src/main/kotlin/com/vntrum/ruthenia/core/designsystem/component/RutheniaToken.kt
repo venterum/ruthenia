@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialShapes
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -30,19 +29,20 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.vntrum.ruthenia.core.designsystem.theme.RutheniaAccent
 import com.vntrum.ruthenia.core.designsystem.theme.onPrimaryContainerColor
+import com.vntrum.ruthenia.core.designsystem.theme.primaryColor
 import com.vntrum.ruthenia.core.designsystem.theme.primaryContainerColor
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
 
-/** Ring style of the device token. Mirrors the persisted `TokenRing` by name. */
+/** Frame style of the device token. Mirrors the persisted `TokenRing` by name. */
 enum class RutheniaTokenRing {
-    NONE,
     THIN,
+    THICK,
     TEETH,
 }
 
-/** Maps a persisted ring name to the design-system enum, with a safe fallback. */
+/** Maps a persisted frame name to the design-system enum, with a safe fallback. */
 fun rutheniaTokenRingByName(name: String): RutheniaTokenRing =
     RutheniaTokenRing.entries.firstOrNull { it.name == name } ?: RutheniaTokenRing.THIN
 
@@ -50,9 +50,9 @@ fun rutheniaTokenRingByName(name: String): RutheniaTokenRing =
  * The "device token": a round mark generated from the local identity, used in
  * place of an account avatar.
  *
- * The motif, accent and ring are personalised by the user; [rotation] keeps
- * symmetric motifs distinct. Everything is drawn from theme roles, so the token
- * follows the light/dark theme without any assets.
+ * [accent] colours the face and motif, [ringAccent] colours the frame; [rotation]
+ * keeps symmetric motifs distinct. Everything is drawn from theme roles, so the
+ * token follows the light/dark theme without any assets.
  */
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -60,13 +60,14 @@ fun RutheniaToken(
     motif: Int,
     accent: RutheniaAccent,
     ring: RutheniaTokenRing,
+    ringAccent: RutheniaAccent,
     rotation: Float,
     modifier: Modifier = Modifier,
     size: Dp = 44.dp,
     contentDescription: String? = null,
     onClick: (() -> Unit)? = null,
 ) {
-    val outline = MaterialTheme.colorScheme.outline
+    val ringColor = ringAccent.primaryColor()
     val semantics = if (contentDescription != null) {
         Modifier.semantics { this.contentDescription = contentDescription }
     } else {
@@ -79,10 +80,10 @@ fun RutheniaToken(
             .clip(CircleShape)
             .background(accent.primaryContainerColor())
             .then(
-                if (ring == RutheniaTokenRing.THIN) {
-                    Modifier.border(1.5.dp, outline, CircleShape)
-                } else {
-                    Modifier
+                when (ring) {
+                    RutheniaTokenRing.THIN -> Modifier.border(1.5.dp, ringColor, CircleShape)
+                    RutheniaTokenRing.THICK -> Modifier.border(3.5.dp, ringColor, CircleShape)
+                    RutheniaTokenRing.TEETH -> Modifier
                 },
             )
             .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
@@ -97,7 +98,7 @@ fun RutheniaToken(
         )
         if (ring == RutheniaTokenRing.TEETH) {
             Canvas(modifier = Modifier.matchParentSize()) {
-                drawTeeth(outline)
+                drawTeeth(ringColor)
             }
         }
     }
@@ -117,7 +118,7 @@ private fun tokenMotif(index: Int): Shape = when (index.mod(MOTIF_COUNT)) {
     else -> MaterialShapes.Cookie9Sided.toShape()
 }
 
-/** Small notches around the rim — the "teeth" ring. */
+/** Small notches around the rim — the "teeth" frame. */
 private fun DrawScope.drawTeeth(color: Color) {
     val outer = size.minDimension / 2f
     val tickLength = size.minDimension * TEETH_LENGTH

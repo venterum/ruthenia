@@ -135,6 +135,7 @@ private fun AppsTopBar(
             motif = identity.emblem.motif,
             accent = rutheniaAccentByName(identity.emblem.accent.name),
             ring = rutheniaTokenRingByName(identity.emblem.ring.name),
+            ringAccent = rutheniaAccentByName(identity.emblem.ringColor.name),
             rotation = tokenRotation(identity.seed),
             size = 44.dp,
             contentDescription = stringResource(R.string.apps_profile),

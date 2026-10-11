@@ -14,27 +14,16 @@
     <string name="profile_privacy">Privacy</string>
 
     <string name="profile_customize">Token setup</string>
-    <string name="profile_shuffle">Reshuffle</string>
-    <string name="profile_codename_reroll">Another name</string>
+    <string name="profile_randomize">New token</string>
+    <string name="profile_back">Back</string>
     <string name="profile_since_value">With us since %1$s</string>
-    <string name="profile_ring_none">None</string>
+    <string name="profile_motif">Motif</string>
+    <string name="profile_color">Color</string>
+    <string name="profile_ring">Frame</string>
+    <string name="profile_ring_color">Frame color</string>
     <string name="profile_ring_thin">Thin</string>
+    <string name="profile_ring_thick">Thick</string>
     <string name="profile_ring_teeth">Notched</string>
-    <string name="profile_rank_max">Top rank</string>
-
-    <string name="profile_rank_guest">Guest</string>
-    <string name="profile_rank_apprentice">Apprentice</string>
-    <string name="profile_rank_journeyman">Journeyman</string>
-    <string name="profile_rank_master">Master</string>
-    <string name="profile_rank_architect">Architect</string>
-    <string name="profile_rank_keeper">Keeper</string>
-    <string name="profile_rank_sorcerer">Sorcerer</string>
-    <string name="profile_rank_archivist">Archivist</string>
-
-    <plurals name="profile_rank_progress">
-        <item quantity="one">%2$d app to %1$s</item>
-        <item quantity="other">%2$d apps to %1$s</item>
-    </plurals>
 
     <!-- Token codename: assembled deterministically from the identity seed. -->
     <string-array name="profile_codename_adjectives">
