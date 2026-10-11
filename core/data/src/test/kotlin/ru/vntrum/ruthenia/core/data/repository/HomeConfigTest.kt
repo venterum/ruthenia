@@ -7,32 +7,41 @@
 package com.vntrum.ruthenia.core.data.repository
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
  * Invariants of the curated feed content. The test does not go online — it just
- * prevents accidentally duplicating sections or slipping in an empty query.
+ * prevents accidentally duplicating sections or slipping in an invalid package.
  */
 class HomeConfigTest {
 
     @Test
-    fun `category ids are unique and queries are non-blank`() {
+    fun `category ids are unique and titles are non-blank`() {
         val ids = HomeConfig.categories.map { it.id }
         assertEquals(ids.size, ids.toSet().size)
         HomeConfig.categories.forEach { category ->
             assertTrue(category.title.isNotBlank())
-            assertTrue(category.query.isNotBlank())
+            assertTrue(category.apps.isNotEmpty())
         }
     }
 
     @Test
-    fun `recommended entries are unique and look like package names`() {
-        val packages = HomeConfig.recommended.map { it.packageName }
-        assertEquals(packages.size, packages.toSet().size)
-        HomeConfig.recommended.forEach { app ->
-            assertTrue(app.query.isNotBlank())
-            assertTrue(app.packageName.contains('.'))
+    fun `featured list is not empty`() {
+        assertTrue(HomeConfig.featured.isNotEmpty())
+    }
+
+    @Test
+    fun `curated apps look like package names and are unique within a section`() {
+        val sections = listOf(HomeConfig.featured) + HomeConfig.categories.map { it.apps }
+        sections.forEach { apps ->
+            val packages = apps.map { it.packageName }
+            assertEquals(packages.size, packages.toSet().size)
+            apps.forEach { app ->
+                assertTrue(app.name.isNotBlank())
+                assertTrue(app.packageName.contains('.'))
+            }
         }
     }
 
@@ -40,6 +49,14 @@ class HomeConfigTest {
     fun `section ids do not collide`() {
         val ids = HomeConfig.categories.map { it.id } + HomeConfig.RECOMMENDED_SECTION_ID
         assertEquals(ids.size, ids.toSet().size)
+    }
+
+    @Test
+    fun `app sections are recognized by id`() {
+        assertTrue(HomeConfig.isAppSection(HomeConfig.RECOMMENDED_SECTION_ID))
+        HomeConfig.categories.forEach { assertTrue(HomeConfig.isAppSection(it.id)) }
+        assertFalse(HomeConfig.isAppSection(HomeConfig.GAMES_POPULAR_SECTION_ID))
+        assertFalse(HomeConfig.isAppSection("cinema"))
     }
 
     @Test
@@ -59,7 +76,6 @@ class HomeConfigTest {
         val appIds = HomeConfig.categories.map { it.id } + HomeConfig.RECOMMENDED_SECTION_ID
         val gameIds = HomeConfig.gameGenres.map { it.id } + HomeConfig.GAMES_POPULAR_SECTION_ID
 
-        // "games" is an app feed category and must not match the game prefix.
         assertTrue(appIds.none(HomeConfig::isGameSection))
         assertTrue(HomeConfig.isGameSection(HomeConfig.GAMES_POPULAR_SECTION_ID))
         assertEquals((appIds + gameIds).size, (appIds + gameIds).toSet().size)

@@ -53,8 +53,10 @@ import com.vntrum.ruthenia.core.designsystem.component.LocalRutheniaBottomConten
 import com.vntrum.ruthenia.core.designsystem.component.RutheniaBrandMark
 import com.vntrum.ruthenia.core.designsystem.component.RutheniaIconTile
 import com.vntrum.ruthenia.core.designsystem.component.RutheniaToken
+import com.vntrum.ruthenia.core.designsystem.component.RutheniaWavyProgress
 import com.vntrum.ruthenia.core.designsystem.component.SkeletonBlock
 import com.vntrum.ruthenia.core.designsystem.component.StateMessage
+import com.vntrum.ruthenia.core.designsystem.component.progressSemantics
 import com.vntrum.ruthenia.core.designsystem.component.rememberSkeletonShimmer
 import com.vntrum.ruthenia.core.designsystem.component.rutheniaTokenRingByName
 import com.vntrum.ruthenia.core.designsystem.text.appCountLabel
@@ -79,6 +81,7 @@ fun AppsScreen(
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val updateCount by viewModel.updateCount.collectAsStateWithLifecycle()
     val identity by viewModel.identity.collectAsStateWithLifecycle()
+    val loadProgress by viewModel.loadProgress.collectAsStateWithLifecycle()
     // Category quick chips — everything except the special "Recommended"
     // selection is a category.
     val categories = state.homeSections.filter { !it.featured }
@@ -100,6 +103,7 @@ fun AppsScreen(
         AppsContent(
             state = state,
             updateCount = updateCount,
+            progressPercent = loadProgress.percent,
             onRefresh = { viewModel.loadHome(forceRefresh = true) },
             onAppClick = onAppClick,
             onCollectionClick = onCollectionClick,
@@ -163,7 +167,7 @@ private fun CategoryChips(
         items(categories, key = { it.id }) { section ->
             AssistChip(
                 onClick = { onCategoryClick(section.id) },
-                label = { Text(section.title) },
+                label = { Text(feedSectionTitle(section.id, section.title)) },
                 leadingIcon = {
                     Icon(
                         painter = painterResource(categoryIcon(section.id)),
@@ -191,6 +195,7 @@ private fun CategoryChips(
 private fun AppsContent(
     state: AppsUiState,
     updateCount: Int,
+    progressPercent: Int,
     onRefresh: () -> Unit,
     onAppClick: (String) -> Unit,
     onCollectionClick: (String) -> Unit,
@@ -203,7 +208,8 @@ private fun AppsContent(
         modifier = Modifier.fillMaxSize(),
     ) {
         when {
-            state.homeLoading && state.homeSections.isEmpty() -> HomeSkeleton()
+            state.homeLoading && state.homeSections.isEmpty() ->
+                HomeSkeleton(progressPercent = progressPercent)
 
             state.homeSections.isEmpty() -> StateMessage(
                 title = stringResource(R.string.common_error_title),
@@ -270,8 +276,8 @@ private fun AppsFeed(
         categories.forEach { section ->
             stickyHeader(key = "header-${section.id}") {
                 FeedSectionHeader(
-                    title = section.title,
-                    subtitle = appCountLabel(section.apps.size),
+                    title = feedSectionTitle(section.id, section.title),
+                    subtitle = section.description ?: appCountLabel(section.apps.size),
                     onClick = { onCollectionClick(section.id) },
                 )
             }
@@ -338,9 +344,9 @@ private fun UpdatesBanner(count: Int, onClick: () -> Unit) {
     }
 }
 
-/** Feed skeleton: softly pulsing placeholders. */
+/** Feed skeleton: softly pulsing placeholders plus the build progress. */
 @Composable
-private fun HomeSkeleton() {
+private fun HomeSkeleton(progressPercent: Int) {
     val shimmer = rememberSkeletonShimmer()
     val placeholder = MaterialTheme.colorScheme.surfaceContainerHighest
 
@@ -350,6 +356,28 @@ private fun HomeSkeleton() {
             .padding(top = 12.dp),
         verticalArrangement = Arrangement.spacedBy(24.dp),
     ) {
+        // The first build resolves the whole curated catalog. The percent and
+        // the bar make that wait visible instead of looking frozen.
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Text(
+                text = stringResource(R.string.home_loading_collections, progressPercent),
+                style = MaterialTheme.typography.titleMediumEmphasized,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            RutheniaWavyProgress(
+                progress = { progressPercent / 100f },
+                modifier = Modifier
+                    .fillMaxWidth(0.72f)
+                    .progressSemantics(progressPercent / 100f),
+            )
+        }
+
         Column(
             modifier = Modifier.padding(horizontal = 20.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),

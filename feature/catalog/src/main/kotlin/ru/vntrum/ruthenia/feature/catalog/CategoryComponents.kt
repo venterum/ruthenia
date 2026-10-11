@@ -94,7 +94,7 @@ private fun CategoryTile(
             )
             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text(
-                    text = section.title,
+                    text = feedSectionTitle(section.id, section.title),
                     style = MaterialTheme.typography.titleMedium,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -113,13 +113,15 @@ private fun CategoryTile(
 /** Category icon by its id from [com.vntrum.ruthenia.core.data.repository.HomeConfig]. */
 internal fun categoryIcon(id: String): Int = when (id) {
     "banks" -> R.drawable.ic_cat_banks
-    "gosuslugi" -> R.drawable.ic_cat_gosuslugi
-    "messengers" -> R.drawable.ic_cat_messengers
-    "transport" -> R.drawable.ic_cat_transport
-    "cinema" -> R.drawable.ic_cat_cinema
-    "games" -> R.drawable.ic_cat_games
+    "gov" -> R.drawable.ic_cat_gosuslugi
+    "chat" -> R.drawable.ic_cat_messengers
     "shopping" -> R.drawable.ic_cat_shopping
+    "food" -> R.drawable.ic_cat_food
+    "transport" -> R.drawable.ic_cat_transport
+    "entertainment" -> R.drawable.ic_cat_entertainment
+    "travel" -> R.drawable.ic_cat_travel
     "education" -> R.drawable.ic_cat_education
+    "games" -> R.drawable.ic_cat_games
     else -> R.drawable.ic_library
 }
 
@@ -211,12 +213,22 @@ private fun CategoryAppCard(
 }
 
 /**
- * Localized title of a game section. Game sections are built in the data layer
- * by id (see `HomeConfig`); their titles live here so both languages work.
- * Unknown ids keep the fallback from the data layer.
+ * Localized title of a feed section. Category and game section titles live in
+ * the UI layer so both languages work; the data-layer title is the fallback for
+ * unknown ids.
  */
 @Composable
 internal fun feedSectionTitle(sectionId: String, fallback: String): String = when (sectionId) {
+    "recommended" -> stringResource(R.string.home_recommended_title)
+    "banks" -> stringResource(R.string.category_banks)
+    "gov" -> stringResource(R.string.category_gov)
+    "chat" -> stringResource(R.string.category_chat)
+    "shopping" -> stringResource(R.string.category_shopping)
+    "food" -> stringResource(R.string.category_food)
+    "transport" -> stringResource(R.string.category_transport)
+    "entertainment" -> stringResource(R.string.category_entertainment)
+    "travel" -> stringResource(R.string.category_travel)
+    "education" -> stringResource(R.string.category_education)
     "game_popular" -> stringResource(R.string.games_section_popular)
     "game_arcade" -> stringResource(R.string.games_genre_arcade)
     "game_puzzle" -> stringResource(R.string.games_genre_puzzle)

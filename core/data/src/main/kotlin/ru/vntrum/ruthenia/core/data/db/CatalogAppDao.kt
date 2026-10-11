@@ -20,6 +20,9 @@ interface CatalogAppDao {
     @Query("SELECT * FROM catalog_apps WHERE packageName = :packageName")
     suspend fun get(packageName: String): CatalogAppEntity?
 
+    @Query("SELECT * FROM catalog_apps WHERE packageName IN (:packageNames)")
+    suspend fun getByPackages(packageNames: List<String>): List<CatalogAppEntity>
+
     @Upsert
     suspend fun upsertAll(apps: List<CatalogAppEntity>)
 

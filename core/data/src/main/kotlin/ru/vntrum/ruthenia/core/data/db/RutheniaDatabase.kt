@@ -13,8 +13,13 @@ import androidx.room.TypeConverters
 import com.vntrum.ruthenia.core.data.model.AppSource
 
 @Database(
-    entities = [InstalledAppEntity::class, CatalogAppEntity::class, HomeEntryEntity::class],
-    version = 3,
+    entities = [
+        InstalledAppEntity::class,
+        CatalogAppEntity::class,
+        HomeEntryEntity::class,
+        UnresolvedAppEntity::class,
+    ],
+    version = 4,
     exportSchema = true,
 )
 @TypeConverters(AppSourceConverters::class)
@@ -25,6 +30,8 @@ abstract class RutheniaDatabase : RoomDatabase() {
     abstract fun catalogAppDao(): CatalogAppDao
 
     abstract fun homeFeedDao(): HomeFeedDao
+
+    abstract fun unresolvedAppDao(): UnresolvedAppDao
 
     companion object {
         const val NAME = "ruthenia.db"

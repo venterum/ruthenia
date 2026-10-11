@@ -7,6 +7,16 @@
 
     <string name="home_search_hint">Search RuStore</string>
     <string name="home_categories_title">Categories</string>
+    <string name="home_recommended_title">Recommended</string>
+    <string name="category_banks">Banks</string>
+    <string name="category_gov">Government services</string>
+    <string name="category_chat">Communication</string>
+    <string name="category_shopping">Shopping</string>
+    <string name="category_food">Food</string>
+    <string name="category_transport">Transport</string>
+    <string name="category_entertainment">Entertainment</string>
+    <string name="category_travel">Travel</string>
+    <string name="category_education">Education</string>
     <string name="categories_selections_title">Collections</string>
     <string name="categories_selections_source">From RuStore</string>
     <string name="home_updates_banner_hint">Open the library to update</string>
@@ -28,6 +38,7 @@
         <item quantity="other">%d apps have updates</item>
     </plurals>
     <string name="home_home_error">Couldn\'t load recommendations.</string>
+    <string name="home_loading_collections">Loading collections… %1$d%%</string>
     <string name="home_search_empty_title">Nothing found</string>
     <string name="home_search_empty_text">Try another name or package name.</string>
     <string name="home_search_recent">Recent searches</string>

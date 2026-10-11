@@ -74,7 +74,7 @@ fun CollectionScreen(
                     )
                 },
                 subtitle = section?.let { loaded ->
-                    { Text(appCountLabel(loaded.apps.size)) }
+                    { Text(loaded.description ?: appCountLabel(loaded.apps.size)) }
                 },
                 navigationIcon = {
                     IconButton(onClick = onBack) {

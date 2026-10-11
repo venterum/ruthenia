@@ -64,6 +64,15 @@ class ShizukuInstaller @Inject constructor(
     @ApplicationContext private val context: Context,
 ) {
 
+    // Sui is a Magisk module without a launcher package, so it is detected via
+    // its own init (the Shizuku provider does the same automatically). It must
+    // be declared before _status: the initial computeStatus() reads it while
+    // the constructor is still running, so the lazy delegate has to exist by
+    // then (otherwise a missing Shizuku package crashes the app on launch).
+    private val suiAvailable: Boolean by lazy {
+        runCatching { Sui.init(context.packageName) }.getOrDefault(false)
+    }
+
     private val _status = MutableStateFlow(computeStatus())
 
     /** Current availability; updates with the Shizuku binder and permission. */
@@ -73,12 +82,6 @@ class ShizukuInstaller @Inject constructor(
     private var service: IInstallService? = null
     private val connectMutex = Mutex()
     private val installMutex = Mutex()
-
-    // Sui is a Magisk module without a launcher package, so it is detected via
-    // its own init (the Shizuku provider does the same automatically).
-    private val suiAvailable: Boolean by lazy {
-        runCatching { Sui.init(context.packageName) }.getOrDefault(false)
-    }
 
     private val args = Shizuku.UserServiceArgs(
         ComponentName(context.packageName, ShizukuInstallService::class.java.name),

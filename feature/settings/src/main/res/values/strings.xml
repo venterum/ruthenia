@@ -36,6 +36,12 @@
     <string name="settings_section_catalog">Каталог</string>
     <string name="settings_games_page">Страница «Игры»</string>
     <string name="settings_games_page_desc">Показывать вкладку с играми. Выключение не влияет на поиск и разделы каталога.</string>
+    <string name="settings_reload_collections">Обновить подборки</string>
+    <string name="settings_reload_collections_desc">Заново загрузить все категории каталога.</string>
+    <string name="settings_reload_collections_action">Обновить</string>
+    <string name="settings_collections_loading">Загружаем подборки… %1$d%%</string>
+    <string name="settings_collections_loaded">Все подборки загружены.</string>
+    <string name="settings_collections_partial">Часть подборок не загрузилась. Попробуйте ещё раз.</string>
     <string name="settings_section_updates">Обновления</string>
     <string name="settings_background_checks">Фоновая проверка обновлений</string>
     <string name="settings_background_checks_desc">Периодически сверяет версии и уведомляет о доступных обновлениях.</string>

@@ -7,6 +7,16 @@
 
     <string name="home_search_hint">Поиск в RuStore</string>
     <string name="home_categories_title">Категории</string>
+    <string name="home_recommended_title">Рекомендуем</string>
+    <string name="category_banks">Банки</string>
+    <string name="category_gov">Госуслуги</string>
+    <string name="category_chat">Общение</string>
+    <string name="category_shopping">Покупки</string>
+    <string name="category_food">Еда</string>
+    <string name="category_transport">Транспорт</string>
+    <string name="category_entertainment">Развлечения</string>
+    <string name="category_travel">Путешествия</string>
+    <string name="category_education">Образование</string>
     <string name="categories_selections_title">Подборки</string>
     <string name="categories_selections_source">От RuStore</string>
     <string name="home_updates_banner_hint">Открыть библиотеку и обновить</string>
@@ -30,6 +40,7 @@
         <item quantity="other">%d приложений ждут обновления</item>
     </plurals>
     <string name="home_home_error">Не удалось загрузить рекомендации.</string>
+    <string name="home_loading_collections">Загружаем подборки… %1$d%%</string>
     <string name="home_search_empty_title">Ничего не найдено</string>
     <string name="home_search_empty_text">Попробуйте другое название или package name.</string>
     <string name="home_search_recent">Недавние запросы</string>

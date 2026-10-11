@@ -36,6 +36,12 @@
     <string name="settings_section_catalog">Catalog</string>
     <string name="settings_games_page">Games page</string>
     <string name="settings_games_page_desc">Show the games tab. Disabling it doesn\'t affect search or catalog sections.</string>
+    <string name="settings_reload_collections">Reload collections</string>
+    <string name="settings_reload_collections_desc">Load all catalog categories again.</string>
+    <string name="settings_reload_collections_action">Reload</string>
+    <string name="settings_collections_loading">Loading collections… %1$d%%</string>
+    <string name="settings_collections_loaded">All collections loaded.</string>
+    <string name="settings_collections_partial">Some collections didn\'t load. Try again.</string>
     <string name="settings_section_updates">Updates</string>
     <string name="settings_background_checks">Background update checks</string>
     <string name="settings_background_checks_desc">Periodically checks versions and notifies about available updates.</string>

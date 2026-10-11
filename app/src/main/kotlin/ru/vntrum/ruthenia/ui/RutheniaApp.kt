@@ -487,7 +487,6 @@ private fun MainTabs(
             onOpenSettings = { openAndClose(onSettingsClick) },
             onOpenUpdates = { openAndClose(onOpenLibraryUpdates) },
             onOpenAbout = { openAndClose(onAboutClick) },
-            onOpenPrivacy = { openAndClose(onPrivacyClick) },
         )
     }
 }

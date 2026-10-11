@@ -82,7 +82,6 @@ fun ProfileSheet(
     onOpenSettings: () -> Unit,
     onOpenUpdates: () -> Unit,
     onOpenAbout: () -> Unit,
-    onOpenPrivacy: () -> Unit,
     viewModel: ProfileViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -112,7 +111,6 @@ fun ProfileSheet(
                 onOpenSettings = onOpenSettings,
                 onOpenUpdates = onOpenUpdates,
                 onOpenAbout = onOpenAbout,
-                onOpenPrivacy = onOpenPrivacy,
             )
         }
         Spacer(modifier = Modifier.height(16.dp))
@@ -127,7 +125,6 @@ private fun ProfileContent(
     onOpenSettings: () -> Unit,
     onOpenUpdates: () -> Unit,
     onOpenAbout: () -> Unit,
-    onOpenPrivacy: () -> Unit,
 ) {
     val haptics = rememberRutheniaHaptics()
     val codename = codenameFor(
@@ -164,6 +161,10 @@ private fun ProfileContent(
                 label = stringResource(R.string.profile_updates),
                 value = state.updateCount.toString(),
                 modifier = Modifier.weight(1f),
+                onClick = {
+                    haptics.tick()
+                    onOpenUpdates()
+                },
             )
         }
 
@@ -202,9 +203,7 @@ private fun ProfileContent(
 
         ProfileActions(
             onOpenSettings = onOpenSettings,
-            onOpenUpdates = onOpenUpdates,
             onOpenAbout = onOpenAbout,
-            onOpenPrivacy = onOpenPrivacy,
         )
     }
 
@@ -451,43 +450,25 @@ private fun ColorDotRow(
     }
 }
 
-/** The four shortcuts into the existing destinations, as a 2×2 tile grid. */
+/** Shortcuts into the remaining destinations, as a row of tiles. */
 @Composable
 private fun ProfileActions(
     onOpenSettings: () -> Unit,
-    onOpenUpdates: () -> Unit,
     onOpenAbout: () -> Unit,
-    onOpenPrivacy: () -> Unit,
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            ProfileActionTile(
-                titleRes = R.string.nav_settings,
-                iconRes = R.drawable.ic_settings,
-                onClick = onOpenSettings,
-                modifier = Modifier.weight(1f),
-            )
-            ProfileActionTile(
-                titleRes = R.string.profile_updates,
-                iconRes = R.drawable.ic_download,
-                onClick = onOpenUpdates,
-                modifier = Modifier.weight(1f),
-            )
-        }
-        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            ProfileActionTile(
-                titleRes = R.string.profile_about,
-                iconRes = R.drawable.ic_info,
-                onClick = onOpenAbout,
-                modifier = Modifier.weight(1f),
-            )
-            ProfileActionTile(
-                titleRes = R.string.profile_privacy,
-                iconRes = R.drawable.ic_privacy,
-                onClick = onOpenPrivacy,
-                modifier = Modifier.weight(1f),
-            )
-        }
+    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        ProfileActionTile(
+            titleRes = R.string.nav_settings,
+            iconRes = R.drawable.ic_settings,
+            onClick = onOpenSettings,
+            modifier = Modifier.weight(1f),
+        )
+        ProfileActionTile(
+            titleRes = R.string.profile_about,
+            iconRes = R.drawable.ic_info,
+            onClick = onOpenAbout,
+            modifier = Modifier.weight(1f),
+        )
     }
 }
 

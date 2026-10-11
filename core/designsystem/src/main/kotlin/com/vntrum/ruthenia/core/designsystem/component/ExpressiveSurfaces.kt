@@ -117,6 +117,8 @@ fun RutheniaTag(
 /**
  * Fact card: a label and a value, a surface one tone above the background. One
  * card type for all metrics (version, date, size, installed version).
+ *
+ * With [onClick] the whole card becomes a button.
  */
 @Composable
 fun RutheniaStatCard(
@@ -124,12 +126,9 @@ fun RutheniaStatCard(
     value: String,
     modifier: Modifier = Modifier,
     icon: Painter? = null,
+    onClick: (() -> Unit)? = null,
 ) {
-    Surface(
-        modifier = modifier,
-        shape = MaterialTheme.shapes.large,
-        color = MaterialTheme.colorScheme.surfaceContainer,
-    ) {
+    val content: @Composable () -> Unit = {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -155,6 +154,25 @@ fun RutheniaStatCard(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
+        }
+    }
+
+    if (onClick != null) {
+        Surface(
+            onClick = onClick,
+            modifier = modifier,
+            shape = MaterialTheme.shapes.large,
+            color = MaterialTheme.colorScheme.surfaceContainer,
+        ) {
+            content()
+        }
+    } else {
+        Surface(
+            modifier = modifier,
+            shape = MaterialTheme.shapes.large,
+            color = MaterialTheme.colorScheme.surfaceContainer,
+        ) {
+            content()
         }
     }
 }

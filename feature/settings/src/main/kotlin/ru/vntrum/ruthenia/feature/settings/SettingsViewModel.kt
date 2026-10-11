@@ -23,6 +23,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import com.vntrum.ruthenia.core.data.backup.BackupManager
 import com.vntrum.ruthenia.core.data.launcher.LauncherIconController
+import com.vntrum.ruthenia.core.data.repository.FeedBuildProgress
+import com.vntrum.ruthenia.core.data.repository.HomeRepository
 import com.vntrum.ruthenia.core.data.settings.AccentPalette
 import com.vntrum.ruthenia.core.data.settings.AppIconShape
 import com.vntrum.ruthenia.core.data.settings.AppIconVariant
@@ -45,6 +47,7 @@ class SettingsViewModel @Inject constructor(
     private val shizukuInstaller: ShizukuInstaller,
     private val certificateRefresher: CertificateRefresher,
     private val launcherIconController: LauncherIconController,
+    private val homeRepository: HomeRepository,
     @ApplicationContext private val context: Context,
 ) : ViewModel() {
 
@@ -105,6 +108,33 @@ class SettingsViewModel @Inject constructor(
 
     fun setGamesEnabled(enabled: Boolean) = viewModelScope.launch {
         settingsRepository.setGamesEnabled(enabled)
+    }
+
+    // --- Curated collections (manual reload) ---
+
+    /** Whether the curated collections are being re-resolved right now. */
+    private val _collectionsBusy = MutableStateFlow(false)
+    val collectionsBusy: StateFlow<Boolean> = _collectionsBusy.asStateFlow()
+
+    /** How far the reload is, in percent — shown next to the reload row. */
+    val collectionsProgress: StateFlow<FeedBuildProgress> = homeRepository.buildProgress
+
+    /**
+     * Re-resolves every curated category from the catalog. Resolution is cached
+     * per app, so this only fetches what is missing or stale.
+     */
+    fun reloadCollections() = viewModelScope.launch {
+        if (_collectionsBusy.value) return@launch
+        _collectionsBusy.value = true
+        val sections = runCatching { homeRepository.homeFeed(forceRefresh = true) }.getOrNull()
+        _collectionsBusy.value = false
+        _message.value = context.getString(
+            if (sections != null && homeRepository.isComplete(sections)) {
+                R.string.settings_collections_loaded
+            } else {
+                R.string.settings_collections_partial
+            },
+        )
     }
 
     fun setBackgroundChecks(enabled: Boolean) = viewModelScope.launch {

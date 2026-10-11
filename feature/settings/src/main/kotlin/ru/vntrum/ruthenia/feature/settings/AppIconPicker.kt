@@ -9,12 +9,13 @@ package com.vntrum.ruthenia.feature.settings
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -44,11 +45,14 @@ data class AppIconPreview(
 )
 
 /**
- * A wrapping row of launcher-icon previews. Each swatch shows the icon's
- * background colour with its foreground mark, cropped the way a launcher crops
- * an adaptive icon (the visible 72 of the 108 layer units).
+ * A horizontally scrolling carousel of launcher-icon previews. Each swatch
+ * shows the icon's background colour with its foreground mark, cropped the way a
+ * launcher crops an adaptive icon (the visible 72 of the 108 layer units).
+ *
+ * A plain scrollable [Row] is used instead of a lazy list: the picker sits in a
+ * `ListItem`'s supporting slot, which measures intrinsics, and a lazy layout
+ * cannot answer those.
  */
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun AppIconPicker(
     previews: List<AppIconPreview>,
@@ -57,10 +61,9 @@ internal fun AppIconPicker(
     modifier: Modifier = Modifier,
 ) {
     val haptics = rememberRutheniaHaptics()
-    FlowRow(
-        modifier = modifier,
+    Row(
+        modifier = modifier.horizontalScroll(rememberScrollState()),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         previews.forEach { preview ->
             val isSelected = preview.variant == selected

@@ -27,6 +27,7 @@ import com.vntrum.ruthenia.core.data.model.UpdateStatus
 import com.vntrum.ruthenia.core.data.model.isUpdateIgnored
 import com.vntrum.ruthenia.core.data.model.isVisibleForCounters
 import com.vntrum.ruthenia.core.data.model.toUserMessage
+import com.vntrum.ruthenia.core.data.repository.FeedBuildProgress
 import com.vntrum.ruthenia.core.data.repository.HomeRepository
 import com.vntrum.ruthenia.core.data.repository.HomeSection
 import com.vntrum.ruthenia.core.data.repository.LibraryRepository
@@ -54,6 +55,13 @@ class AppsViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(AppsUiState())
     val uiState: StateFlow<AppsUiState> = _uiState.asStateFlow()
+
+    /**
+     * Progress of the initial feed build. The first launch resolves the whole
+     * curated catalog, so the skeleton shows how far along it is instead of
+     * looking frozen.
+     */
+    val loadProgress: StateFlow<FeedBuildProgress> = homeRepository.buildProgress
 
     /**
      * The locally generated device token shown in the header. Not an account:

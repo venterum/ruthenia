@@ -24,6 +24,7 @@ import com.vntrum.ruthenia.core.data.db.CatalogAppDao
 import com.vntrum.ruthenia.core.data.db.HomeFeedDao
 import com.vntrum.ruthenia.core.data.db.InstalledAppDao
 import com.vntrum.ruthenia.core.data.db.RutheniaDatabase
+import com.vntrum.ruthenia.core.data.db.UnresolvedAppDao
 import com.vntrum.ruthenia.core.data.model.AppSource
 
 @Module
@@ -36,7 +37,7 @@ internal object DataModule {
     @Singleton
     internal fun provideDatabase(@ApplicationContext context: Context): RutheniaDatabase =
         Room.databaseBuilder(context, RutheniaDatabase::class.java, RutheniaDatabase.NAME)
-            .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
             .build()
 
     @Provides
@@ -50,6 +51,10 @@ internal object DataModule {
     @Provides
     internal fun provideHomeFeedDao(database: RutheniaDatabase): HomeFeedDao =
         database.homeFeedDao()
+
+    @Provides
+    internal fun provideUnresolvedAppDao(database: RutheniaDatabase): UnresolvedAppDao =
+        database.unresolvedAppDao()
 
     @Provides
     @Singleton
@@ -103,6 +108,25 @@ internal object DataModule {
                     `downloadsText` TEXT,
                     `cachedAt` INTEGER NOT NULL,
                     PRIMARY KEY(`sectionId`, `packageName`)
+                )
+                """.trimIndent(),
+            )
+        }
+    }
+
+    /**
+     * Adds the negative cache of the app feed: curated packages the catalog
+     * could not resolve. It keeps every feed access from retrying them and
+     * blocking collection opens on the network.
+     */
+    private val MIGRATION_3_4 = object : Migration(3, 4) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(
+                """
+                CREATE TABLE IF NOT EXISTS `unresolved_apps` (
+                    `packageName` TEXT NOT NULL,
+                    `attemptedAt` INTEGER NOT NULL,
+                    PRIMARY KEY(`packageName`)
                 )
                 """.trimIndent(),
             )

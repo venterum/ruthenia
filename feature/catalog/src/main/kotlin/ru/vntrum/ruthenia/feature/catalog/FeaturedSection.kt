@@ -73,8 +73,8 @@ internal fun FeaturedSection(
 ) {
     Column(modifier = Modifier.padding(bottom = 8.dp)) {
         SectionHeader(
-            text = section.title,
-            subtitle = stringResource(R.string.featured_editorial),
+            text = feedSectionTitle(section.id, section.title),
+            subtitle = section.description ?: stringResource(R.string.featured_editorial),
             showAccent = true,
             onClick = { onCollectionClick(section.id) },
             modifier = Modifier.padding(horizontal = 20.dp),

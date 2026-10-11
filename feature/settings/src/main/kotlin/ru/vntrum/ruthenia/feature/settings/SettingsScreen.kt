@@ -84,8 +84,10 @@ import com.vntrum.ruthenia.core.data.settings.InstallMethod
 import com.vntrum.ruthenia.core.data.settings.NavBarStyle
 import com.vntrum.ruthenia.core.data.settings.ThemeMode
 import com.vntrum.ruthenia.core.designsystem.component.LocalRutheniaBottomContentPadding
+import com.vntrum.ruthenia.core.designsystem.component.RutheniaWavyProgress
 import com.vntrum.ruthenia.core.designsystem.component.SectionHeader
 import com.vntrum.ruthenia.core.designsystem.component.animatedEntrance
+import com.vntrum.ruthenia.core.designsystem.component.progressSemantics
 import com.vntrum.ruthenia.core.designsystem.component.rutheniaContentWidth
 import com.vntrum.ruthenia.core.designsystem.haptics.rememberRutheniaHaptics
 import com.vntrum.ruthenia.core.designsystem.theme.RutheniaAccent
@@ -109,6 +111,8 @@ fun SettingsScreen(
     val shizukuStatus by viewModel.shizukuStatus.collectAsStateWithLifecycle()
     val certificateStatus by viewModel.certificateStatus.collectAsStateWithLifecycle()
     val certificateBusy by viewModel.certificateBusy.collectAsStateWithLifecycle()
+    val collectionsBusy by viewModel.collectionsBusy.collectAsStateWithLifecycle()
+    val collectionsProgress by viewModel.collectionsProgress.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val version = remember { context.appVersionInfo() }
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
@@ -307,6 +311,40 @@ fun SettingsScreen(
                     subtitle = stringResource(R.string.settings_games_page_desc),
                     checked = settings.gamesEnabled,
                     onCheckedChange = viewModel::setGamesEnabled,
+                )
+
+                ListItem(
+                    headlineContent = { Text(stringResource(R.string.settings_reload_collections)) },
+                    supportingContent = {
+                        // While reloading, the percent and the bar show that the
+                        // collections are actually being resolved.
+                        if (collectionsBusy) {
+                            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                                Text(
+                                    stringResource(
+                                        R.string.settings_collections_loading,
+                                        collectionsProgress.percent,
+                                    ),
+                                )
+                                RutheniaWavyProgress(
+                                    progress = { collectionsProgress.percent / 100f },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .progressSemantics(collectionsProgress.percent / 100f),
+                                )
+                            }
+                        } else {
+                            Text(stringResource(R.string.settings_reload_collections_desc))
+                        }
+                    },
+                    trailingContent = {
+                        if (!collectionsBusy) {
+                            TextButton(onClick = viewModel::reloadCollections) {
+                                Text(stringResource(R.string.settings_reload_collections_action))
+                            }
+                        }
+                    },
+                    colors = transparentListItemColors(),
                 )
             }
 
