@@ -28,6 +28,7 @@ fun RutheniaBrandMark(
     size: Dp = 36.dp,
     contentDescription: String? = null,
     tint: Color = MaterialTheme.colorScheme.primary,
+    scale: Float = 1.3f,
 ) {
     Icon(
         painter = painterResource(R.drawable.ic_brand_mark),
@@ -37,6 +38,6 @@ fun RutheniaBrandMark(
         // scaled up to fill the given size.
         modifier = modifier
             .size(size)
-            .scale(1.3f),
+            .scale(scale),
     )
 }

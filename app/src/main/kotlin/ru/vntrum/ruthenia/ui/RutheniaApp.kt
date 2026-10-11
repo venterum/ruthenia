@@ -460,7 +460,7 @@ private fun MainTabs(
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
                         .navigationBarsPadding()
-                        .padding(bottom = 16.dp),
+                        .padding(bottom = 8.dp),
                 )
                 NavBarStyle.NORMAL -> RutheniaBottomNavigationBar(
                     items = navItems,

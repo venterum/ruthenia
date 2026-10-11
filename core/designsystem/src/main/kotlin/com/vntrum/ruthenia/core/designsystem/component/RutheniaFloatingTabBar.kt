@@ -45,7 +45,7 @@ data class RutheniaNavItem(
  * Bottom content padding so the floating tab bar does not cover the last
  * list item. The content scrolls "under" the bar.
  */
-val FloatingToolbarBottomPadding = 128.dp
+val FloatingToolbarBottomPadding = 140.dp
 
 /**
  * Bottom content padding for the standard navigation bar (80dp tall plus a
@@ -83,7 +83,7 @@ fun RutheniaFloatingTabBar(
         shadowElevation = 6.dp,
     ) {
         Row(
-            modifier = Modifier.padding(8.dp),
+            modifier = Modifier.padding(10.dp),
             horizontalArrangement = Arrangement.spacedBy(4.dp),
         ) {
             items.forEachIndexed { index, item ->
@@ -142,10 +142,10 @@ private fun FloatingTabItem(
                     scaleY = selectionScale
                 }
                 .animateContentSize(animationSpec = motion.defaultSpatialSpec<IntSize>())
-                .heightIn(min = 48.dp)
+                .heightIn(min = 56.dp)
                 .padding(
-                    horizontal = if (selected) 16.dp else 12.dp,
-                    vertical = 10.dp,
+                    horizontal = if (selected) 18.dp else 14.dp,
+                    vertical = 12.dp,
                 ),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -160,7 +160,7 @@ private fun FloatingTabItem(
                 Icon(
                     painter = item.icon,
                     contentDescription = item.label,
-                    modifier = Modifier.size(20.dp),
+                    modifier = Modifier.size(24.dp),
                     tint = contentColor,
                 )
             }
