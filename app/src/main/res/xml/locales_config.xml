@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Ruthenia Store — an open, private client for installing and updating apps.
+  Copyright (C) 2026 Ruthenia Store contributors
+  SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<!--
+  Languages the app ships with. Declaring them lets Android 13+ show
+  "App language" in the system settings and honours per-app locales set
+  through LocaleManager or `pm set-app-locales`.
+-->
+<locale-config xmlns:android="http://schemas.android.com/apk/res/android">
+    <locale android:name="ru" />
+    <locale android:name="en" />
+</locale-config>
