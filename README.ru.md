@@ -1,3 +1,5 @@
+<img src="docs/branding/ruthenia-icon-512.png" width="96" align="right" alt="Иконка Ruthenia Store">
+
 # Ruthenia Store
 
 [![License](https://ziadoua.github.io/m3-Markdown-Badges/badges/LicenceGPLv3/licencegplv31.svg)](LICENSE)
@@ -9,6 +11,12 @@
 **Лёгкий приватный клиент RuStore. Написан с нуля. Без слежки, без рекламы, без лишнего.**
 
 Ruthenia Store позволяет устанавливать и обновлять приложения из каталога RuStore (банки, госуслуги и другие отечественные сервисы) без официального приложения — никаких трекеров, навязчивых обновлений и захламлённого интерфейса.
+
+---
+
+## Скачать
+
+Последний APK — на [странице релизов](https://github.com/venterum/ruthenia/releases). Требуется Android 8.0 (API 26) или новее.
 
 ---
 
@@ -30,7 +38,22 @@ Ruthenia Store позволяет устанавливать и обновлят
 
 ## Скриншоты
 
-<!-- TODO: Добавить скриншоты (docs/screenshots/*.png) -->
+<table>
+  <tr>
+    <td align="center"><a href="docs/screenshots/ru/01-onboarding.webp"><img src="docs/screenshots/ru/01-onboarding.webp" width="170" alt="Онбординг"></a><br><sub>Онбординг</sub></td>
+    <td align="center"><a href="docs/screenshots/ru/02-home.webp"><img src="docs/screenshots/ru/02-home.webp" width="170" alt="Лента"></a><br><sub>Лента</sub></td>
+    <td align="center"><a href="docs/screenshots/ru/03-search.webp"><img src="docs/screenshots/ru/03-search.webp" width="170" alt="Поиск"></a><br><sub>Поиск</sub></td>
+    <td align="center"><a href="docs/screenshots/ru/04-app.webp"><img src="docs/screenshots/ru/04-app.webp" width="170" alt="Карточка приложения"></a><br><sub>Карточка приложения</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><a href="docs/screenshots/ru/05-games.webp"><img src="docs/screenshots/ru/05-games.webp" width="170" alt="Игры"></a><br><sub>Игры</sub></td>
+    <td align="center"><a href="docs/screenshots/ru/06-library.webp"><img src="docs/screenshots/ru/06-library.webp" width="170" alt="Библиотека"></a><br><sub>Библиотека и обновления</sub></td>
+    <td align="center"><a href="docs/screenshots/ru/07-settings.webp"><img src="docs/screenshots/ru/07-settings.webp" width="170" alt="Настройки"></a><br><sub>Настройки</sub></td>
+    <td align="center"><a href="docs/screenshots/ru/08-token.webp"><img src="docs/screenshots/ru/08-token.webp" width="170" alt="Жетон"></a><br><sub>Жетон</sub></td>
+  </tr>
+</table>
+
+Те же экраны на английском — в [README.md](README.md) (`docs/screenshots/en/`).
 
 ---
 

@@ -1,3 +1,5 @@
+<img src="docs/branding/ruthenia-icon-512.png" width="96" align="right" alt="Ruthenia Store icon">
+
 # Ruthenia Store
 
 [![License](https://ziadoua.github.io/m3-Markdown-Badges/badges/LicenceGPLv3/licencegplv31.svg)](LICENSE)
@@ -9,6 +11,12 @@
 **A lightweight, private RuStore client. Written from scratch. No tracking, no ads, no bloat.**
 
 Ruthenia Store lets you install and update apps from the RuStore catalog (banks, government services and other Russian services) without the official app — no trackers, no nagging updates, no cluttered interface.
+
+---
+
+## Download
+
+Grab the latest APK from the [Releases page](https://github.com/venterum/ruthenia/releases). Requires Android 8.0 (API 26) or newer.
 
 ---
 
@@ -30,7 +38,22 @@ Ruthenia Store lets you install and update apps from the RuStore catalog (banks,
 
 ## Screenshots
 
-<!-- TODO: add screenshots (docs/screenshots/*.png) -->
+<table>
+  <tr>
+    <td align="center"><a href="docs/screenshots/en/01-onboarding.webp"><img src="docs/screenshots/en/01-onboarding.webp" width="170" alt="Onboarding"></a><br><sub>Onboarding</sub></td>
+    <td align="center"><a href="docs/screenshots/en/02-home.webp"><img src="docs/screenshots/en/02-home.webp" width="170" alt="Home feed"></a><br><sub>Home feed</sub></td>
+    <td align="center"><a href="docs/screenshots/en/03-search.webp"><img src="docs/screenshots/en/03-search.webp" width="170" alt="Search"></a><br><sub>Search</sub></td>
+    <td align="center"><a href="docs/screenshots/en/04-app.webp"><img src="docs/screenshots/en/04-app.webp" width="170" alt="App details"></a><br><sub>App details</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><a href="docs/screenshots/en/05-games.webp"><img src="docs/screenshots/en/05-games.webp" width="170" alt="Games"></a><br><sub>Games</sub></td>
+    <td align="center"><a href="docs/screenshots/en/06-library.webp"><img src="docs/screenshots/en/06-library.webp" width="170" alt="Library"></a><br><sub>Library and updates</sub></td>
+    <td align="center"><a href="docs/screenshots/en/07-settings.webp"><img src="docs/screenshots/en/07-settings.webp" width="170" alt="Settings"></a><br><sub>Settings</sub></td>
+    <td align="center"><a href="docs/screenshots/en/08-token.webp"><img src="docs/screenshots/en/08-token.webp" width="170" alt="Device token"></a><br><sub>Device token</sub></td>
+  </tr>
+</table>
+
+The same screens in Russian are in [README.ru.md](README.ru.md) (`docs/screenshots/ru/`).
 
 ---
 
