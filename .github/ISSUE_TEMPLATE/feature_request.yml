@@ -1,0 +1,41 @@
+# Ruthenia Store — an open, private client for installing and updating apps.
+# Copyright (C) 2026 Ruthenia Store contributors
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+name: Feature request
+description: Suggest an idea for the app
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before opening a request, please keep the project's boundaries in mind:
+        no analytics, no crash reporting, no ads, and no network traffic beyond
+        the RuStore API and the official Mintsifry certificate host
+        (see [PRIVACY.md](../../blob/main/docs/PRIVACY.md)).
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: Describe the use case, not just the feature.
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+    validations:
+      required: false
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Mockups, screenshots, links.
+    validations:
+      required: false

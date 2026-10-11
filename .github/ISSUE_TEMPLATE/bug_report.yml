@@ -1,0 +1,74 @@
+# Ruthenia Store — an open, private client for installing and updating apps.
+# Copyright (C) 2026 Ruthenia Store contributors
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+name: Bug report
+description: Report a problem with the app
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug.
+
+        **Important:** this is an unofficial client built on top of a reverse-engineered
+        RuStore API. Problems that only happen inside the RuStore service itself are out of scope.
+
+        Security issues: do **not** open a public issue — use
+        [GitHub Security Advisories](../../security/advisories/new) instead
+        (see [SECURITY.md](../../blob/main/docs/SECURITY.md)).
+  - type: input
+    id: device
+    attributes:
+      label: Device and OS
+      description: Model and Android version (e.g. Pixel 8, Android 15).
+      placeholder: Redmi Note 12, Android 14
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: App version
+      description: Shown in Settings → About.
+      placeholder: 0.1.0
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open …
+        2. Tap …
+        3. See error
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behaviour
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs and screenshots
+      description: Optional. Logs can be captured with `adb logcat`.
+      render: text
+    validations:
+      required: false
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched existing issues and this is not a duplicate.
+          required: true
+        - label: This is not a security issue (those go through Security Advisories).
+          required: true

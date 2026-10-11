@@ -1,0 +1,12 @@
+# Ruthenia Store — an open, private client for installing and updating apps.
+# Copyright (C) 2026 Ruthenia Store contributors
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/venterum/ruthenia/security/advisories/new
+    about: Report security issues privately, not as a public issue.
+  - name: Documentation
+    url: https://github.com/venterum/ruthenia/blob/main/docs/CONTRIBUTING.md
+    about: Build instructions, code style and architecture.
