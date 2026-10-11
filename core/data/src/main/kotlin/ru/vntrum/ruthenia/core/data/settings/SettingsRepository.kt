@@ -41,6 +41,9 @@ class SettingsRepository @Inject constructor(
             appIconShape = preferences[Keys.APP_ICON_SHAPE]
                 ?.let { name -> AppIconShape.entries.firstOrNull { it.name == name } }
                 ?: AppIconShape.CIRCLE,
+            appIconVariant = preferences[Keys.APP_ICON_VARIANT]
+                ?.let { name -> AppIconVariant.entries.firstOrNull { it.name == name } }
+                ?: AppIconVariant.ORIGINAL,
             gamesEnabled = preferences[Keys.GAMES_ENABLED] ?: true,
             backgroundChecksEnabled = preferences[Keys.BACKGROUND_CHECKS] ?: false,
             updateCheckIntervalHours = preferences[Keys.UPDATE_INTERVAL_HOURS]
@@ -86,6 +89,11 @@ class SettingsRepository @Inject constructor(
     /** Shape of app icons in the interface. */
     suspend fun setAppIconShape(shape: AppIconShape) {
         dataStore.edit { it[Keys.APP_ICON_SHAPE] = shape.name }
+    }
+
+    /** Colour variant of the launcher icon. */
+    suspend fun setAppIconVariant(variant: AppIconVariant) {
+        dataStore.edit { it[Keys.APP_ICON_VARIANT] = variant.name }
     }
 
     /** Shows or hides the "Games" tab. */
@@ -192,6 +200,7 @@ class SettingsRepository @Inject constructor(
             preferences[Keys.ACCENT] = settings.accent.name
             preferences[Keys.NAV_BAR_STYLE] = settings.navBarStyle.name
             preferences[Keys.APP_ICON_SHAPE] = settings.appIconShape.name
+            preferences[Keys.APP_ICON_VARIANT] = settings.appIconVariant.name
             preferences[Keys.GAMES_ENABLED] = settings.gamesEnabled
             preferences[Keys.BACKGROUND_CHECKS] = settings.backgroundChecksEnabled
             preferences[Keys.UPDATE_INTERVAL_HOURS] = settings.updateCheckIntervalHours
@@ -216,6 +225,7 @@ class SettingsRepository @Inject constructor(
         val LANGUAGE = stringPreferencesKey("language")
         val NAV_BAR_STYLE = stringPreferencesKey("nav_bar_style")
         val APP_ICON_SHAPE = stringPreferencesKey("app_icon_shape")
+        val APP_ICON_VARIANT = stringPreferencesKey("app_icon_variant")
         val GAMES_ENABLED = booleanPreferencesKey("games_enabled")
         val BACKGROUND_CHECKS = booleanPreferencesKey("background_checks")
         val UPDATE_INTERVAL_HOURS = intPreferencesKey("update_interval_hours")

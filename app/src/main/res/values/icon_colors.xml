@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Ruthenia Store — an open, private client for installing and updating apps.
+  Copyright (C) 2026 Ruthenia Store contributors
+  SPDX-License-Identifier: GPL-3.0-or-later
+
+  Adaptive-icon background layers for the selectable launcher-icon
+  colour variants.
+-->
+<resources>
+    <color name="ic_launcher_background_dark">#FF101A45</color>
+    <color name="ic_launcher_background_emerald">#FF0B2E2D</color>
+    <color name="ic_launcher_background_raspberry">#FFF5F1E8</color>
+    <color name="ic_launcher_background_violet_gold">#FF24114A</color>
+    <color name="ic_launcher_background_warm">#FF1F2026</color>
+    <color name="ic_launcher_background_flag">#FF111622</color>
+    <color name="ic_launcher_background_google_play">#FFFFFFFF</color>
+</resources>

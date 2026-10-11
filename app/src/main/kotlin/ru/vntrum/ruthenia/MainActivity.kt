@@ -18,9 +18,15 @@ import androidx.compose.runtime.getValue
 import androidx.core.os.LocaleListCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+import com.vntrum.ruthenia.core.data.launcher.LauncherIconController
 import com.vntrum.ruthenia.core.data.settings.AppIconShape
 import com.vntrum.ruthenia.core.data.settings.AppLanguage
+import com.vntrum.ruthenia.core.data.settings.SettingsRepository
 import com.vntrum.ruthenia.core.data.settings.ThemeMode
 import com.vntrum.ruthenia.core.designsystem.component.LocalRutheniaIconShape
 import com.vntrum.ruthenia.core.designsystem.component.RutheniaIconShape
@@ -34,6 +40,12 @@ class MainActivity : AppCompatActivity() {
 
     private val viewModel: MainViewModel by viewModels()
 
+    @Inject
+    lateinit var launcherIconController: LauncherIconController
+
+    @Inject
+    lateinit var settingsRepository: SettingsRepository
+
     override fun onCreate(savedInstanceState: Bundle?) {
         // Install the system splash before super.onCreate: the cold-start
         // theme switches to Theme.Ruthenia once Compose renders its first frame.
@@ -42,6 +54,13 @@ class MainActivity : AppCompatActivity() {
         enableEdgeToEdge()
         handleInstallIntent(intent)
         handleDeepLinkIntent(intent)
+
+        // Keep the launcher icon in sync with the stored choice: an app update
+        // can reset the enabled alias back to the manifest default.
+        lifecycleScope.launch {
+            launcherIconController.reconcile(settingsRepository.settings.first().appIconVariant)
+        }
+
         setContent {
             val settings by viewModel.settings.collectAsStateWithLifecycle()
             val confirmation by viewModel.pendingConfirmation.collectAsStateWithLifecycle()

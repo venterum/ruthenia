@@ -233,6 +233,7 @@ fun RutheniaApp(viewModel: MainViewModel = hiltViewModel()) {
                         onBack = { navController.popBackStack() },
                         onPrivacyClick = { navController.navigate(RutheniaRoutes.PRIVACY) },
                         onAboutClick = { navController.navigate(RutheniaRoutes.ABOUT) },
+                        appIconPreviews = appIconPreviews,
                     )
                 }
             }

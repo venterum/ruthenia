@@ -22,8 +22,10 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import com.vntrum.ruthenia.core.data.backup.BackupManager
+import com.vntrum.ruthenia.core.data.launcher.LauncherIconController
 import com.vntrum.ruthenia.core.data.settings.AccentPalette
 import com.vntrum.ruthenia.core.data.settings.AppIconShape
+import com.vntrum.ruthenia.core.data.settings.AppIconVariant
 import com.vntrum.ruthenia.core.data.settings.AppLanguage
 import com.vntrum.ruthenia.core.data.settings.AppSettings
 import com.vntrum.ruthenia.core.data.settings.InstallMethod
@@ -42,6 +44,7 @@ class SettingsViewModel @Inject constructor(
     private val backupManager: BackupManager,
     private val shizukuInstaller: ShizukuInstaller,
     private val certificateRefresher: CertificateRefresher,
+    private val launcherIconController: LauncherIconController,
     @ApplicationContext private val context: Context,
 ) : ViewModel() {
 
@@ -92,6 +95,12 @@ class SettingsViewModel @Inject constructor(
 
     fun setAppIconShape(shape: AppIconShape) = viewModelScope.launch {
         settingsRepository.setAppIconShape(shape)
+    }
+
+    /** Selects the launcher-icon colour variant and applies it immediately. */
+    fun setAppIconVariant(variant: AppIconVariant) = viewModelScope.launch {
+        settingsRepository.setAppIconVariant(variant)
+        launcherIconController.apply(variant)
     }
 
     fun setGamesEnabled(enabled: Boolean) = viewModelScope.launch {

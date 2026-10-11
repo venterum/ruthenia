@@ -53,16 +53,17 @@
         android:theme="@style/Theme.Ruthenia"
         android:usesCleartextTraffic="false">
 
+        <!--
+            The launcher entry point lives on the activity-alias blocks below
+            (one per icon colour variant); the activity itself has no LAUNCHER
+            filter, so the app never shows two entries. See
+            LauncherIconController for the runtime switch.
+        -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
             android:launchMode="singleTop"
             android:theme="@style/Theme.Ruthenia.Splash">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-
             <!-- "Install" action from the ready-to-install notification. -->
             <intent-filter>
                 <action android:name="com.vntrum.ruthenia.action.INSTALL_READY" />
@@ -89,6 +90,125 @@
                     android:pathPrefix="/catalog/app/" />
             </intent-filter>
         </activity>
+
+        <!--
+            Launcher icons: one activity-alias per colour variant. Exactly one
+            is enabled at a time; the app switches them at runtime through
+            LauncherIconController (PackageManager.setComponentEnabledSetting).
+            Every variant keeps the themed (monochrome) layer, so Android 13+
+            themed icons work unchanged.
+        -->
+        <activity-alias
+            android:name=".launcher.IconOriginal"
+            android:enabled="true"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher"
+            android:label="@string/app_name"
+            android:roundIcon="@mipmap/ic_launcher_round"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
+            android:name=".launcher.IconDark"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_dark"
+            android:label="@string/app_name"
+            android:roundIcon="@mipmap/ic_launcher_dark_round"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
+            android:name=".launcher.IconEmerald"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_emerald"
+            android:label="@string/app_name"
+            android:roundIcon="@mipmap/ic_launcher_emerald_round"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
+            android:name=".launcher.IconRaspberry"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_raspberry"
+            android:label="@string/app_name"
+            android:roundIcon="@mipmap/ic_launcher_raspberry_round"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
+            android:name=".launcher.IconVioletGold"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_violet_gold"
+            android:label="@string/app_name"
+            android:roundIcon="@mipmap/ic_launcher_violet_gold_round"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
+            android:name=".launcher.IconWarm"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_warm"
+            android:label="@string/app_name"
+            android:roundIcon="@mipmap/ic_launcher_warm_round"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
+            android:name=".launcher.IconFlag"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_flag"
+            android:label="@string/app_name"
+            android:roundIcon="@mipmap/ic_launcher_flag_round"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
+            android:name=".launcher.IconGooglePlay"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_google_play"
+            android:label="@string/app_name"
+            android:roundIcon="@mipmap/ic_launcher_google_play_round"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
 
         <!--
             Storage for the selected locale on API < 33: AppCompat persists the

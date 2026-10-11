@@ -20,6 +20,8 @@ Ruthenia Store lets you install and update apps from the RuStore catalog (banks,
 - **App details** — screenshots, "what's new", rating, "More from developer"
 - **Install and update** — split-APK support, a single install session, background downloads via WorkManager
 - **Silent install via Shizuku** — optionally installs APKs without the system dialog (off by default, signature verification still applies)
+- **Device token** — a locally generated identity (name, motif, colour, frame) instead of an account; it never leaves the device
+- **Launcher icon** — pick the app icon colour in settings; themed (monochrome) icons keep working
 - **Library** — installed apps with update status, batch update, import from device
 - **Certificate refresh** — manual re-check of SPKI pins against live RuStore chains and the official Mintsifry CA
 - **Privacy above all** — no analytics, crash reporting or ad SDKs, anonymous operation, signature verification on every update
@@ -41,7 +43,7 @@ Ruthenia Store lets you install and update apps from the RuStore catalog (banks,
 # Release APK (~3.3 MB, R8)
 ./gradlew :app:assembleRelease
 
-# Unit tests (84 tests, offline)
+# Unit tests (91 tests, offline)
 ./gradlew testDebugUnitTest
 ```
 

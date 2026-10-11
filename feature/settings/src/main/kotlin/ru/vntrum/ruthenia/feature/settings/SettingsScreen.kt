@@ -102,6 +102,7 @@ fun SettingsScreen(
     onBack: () -> Unit,
     onPrivacyClick: () -> Unit,
     onAboutClick: () -> Unit,
+    appIconPreviews: List<AppIconPreview> = emptyList(),
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
     val settings by viewModel.settings.collectAsStateWithLifecycle()
@@ -271,6 +272,23 @@ fun SettingsScreen(
                     },
                     colors = transparentListItemColors(),
                 )
+
+                if (appIconPreviews.isNotEmpty()) {
+                    ListItem(
+                        headlineContent = { Text(stringResource(R.string.settings_app_icon)) },
+                        supportingContent = {
+                            AppIconPicker(
+                                previews = appIconPreviews,
+                                selected = settings.appIconVariant,
+                                onSelect = viewModel::setAppIconVariant,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 8.dp),
+                            )
+                        },
+                        colors = transparentListItemColors(),
+                    )
+                }
 
                 SwitchRow(
                     title = stringResource(R.string.settings_dynamic_color),

@@ -15,6 +15,7 @@ import com.vntrum.ruthenia.core.data.db.InstalledAppDao
 import com.vntrum.ruthenia.core.data.db.InstalledAppEntity
 import com.vntrum.ruthenia.core.data.model.AppSource
 import com.vntrum.ruthenia.core.data.settings.AppIconShape
+import com.vntrum.ruthenia.core.data.settings.AppIconVariant
 import com.vntrum.ruthenia.core.data.settings.AppSettings
 import com.vntrum.ruthenia.core.data.settings.InstallMethod
 import com.vntrum.ruthenia.core.data.settings.NavBarStyle
@@ -64,6 +65,7 @@ data class BackupSettings(
     val dynamicColor: Boolean = true,
     val navBarStyle: String = NavBarStyle.FLOATING.name,
     val appIconShape: String = AppIconShape.CIRCLE.name,
+    val appIconVariant: String = AppIconVariant.ORIGINAL.name,
     val gamesEnabled: Boolean = true,
     val backgroundChecksEnabled: Boolean = false,
     val updateCheckIntervalHours: Int = AppSettings.DEFAULT_INTERVAL_HOURS,
@@ -149,6 +151,7 @@ private fun AppSettings.toBackupSettings(): BackupSettings = BackupSettings(
     dynamicColor = dynamicColor,
     navBarStyle = navBarStyle.name,
     appIconShape = appIconShape.name,
+    appIconVariant = appIconVariant.name,
     gamesEnabled = gamesEnabled,
     backgroundChecksEnabled = backgroundChecksEnabled,
     updateCheckIntervalHours = updateCheckIntervalHours,
@@ -166,6 +169,8 @@ private fun BackupSettings.toAppSettings(): AppSettings = AppSettings(
     dynamicColor = dynamicColor,
     navBarStyle = NavBarStyle.entries.firstOrNull { it.name == navBarStyle } ?: NavBarStyle.FLOATING,
     appIconShape = AppIconShape.entries.firstOrNull { it.name == appIconShape } ?: AppIconShape.CIRCLE,
+    appIconVariant = AppIconVariant.entries.firstOrNull { it.name == appIconVariant }
+        ?: AppIconVariant.ORIGINAL,
     gamesEnabled = gamesEnabled,
     backgroundChecksEnabled = backgroundChecksEnabled,
     updateCheckIntervalHours = updateCheckIntervalHours,

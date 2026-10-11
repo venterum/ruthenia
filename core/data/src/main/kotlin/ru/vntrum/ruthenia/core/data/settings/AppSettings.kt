@@ -42,6 +42,39 @@ enum class AppIconShape {
 }
 
 /**
+ * Colour variant of the app's launcher icon.
+ *
+ * Each value maps to an `<activity-alias>` in the manifest via [aliasSuffix];
+ * exactly one alias is enabled at a time (see `LauncherIconController`). The
+ * themed (monochrome) icon layer is shared and never changes.
+ */
+enum class AppIconVariant(val aliasSuffix: String) {
+    /** The default brand-blue icon. */
+    ORIGINAL("IconOriginal"),
+
+    /** Deep navy background. */
+    DARK("IconDark"),
+
+    /** Green-on-dark. */
+    EMERALD("IconEmerald"),
+
+    /** Raspberry on cream. */
+    RASPBERRY("IconRaspberry"),
+
+    /** Violet with a gold shackle. */
+    VIOLET_GOLD("IconVioletGold"),
+
+    /** Warm orange on charcoal. */
+    WARM("IconWarm"),
+
+    /** White/blue/red bands. */
+    FLAG("IconFlag"),
+
+    /** Google Play–style four-colour mark. */
+    GOOGLE_PLAY("IconGooglePlay"),
+}
+
+/**
  * Accent palette for when Material You dynamic colors are unavailable or
  * disabled.
  */
@@ -82,6 +115,11 @@ data class AppSettings(
      * brand mark is deliberately always round.
      */
     val appIconShape: AppIconShape = AppIconShape.CIRCLE,
+    /**
+     * Colour variant of the launcher icon. Applied by switching the matching
+     * `<activity-alias>` (see `LauncherIconController`).
+     */
+    val appIconVariant: AppIconVariant = AppIconVariant.ORIGINAL,
     /**
      * Show the "Games" tab. Disabling hides the page without affecting
      * game sections in the feed or search results.

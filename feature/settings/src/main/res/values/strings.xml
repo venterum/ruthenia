@@ -24,6 +24,15 @@
     <string name="settings_icon_shape_circle">Круглые</string>
     <string name="settings_icon_shape_rounded">Скруглённые</string>
     <string name="settings_icon_shape_square">Квадратные</string>
+    <string name="settings_app_icon">Иконка приложения</string>
+    <string name="settings_app_icon_original">Классика</string>
+    <string name="settings_app_icon_dark">Тёмная</string>
+    <string name="settings_app_icon_emerald">Изумруд</string>
+    <string name="settings_app_icon_raspberry">Малина</string>
+    <string name="settings_app_icon_violet_gold">Фиалка</string>
+    <string name="settings_app_icon_warm">Тёплая</string>
+    <string name="settings_app_icon_flag">Флаг</string>
+    <string name="settings_app_icon_google_play">Google Play</string>
     <string name="settings_section_catalog">Каталог</string>
     <string name="settings_games_page">Страница «Игры»</string>
     <string name="settings_games_page_desc">Показывать вкладку с играми. Выключение не влияет на поиск и разделы каталога.</string>
