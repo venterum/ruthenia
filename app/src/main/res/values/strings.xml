@@ -16,6 +16,10 @@
     <string name="profile_customize">Настройка жетона</string>
     <string name="profile_randomize">Новый жетон</string>
     <string name="profile_back">Назад</string>
+    <string name="profile_info">Что такое жетон?</string>
+    <string name="profile_info_title">Что такое жетон?</string>
+    <string name="profile_info_body">Это ваш локальный профиль вместо аккаунта: ни регистрации, ни связи с RuStore. Имя и вид жетона генерируются прямо на устройстве из случайного зерна и никуда не отправляются.\n\nНужен он по приколу — чтобы у приложения было лицо, а у вас свой уголок. Жетон можно пересобрать одной кнопкой или вручную выбрать мотив, цвет и рамку. Никаких данных для этого не требуется.</string>
+    <string name="profile_info_ok">Понятно</string>
     <string name="profile_since_value">С нами с %1$s</string>
     <string name="profile_motif">Мотив</string>
     <string name="profile_color">Цвет</string>

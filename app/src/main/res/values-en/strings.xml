@@ -16,6 +16,10 @@
     <string name="profile_customize">Token setup</string>
     <string name="profile_randomize">New token</string>
     <string name="profile_back">Back</string>
+    <string name="profile_info">What\'s a token?</string>
+    <string name="profile_info_title">What\'s a token?</string>
+    <string name="profile_info_body">It\'s your local profile instead of an account: no sign-up, no link to RuStore. The token\'s name and look are generated on the device from a random seed and never leave it.\n\nIt exists just for fun — to give the app a face and you a corner of your own. You can reroll the token with one button or pick a motif, colour and frame by hand. It needs no data.</string>
+    <string name="profile_info_ok">Got it</string>
     <string name="profile_since_value">With us since %1$s</string>
     <string name="profile_motif">Motif</string>
     <string name="profile_color">Color</string>

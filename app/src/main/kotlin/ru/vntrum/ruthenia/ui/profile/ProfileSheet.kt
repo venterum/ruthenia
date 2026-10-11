@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
@@ -34,6 +35,7 @@ import androidx.compose.material3.SheetValue
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -133,6 +135,7 @@ private fun ProfileContent(
         adjectives = stringArrayResource(R.array.profile_codename_adjectives).toList(),
         nouns = stringArrayResource(R.array.profile_codename_nouns).toList(),
     )
+    var showInfo by rememberSaveable { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -164,20 +167,37 @@ private fun ProfileContent(
             )
         }
 
-        OutlinedButton(
-            onClick = {
-                haptics.tick()
-                onCustomize()
-            },
-            modifier = Modifier.fillMaxWidth(),
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Icon(
-                painter = painterResource(R.drawable.ic_tune),
-                contentDescription = null,
-                modifier = Modifier.size(18.dp),
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(stringResource(R.string.profile_customize))
+            OutlinedButton(
+                onClick = {
+                    haptics.tick()
+                    onCustomize()
+                },
+                modifier = Modifier.weight(1f),
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_tune),
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp),
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(stringResource(R.string.profile_customize))
+            }
+            IconButton(
+                onClick = {
+                    haptics.tick()
+                    showInfo = true
+                },
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_info),
+                    contentDescription = stringResource(R.string.profile_info),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
         }
 
         ProfileActions(
@@ -187,6 +207,25 @@ private fun ProfileContent(
             onOpenPrivacy = onOpenPrivacy,
         )
     }
+
+    if (showInfo) {
+        TokenInfoDialog(onDismiss = { showInfo = false })
+    }
+}
+
+/** A short, playful explanation of what the token is and why it exists. */
+@Composable
+private fun TokenInfoDialog(onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.profile_info_title)) },
+        text = { Text(stringResource(R.string.profile_info_body)) },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.profile_info_ok))
+            }
+        },
+    )
 }
 
 /**

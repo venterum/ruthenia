@@ -125,7 +125,7 @@ private fun AppsTopBar(
     ) {
         RutheniaBrandMark(
             size = 44.dp,
-            scale = 1.7f,
+            scale = 1.55f,
             contentDescription = stringResource(R.string.apps_about),
             modifier = Modifier
                 .clip(CircleShape)
