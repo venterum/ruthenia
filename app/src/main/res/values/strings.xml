@@ -7,13 +7,67 @@
     <string name="nav_library">Библиотека</string>
     <string name="nav_settings">Настройки</string>
 
-    <!-- Профиль устройства: локальная идентичность вместо аккаунта. -->
-    <string name="profile_subtitle">Данные хранятся только на этом устройстве. Аккаунт не нужен.</string>
+    <!-- Жетон устройства: локальная идентичность вместо аккаунта. -->
     <string name="profile_installed">Установлено</string>
     <string name="profile_updates">Обновления</string>
     <string name="profile_about">О приложении</string>
     <string name="profile_privacy">Конфиденциальность</string>
-    <string name="profile_change_seal">Сменить печать</string>
+
+    <string name="profile_customize">Настройка жетона</string>
+    <string name="profile_shuffle">Пересобрать</string>
+    <string name="profile_codename_reroll">Другое имя</string>
+    <string name="profile_since_value">С нами с %1$s</string>
+    <string name="profile_ring_none">Нет</string>
+    <string name="profile_ring_thin">Тонкий</string>
+    <string name="profile_ring_teeth">Зубцы</string>
+    <string name="profile_rank_max">Высшая ступень</string>
+
+    <string name="profile_rank_guest">Гость</string>
+    <string name="profile_rank_apprentice">Ученик</string>
+    <string name="profile_rank_journeyman">Подмастерье</string>
+    <string name="profile_rank_master">Мастер</string>
+    <string name="profile_rank_architect">Зодчий</string>
+    <string name="profile_rank_keeper">Хранитель</string>
+    <string name="profile_rank_sorcerer">Кудесник</string>
+    <string name="profile_rank_archivist">Архивариус</string>
+
+    <plurals name="profile_rank_progress">
+        <item quantity="one">До «%1$s» — %2$d приложение</item>
+        <item quantity="few">До «%1$s» — %2$d приложения</item>
+        <item quantity="many">До «%1$s» — %2$d приложений</item>
+        <item quantity="other">До «%1$s» — %2$d приложения</item>
+    </plurals>
+
+    <!-- Кодовое имя жетона: детерминированно собирается из seed. -->
+    <string-array name="profile_codename_adjectives">
+        <item>Тихий</item>
+        <item>Лунный</item>
+        <item>Ранний</item>
+        <item>Северный</item>
+        <item>Тайный</item>
+        <item>Спокойный</item>
+        <item>Вольный</item>
+        <item>Ясный</item>
+        <item>Ночной</item>
+        <item>Медленный</item>
+        <item>Снежный</item>
+        <item>Дальний</item>
+    </string-array>
+
+    <string-array name="profile_codename_nouns">
+        <item>Ветер</item>
+        <item>Странник</item>
+        <item>Ключ</item>
+        <item>Огонь</item>
+        <item>Дозор</item>
+        <item>Клинок</item>
+        <item>Иней</item>
+        <item>Маяк</item>
+        <item>Шёпот</item>
+        <item>След</item>
+        <item>Гонец</item>
+        <item>Пилигрим</item>
+    </string-array>
 
     <!-- Знакомство при первом запуске. -->
     <string name="onboarding_skip">Пропустить</string>

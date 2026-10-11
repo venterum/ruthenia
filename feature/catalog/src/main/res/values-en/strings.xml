@@ -10,7 +10,7 @@
     <string name="categories_selections_title">Collections</string>
     <string name="categories_selections_source">From RuStore</string>
     <string name="home_updates_banner_hint">Open the library to update</string>
-    <string name="apps_profile">Device profile</string>
+    <string name="apps_profile">Token</string>
     <string name="apps_about">About</string>
 
     <string name="games_title">Games</string>

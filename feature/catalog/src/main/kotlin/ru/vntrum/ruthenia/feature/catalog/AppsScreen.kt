@@ -45,22 +45,26 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.vntrum.ruthenia.core.data.identity.LocalIdentity
+import com.vntrum.ruthenia.core.data.identity.tokenRotation
 import com.vntrum.ruthenia.core.data.repository.HomeSection
 import com.vntrum.ruthenia.core.designsystem.component.ExpressiveCard
 import com.vntrum.ruthenia.core.designsystem.component.LocalRutheniaBottomContentPadding
 import com.vntrum.ruthenia.core.designsystem.component.RutheniaBrandMark
 import com.vntrum.ruthenia.core.designsystem.component.RutheniaIconTile
-import com.vntrum.ruthenia.core.designsystem.component.RutheniaProfileAvatar
+import com.vntrum.ruthenia.core.designsystem.component.RutheniaToken
 import com.vntrum.ruthenia.core.designsystem.component.SkeletonBlock
 import com.vntrum.ruthenia.core.designsystem.component.StateMessage
 import com.vntrum.ruthenia.core.designsystem.component.rememberSkeletonShimmer
+import com.vntrum.ruthenia.core.designsystem.component.rutheniaTokenRingByName
 import com.vntrum.ruthenia.core.designsystem.text.appCountLabel
 import com.vntrum.ruthenia.core.designsystem.theme.RutheniaPillShape
+import com.vntrum.ruthenia.core.designsystem.theme.rutheniaAccentByName
 
 /**
  * "Apps" tab: the curated catalog feed — a "Recommended" carousel, an updates
  * banner, and category sections. The header has the app mark and the local
- * device seal (a profile, not an account); search lives on its own tab.
+ * device token (a profile, not an account); search lives on its own tab.
  */
 @Composable
 fun AppsScreen(
@@ -74,14 +78,14 @@ fun AppsScreen(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val updateCount by viewModel.updateCount.collectAsStateWithLifecycle()
-    val profileSeed by viewModel.profileSeed.collectAsStateWithLifecycle()
+    val identity by viewModel.identity.collectAsStateWithLifecycle()
     // Category quick chips — everything except the special "Recommended"
     // selection is a category.
     val categories = state.homeSections.filter { !it.featured }
 
     Column(modifier = Modifier.fillMaxSize()) {
         AppsTopBar(
-            profileSeed = profileSeed,
+            identity = identity,
             onProfileClick = onProfileClick,
             onAboutClick = onAboutClick,
         )
@@ -105,10 +109,10 @@ fun AppsScreen(
     }
 }
 
-/** Header of the Apps page: the brand mark (opens "About") and the device seal. */
+/** Header of the Apps page: the brand mark (opens "About") and the device token. */
 @Composable
 private fun AppsTopBar(
-    profileSeed: String,
+    identity: LocalIdentity,
     onProfileClick: () -> Unit,
     onAboutClick: () -> Unit,
 ) {
@@ -127,8 +131,11 @@ private fun AppsTopBar(
                 .clickable(onClick = onAboutClick),
         )
         Spacer(modifier = Modifier.weight(1f))
-        RutheniaProfileAvatar(
-            seed = profileSeed,
+        RutheniaToken(
+            motif = identity.emblem.motif,
+            accent = rutheniaAccentByName(identity.emblem.accent.name),
+            ring = rutheniaTokenRingByName(identity.emblem.ring.name),
+            rotation = tokenRotation(identity.seed),
             size = 44.dp,
             contentDescription = stringResource(R.string.apps_profile),
             onClick = onProfileClick,

@@ -123,6 +123,20 @@ internal fun rutheniaAccentScheme(
 fun RutheniaAccent.primaryColor(darkTheme: Boolean = isSystemInDarkTheme()): Color =
     rutheniaAccentScheme(this, darkTheme).primary
 
+/** The accent's primary container — the face of the device token. */
+@Composable
+fun RutheniaAccent.primaryContainerColor(darkTheme: Boolean = isSystemInDarkTheme()): Color =
+    rutheniaAccentScheme(this, darkTheme).primaryContainer
+
+/** The accent's on-primary-container — the motif of the device token. */
+@Composable
+fun RutheniaAccent.onPrimaryContainerColor(darkTheme: Boolean = isSystemInDarkTheme()): Color =
+    rutheniaAccentScheme(this, darkTheme).onPrimaryContainer
+
+/** Maps a persisted accent name to the enum, with a safe fallback. */
+fun rutheniaAccentByName(name: String): RutheniaAccent =
+    RutheniaAccent.entries.firstOrNull { it.name == name } ?: RutheniaAccent.TEAL
+
 private val IndigoLightColorScheme = lightColorScheme(
     primary = Color(0xFF4355B9),
     onPrimary = Color(0xFFFFFFFF),

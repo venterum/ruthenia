@@ -17,11 +17,12 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import com.vntrum.ruthenia.core.data.identity.LocalIdentity
 import com.vntrum.ruthenia.core.data.identity.LocalIdentityRepository
+import com.vntrum.ruthenia.core.data.identity.ProfileEmblem
 import com.vntrum.ruthenia.core.data.model.UpdateStatus
 import com.vntrum.ruthenia.core.data.model.isUpdateIgnored
 import com.vntrum.ruthenia.core.data.model.isVisibleForCounters
@@ -55,15 +56,18 @@ class AppsViewModel @Inject constructor(
     val uiState: StateFlow<AppsUiState> = _uiState.asStateFlow()
 
     /**
-     * Seed of the locally generated "device seal" shown in the header. Not an
-     * account: the value is minted on the device and never sent anywhere.
+     * The locally generated device token shown in the header. Not an account:
+     * the identity is minted on the device and never sent anywhere.
      */
-    val profileSeed: StateFlow<String> = identityRepository.identity
-        .map { it.seed }
+    val identity: StateFlow<LocalIdentity> = identityRepository.identity
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(SUBSCRIPTION_TIMEOUT_MS),
-            initialValue = "",
+            initialValue = LocalIdentity(
+                seed = "",
+                firstSeen = 0L,
+                emblem = ProfileEmblem.fromSeed(""),
+            ),
         )
 
     /**
