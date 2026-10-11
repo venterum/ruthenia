@@ -21,6 +21,7 @@
     <string name="profile_color">Цвет</string>
     <string name="profile_ring">Рамка</string>
     <string name="profile_ring_color">Цвет рамки</string>
+    <string name="profile_ring_none">Нет</string>
     <string name="profile_ring_thin">Тонкая</string>
     <string name="profile_ring_thick">Толстая</string>
     <string name="profile_ring_teeth">Зубцы</string>

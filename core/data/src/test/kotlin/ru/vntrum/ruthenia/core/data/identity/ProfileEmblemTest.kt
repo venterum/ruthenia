@@ -6,7 +6,6 @@
 
 package com.vntrum.ruthenia.core.data.identity
 
-import com.vntrum.ruthenia.core.data.settings.AccentPalette
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -52,9 +51,9 @@ class ProfileEmblemTest {
         repeat(64) {
             val emblem = ProfileEmblem.random()
             assertTrue(emblem.motif in 0 until TOKEN_MOTIF_VARIANTS)
-            assertTrue(emblem.accent in AccentPalette.entries)
+            assertTrue(emblem.accent in TokenColor.entries)
             assertTrue(emblem.ring in TokenRing.entries)
-            assertTrue(emblem.ringColor in AccentPalette.entries)
+            assertTrue(emblem.ringColor in TokenColor.entries)
         }
     }
 }

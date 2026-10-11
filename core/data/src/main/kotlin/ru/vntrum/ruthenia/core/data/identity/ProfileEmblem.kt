@@ -6,11 +6,10 @@
 
 package com.vntrum.ruthenia.core.data.identity
 
-import com.vntrum.ruthenia.core.data.settings.AccentPalette
 import kotlin.random.Random
 
 /** Number of token motifs; the visual set itself lives in the design system. */
-const val TOKEN_MOTIF_VARIANTS = 8
+const val TOKEN_MOTIF_VARIANTS = 20
 
 /**
  * Deterministically maps a [seed] to a motif index in `0 until [TOKEN_MOTIF_VARIANTS]`.
@@ -23,6 +22,7 @@ fun tokenRotation(seed: String): Float = seed.hashCode().mod(360).toFloat()
 
 /** Frame style of the token. */
 enum class TokenRing {
+    NONE,
     THIN,
     THICK,
     TEETH,
@@ -37,14 +37,14 @@ enum class TokenRing {
  */
 data class ProfileEmblem(
     val motif: Int,
-    val accent: AccentPalette,
+    val accent: TokenColor,
     val ring: TokenRing,
-    val ringColor: AccentPalette,
+    val ringColor: TokenColor,
 ) {
     companion object {
         /** The look a fresh install starts with: derived from the identity seed. */
         fun fromSeed(seed: String): ProfileEmblem {
-            val accent = AccentPalette.entries[seed.hashCode().mod(AccentPalette.entries.size)]
+            val accent = TokenColor.entries[seed.hashCode().mod(TokenColor.entries.size)]
             return ProfileEmblem(
                 motif = tokenMotifIndex(seed),
                 accent = accent,
@@ -59,9 +59,9 @@ data class ProfileEmblem(
          */
         fun random(): ProfileEmblem = ProfileEmblem(
             motif = Random.nextInt(TOKEN_MOTIF_VARIANTS),
-            accent = AccentPalette.entries.random(),
+            accent = TokenColor.entries.random(),
             ring = TokenRing.entries.random(),
-            ringColor = AccentPalette.entries.random(),
+            ringColor = TokenColor.entries.random(),
         )
     }
 }

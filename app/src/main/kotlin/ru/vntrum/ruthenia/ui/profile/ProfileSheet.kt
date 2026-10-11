@@ -53,16 +53,16 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.vntrum.ruthenia.R
 import com.vntrum.ruthenia.core.data.identity.ProfileEmblem
 import com.vntrum.ruthenia.core.data.identity.TOKEN_MOTIF_VARIANTS
+import com.vntrum.ruthenia.core.data.identity.TokenColor
 import com.vntrum.ruthenia.core.data.identity.TokenRing
 import com.vntrum.ruthenia.core.data.identity.tokenRotation
-import com.vntrum.ruthenia.core.data.settings.AccentPalette
 import com.vntrum.ruthenia.core.designsystem.component.RutheniaStatCard
 import com.vntrum.ruthenia.core.designsystem.component.RutheniaToken
 import com.vntrum.ruthenia.core.designsystem.component.RutheniaTokenRing
 import com.vntrum.ruthenia.core.designsystem.component.rutheniaTokenRingByName
 import com.vntrum.ruthenia.core.designsystem.haptics.rememberRutheniaHaptics
-import com.vntrum.ruthenia.core.designsystem.theme.primaryColor
-import com.vntrum.ruthenia.core.designsystem.theme.rutheniaAccentByName
+import com.vntrum.ruthenia.core.designsystem.theme.frameColor
+import com.vntrum.ruthenia.core.designsystem.theme.rutheniaTokenColorByName
 import java.text.DateFormat
 import java.util.Date
 
@@ -207,9 +207,9 @@ private fun TokenHero(
     ) {
         RutheniaToken(
             motif = emblem.motif,
-            accent = rutheniaAccentByName(emblem.accent.name),
+            accent = rutheniaTokenColorByName(emblem.accent.name),
             ring = rutheniaTokenRingByName(emblem.ring.name),
-            ringAccent = rutheniaAccentByName(emblem.ringColor.name),
+            ringAccent = rutheniaTokenColorByName(emblem.ringColor.name),
             rotation = tokenRotation(seed),
             size = 76.dp,
         )
@@ -253,8 +253,8 @@ private fun TokenCustomization(
     onBack: () -> Unit,
 ) {
     val haptics = rememberRutheniaHaptics()
-    val accent = rutheniaAccentByName(emblem.accent.name)
-    val ringAccent = rutheniaAccentByName(emblem.ringColor.name)
+    val accent = rutheniaTokenColorByName(emblem.accent.name)
+    val ringAccent = rutheniaTokenColorByName(emblem.ringColor.name)
     val ring = rutheniaTokenRingByName(emblem.ring.name)
 
     Column(
@@ -379,31 +379,35 @@ private fun CustomizationLabel(text: String) {
     )
 }
 
-/** The shared accent palette, as selectable dots. */
+/** The shared token palette, as selectable dots, two rows of five. */
 @Composable
 private fun ColorDotRow(
-    selected: AccentPalette,
-    onSelect: (AccentPalette) -> Unit,
+    selected: TokenColor,
+    onSelect: (TokenColor) -> Unit,
 ) {
-    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        AccentPalette.entries.forEach { palette ->
-            val isSelected = palette == selected
-            Box(
-                modifier = Modifier
-                    .size(32.dp)
-                    .clip(CircleShape)
-                    .background(rutheniaAccentByName(palette.name).primaryColor())
-                    .border(
-                        width = if (isSelected) 3.dp else 1.dp,
-                        color = if (isSelected) {
-                            MaterialTheme.colorScheme.onSurface
-                        } else {
-                            MaterialTheme.colorScheme.outlineVariant
-                        },
-                        shape = CircleShape,
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        TokenColor.entries.chunked(COLORS_PER_ROW).forEach { rowColors ->
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                rowColors.forEach { color ->
+                    val isSelected = color == selected
+                    Box(
+                        modifier = Modifier
+                            .size(32.dp)
+                            .clip(CircleShape)
+                            .background(rutheniaTokenColorByName(color.name).frameColor())
+                            .border(
+                                width = if (isSelected) 3.dp else 1.dp,
+                                color = if (isSelected) {
+                                    MaterialTheme.colorScheme.onSurface
+                                } else {
+                                    MaterialTheme.colorScheme.outlineVariant
+                                },
+                                shape = CircleShape,
+                            )
+                            .clickable { onSelect(color) },
                     )
-                    .clickable { onSelect(palette) },
-            )
+                }
+            }
         }
     }
 }
@@ -484,7 +488,11 @@ private fun ProfileActionTile(
 
 @StringRes
 private fun TokenRing.labelRes(): Int = when (this) {
+    TokenRing.NONE -> R.string.profile_ring_none
     TokenRing.THIN -> R.string.profile_ring_thin
     TokenRing.THICK -> R.string.profile_ring_thick
     TokenRing.TEETH -> R.string.profile_ring_teeth
 }
+
+/** Colours per row in the palette pickers. */
+private const val COLORS_PER_ROW = 5

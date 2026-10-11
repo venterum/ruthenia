@@ -8,12 +8,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vntrum.ruthenia.core.data.identity.LocalIdentityRepository
 import com.vntrum.ruthenia.core.data.identity.ProfileEmblem
+import com.vntrum.ruthenia.core.data.identity.TokenColor
 import com.vntrum.ruthenia.core.data.identity.TokenRing
 import com.vntrum.ruthenia.core.data.model.UpdateStatus
 import com.vntrum.ruthenia.core.data.model.isUpdateIgnored
 import com.vntrum.ruthenia.core.data.model.isVisibleForCounters
 import com.vntrum.ruthenia.core.data.repository.LibraryRepository
-import com.vntrum.ruthenia.core.data.settings.AccentPalette
 import com.vntrum.ruthenia.core.data.settings.SettingsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -35,9 +35,9 @@ data class ProfileUiState(
     val firstSeen: Long = 0L,
     val emblem: ProfileEmblem = ProfileEmblem(
         motif = 0,
-        accent = AccentPalette.TEAL,
+        accent = TokenColor.TEAL,
         ring = TokenRing.THIN,
-        ringColor = AccentPalette.TEAL,
+        ringColor = TokenColor.TEAL,
     ),
     val installedCount: Int = 0,
     val updateCount: Int = 0,

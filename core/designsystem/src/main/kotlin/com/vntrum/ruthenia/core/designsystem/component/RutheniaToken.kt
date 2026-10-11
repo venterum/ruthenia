@@ -27,16 +27,17 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.vntrum.ruthenia.core.designsystem.theme.RutheniaAccent
-import com.vntrum.ruthenia.core.designsystem.theme.onPrimaryContainerColor
-import com.vntrum.ruthenia.core.designsystem.theme.primaryColor
-import com.vntrum.ruthenia.core.designsystem.theme.primaryContainerColor
+import com.vntrum.ruthenia.core.designsystem.theme.RutheniaTokenColor
+import com.vntrum.ruthenia.core.designsystem.theme.faceColor
+import com.vntrum.ruthenia.core.designsystem.theme.frameColor
+import com.vntrum.ruthenia.core.designsystem.theme.motifColor
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
 
 /** Frame style of the device token. Mirrors the persisted `TokenRing` by name. */
 enum class RutheniaTokenRing {
+    NONE,
     THIN,
     THICK,
     TEETH,
@@ -51,23 +52,29 @@ fun rutheniaTokenRingByName(name: String): RutheniaTokenRing =
  * place of an account avatar.
  *
  * [accent] colours the face and motif, [ringAccent] colours the frame; [rotation]
- * keeps symmetric motifs distinct. Everything is drawn from theme roles, so the
- * token follows the light/dark theme without any assets.
+ * keeps symmetric motifs distinct. Thin and thick frames leave a small gap
+ * between the frame and the face, so the mark reads as a medallion.
  */
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun RutheniaToken(
     motif: Int,
-    accent: RutheniaAccent,
+    accent: RutheniaTokenColor,
     ring: RutheniaTokenRing,
-    ringAccent: RutheniaAccent,
+    ringAccent: RutheniaTokenColor,
     rotation: Float,
     modifier: Modifier = Modifier,
     size: Dp = 44.dp,
     contentDescription: String? = null,
     onClick: (() -> Unit)? = null,
 ) {
-    val ringColor = ringAccent.primaryColor()
+    val ringColor = ringAccent.frameColor()
+    val frameWidth = when (ring) {
+        RutheniaTokenRing.THIN -> 1.5.dp
+        RutheniaTokenRing.THICK -> 2.5.dp
+        RutheniaTokenRing.NONE, RutheniaTokenRing.TEETH -> 0.dp
+    }
+    val faceSize = if (frameWidth > 0.dp) size - (frameWidth + FRAME_GAP) * 2 else size
     val semantics = if (contentDescription != null) {
         Modifier.semantics { this.contentDescription = contentDescription }
     } else {
@@ -78,24 +85,34 @@ fun RutheniaToken(
         modifier = modifier
             .size(size)
             .clip(CircleShape)
-            .background(accent.primaryContainerColor())
-            .then(
-                when (ring) {
-                    RutheniaTokenRing.THIN -> Modifier.border(1.5.dp, ringColor, CircleShape)
-                    RutheniaTokenRing.THICK -> Modifier.border(3.5.dp, ringColor, CircleShape)
-                    RutheniaTokenRing.TEETH -> Modifier
-                },
-            )
             .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
             .then(semantics),
         contentAlignment = Alignment.Center,
     ) {
+        if (frameWidth > 0.dp) {
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .clip(CircleShape)
+                    .border(frameWidth, ringColor, CircleShape),
+            )
+        }
+
         Box(
             modifier = Modifier
-                .size(size * TOKEN_FILL)
-                .graphicsLayer { rotationZ = rotation }
-                .background(accent.onPrimaryContainerColor(), tokenMotif(motif)),
-        )
+                .size(faceSize)
+                .clip(CircleShape)
+                .background(accent.faceColor()),
+            contentAlignment = Alignment.Center,
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(faceSize * TOKEN_FILL)
+                    .graphicsLayer { rotationZ = rotation }
+                    .background(accent.motifColor(), tokenMotif(motif)),
+            )
+        }
+
         if (ring == RutheniaTokenRing.TEETH) {
             Canvas(modifier = Modifier.matchParentSize()) {
                 drawTeeth(ringColor)
@@ -112,9 +129,21 @@ private fun tokenMotif(index: Int): Shape = when (index.mod(MOTIF_COUNT)) {
     1 -> MaterialShapes.Clover8Leaf.toShape()
     2 -> MaterialShapes.Flower.toShape()
     3 -> MaterialShapes.Sunny.toShape()
-    4 -> MaterialShapes.Burst.toShape()
-    5 -> MaterialShapes.SoftBurst.toShape()
-    6 -> MaterialShapes.Gem.toShape()
+    4 -> MaterialShapes.VerySunny.toShape()
+    5 -> MaterialShapes.Burst.toShape()
+    6 -> MaterialShapes.SoftBurst.toShape()
+    7 -> MaterialShapes.Boom.toShape()
+    8 -> MaterialShapes.SoftBoom.toShape()
+    9 -> MaterialShapes.Gem.toShape()
+    10 -> MaterialShapes.Diamond.toShape()
+    11 -> MaterialShapes.Pentagon.toShape()
+    12 -> MaterialShapes.Triangle.toShape()
+    13 -> MaterialShapes.Heart.toShape()
+    14 -> MaterialShapes.Puffy.toShape()
+    15 -> MaterialShapes.PuffyDiamond.toShape()
+    16 -> MaterialShapes.ClamShell.toShape()
+    17 -> MaterialShapes.Cookie4Sided.toShape()
+    18 -> MaterialShapes.Cookie6Sided.toShape()
     else -> MaterialShapes.Cookie9Sided.toShape()
 }
 
@@ -146,7 +175,10 @@ private fun DrawScope.drawTeeth(color: Color) {
 private const val TOKEN_FILL = 0.56f
 
 /** Kept in sync with `TOKEN_MOTIF_VARIANTS` in `:core:data`. */
-private const val MOTIF_COUNT = 8
+private const val MOTIF_COUNT = 20
+
+/** Breathing space between the frame and the face. */
+private val FRAME_GAP = 2.dp
 
 private const val TEETH_COUNT = 16
 private const val TEETH_LENGTH = 0.09f

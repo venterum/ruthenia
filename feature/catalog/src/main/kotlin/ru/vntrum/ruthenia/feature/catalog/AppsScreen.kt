@@ -59,7 +59,7 @@ import com.vntrum.ruthenia.core.designsystem.component.rememberSkeletonShimmer
 import com.vntrum.ruthenia.core.designsystem.component.rutheniaTokenRingByName
 import com.vntrum.ruthenia.core.designsystem.text.appCountLabel
 import com.vntrum.ruthenia.core.designsystem.theme.RutheniaPillShape
-import com.vntrum.ruthenia.core.designsystem.theme.rutheniaAccentByName
+import com.vntrum.ruthenia.core.designsystem.theme.rutheniaTokenColorByName
 
 /**
  * "Apps" tab: the curated catalog feed — a "Recommended" carousel, an updates
@@ -133,9 +133,9 @@ private fun AppsTopBar(
         Spacer(modifier = Modifier.weight(1f))
         RutheniaToken(
             motif = identity.emblem.motif,
-            accent = rutheniaAccentByName(identity.emblem.accent.name),
+            accent = rutheniaTokenColorByName(identity.emblem.accent.name),
             ring = rutheniaTokenRingByName(identity.emblem.ring.name),
-            ringAccent = rutheniaAccentByName(identity.emblem.ringColor.name),
+            ringAccent = rutheniaTokenColorByName(identity.emblem.ringColor.name),
             rotation = tokenRotation(identity.seed),
             size = 44.dp,
             contentDescription = stringResource(R.string.apps_profile),

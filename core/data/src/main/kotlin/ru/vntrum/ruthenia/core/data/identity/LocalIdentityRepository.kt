@@ -19,7 +19,6 @@ import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
-import com.vntrum.ruthenia.core.data.settings.AccentPalette
 
 /**
  * The device's local identity — deliberately **not** an account.
@@ -97,15 +96,14 @@ class LocalIdentityRepository @Inject constructor(
         val firstSeen = this[Keys.FIRST_SEEN] ?: 0L
         val motif = this[Keys.EMBLEM_MOTIF]
         val accent = this[Keys.EMBLEM_ACCENT]?.let { name ->
-            AccentPalette.entries.firstOrNull { it.name == name }
+            TokenColor.entries.firstOrNull { it.name == name }
         }
-        // The frame styles changed over time (the old "none" is gone), so an
-        // unknown name safely falls back to the default.
+        // Unknown or legacy frame names safely fall back to the default.
         val ring = this[Keys.EMBLEM_RING]?.let { name ->
             TokenRing.entries.firstOrNull { it.name == name }
         }
         val ringColor = this[Keys.EMBLEM_RING_COLOR]?.let { name ->
-            AccentPalette.entries.firstOrNull { it.name == name }
+            TokenColor.entries.firstOrNull { it.name == name }
         }
         val emblem = if (motif != null && accent != null && ring != null) {
             ProfileEmblem(

@@ -21,6 +21,7 @@
     <string name="profile_color">Color</string>
     <string name="profile_ring">Frame</string>
     <string name="profile_ring_color">Frame color</string>
+    <string name="profile_ring_none">None</string>
     <string name="profile_ring_thin">Thin</string>
     <string name="profile_ring_thick">Thick</string>
     <string name="profile_ring_teeth">Notched</string>
