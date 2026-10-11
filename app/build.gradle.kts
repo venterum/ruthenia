@@ -74,6 +74,18 @@ android {
     }
 }
 
+// Give artifacts a descriptive, version-stamped name so builds are easy to
+// tell apart: ruthenia-0.1.0.apk (release), ruthenia-0.1.0-debug.apk (debug).
+androidComponents {
+    onVariants { variant ->
+        val suffix = if (variant.buildType == "release") "" else "-${variant.buildType}"
+        variant.outputs.forEach { output ->
+            val version = output.versionName.orNull ?: "0.0.0"
+            output.outputFileName.set("ruthenia-$version$suffix.apk")
+        }
+    }
+}
+
 baselineProfile {
     // Keep the generated profiles in the repository and merge variants into
     // app/src/main/generated/baselineProfiles: the profile is generated rarely
