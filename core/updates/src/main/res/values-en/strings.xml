@@ -13,6 +13,7 @@
 
     <string name="notification_download_downloading">Downloading…</string>
     <string name="notification_download_downloaded">Downloaded %1$d%%</string>
+    <string name="notification_download_short_progress">%1$d%%</string>
     <string name="notification_download_ready">Download complete — open Ruthenia Store to install.</string>
     <string name="notification_install_action">Install</string>
     <string name="notification_update_arrow">%1$s → %2$s</string>

@@ -27,6 +27,7 @@ Grab the latest APK from the [Releases page](https://github.com/venterum/rutheni
 - **Games page** — popular games and genre feeds (can be hidden in settings)
 - **App details** — screenshots, "what's new", rating, "More from developer"
 - **Install and update** — split-APK support, a single install session, background downloads via WorkManager, pause/resume and a download manager with recovery actions in the Library
+- **Live Updates** — active download progress appears as a promoted ongoing notification on Android 16+ (lock screen and status-bar chip)
 - **Silent install via Shizuku** — optionally installs APKs without the system dialog (off by default, signature verification still applies)
 - **Device token** — a locally generated identity (name, motif, colour, frame) instead of an account; it never leaves the device
 - **Launcher icon** — pick the app icon colour in settings; themed (monochrome) icons keep working
@@ -66,7 +67,7 @@ The same screens in Russian are in [README.ru.md](README.ru.md) (`docs/screensho
 # Release APK (~3.3 MB, R8)
 ./gradlew :app:assembleRelease
 
-# Unit tests (91 tests, offline)
+# Unit tests (102 tests, offline)
 ./gradlew testDebugUnitTest
 ```
 

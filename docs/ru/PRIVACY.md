@@ -12,6 +12,7 @@
 |------------|-------|
 | `INTERNET` | Единственный сетевой доступ; только к хостам, описанным ниже |
 | `POST_NOTIFICATIONS` | Одно групповое уведомление «есть обновления» (Android 13+); запрашивается только при включении фоновых проверок |
+| `POST_PROMOTED_NOTIFICATIONS` | Live Updates в Android 16+ для прогресса активных загрузок; обычное (не runtime) разрешение, дополнительного доступа к данным не даёт |
 | `REQUEST_INSTALL_PACKAGES` | Установка скачанных APK через системный `PackageInstaller` |
 | `QUERY_ALL_PACKAGES` | Чтение списка установленных приложений **локально** (никуда не отправляется) |
 | `ACCESS_NETWORK_STATE` | Проверка сети в WorkManager (Wi-Fi / доступность) |
@@ -113,6 +114,6 @@
 Проверка разрешений и содержимого APK:
 
 ```bash
-aapt2 dump badging app/build/outputs/apk/release/app-release*.apk
-unzip -l app/build/outputs/apk/release/app-release*.apk | grep -E "res/.*\.cer"
+aapt2 dump badging app/build/outputs/apk/release/*.apk
+unzip -l app/build/outputs/apk/release/*.apk | grep -E "res/.*\.cer"
 ```

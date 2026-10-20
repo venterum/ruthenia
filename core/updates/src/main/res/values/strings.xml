@@ -15,6 +15,7 @@
 
     <string name="notification_download_downloading">Скачивание…</string>
     <string name="notification_download_downloaded">Скачано %1$d%%</string>
+    <string name="notification_download_short_progress">%1$d%%</string>
     <string name="notification_download_ready">Загрузка завершена — откройте Ruthenia Store, чтобы установить.</string>
     <string name="notification_install_action">Установить</string>
     <string name="notification_update_arrow">%1$s → %2$s</string>

@@ -45,7 +45,7 @@
 | `:core:network` | API RuStore, DTO, подпись сессии |
 | `:core:data` | Room, DataStore, репозитории, бэкап |
 | `:core:installer` | Загрузка APK, проверка подписи/размера, PackageInstaller, Shizuku |
-| `:core:updates` | WorkManager: проверка обновлений, фоновые загрузки |
+| `:core:updates` | WorkManager: проверка обновлений, фоновые загрузки и менеджер загрузок |
 | `:core:designsystem` | Тема, токены, компоненты Material 3 Expressive |
 | `:feature:*` | Экраны и ViewModel |
 | `:macrobenchmark` | Baseline/startup профили, замеры производительности |

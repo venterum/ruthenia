@@ -31,8 +31,8 @@ android {
         applicationId = "com.vntrum.ruthenia"
         minSdk = 26
         targetSdk = 37
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = 2
+        versionName = "0.2.0"
     }
 
     signingConfigs {
@@ -75,7 +75,7 @@ android {
 }
 
 // Give artifacts a descriptive, version-stamped name so builds are easy to
-// tell apart: ruthenia-0.1.0.apk (release), ruthenia-0.1.0-debug.apk (debug).
+// tell apart: ruthenia-0.2.0.apk (release), ruthenia-0.2.0-debug.apk (debug).
 androidComponents {
     onVariants { variant ->
         val suffix = if (variant.buildType == "release") "" else "-${variant.buildType}"

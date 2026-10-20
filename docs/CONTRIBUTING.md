@@ -45,7 +45,7 @@ Thanks for your interest in the project! Here is a short guide on how you can he
 | `:core:network` | RuStore API, DTOs, session signature |
 | `:core:data` | Room, DataStore, repositories, backup |
 | `:core:installer` | APK download, signature/size verification, PackageInstaller, Shizuku |
-| `:core:updates` | WorkManager: update checks, background downloads |
+| `:core:updates` | WorkManager: update checks, background downloads and the download manager |
 | `:core:designsystem` | Theme, tokens, Material 3 Expressive components |
 | `:feature:*` | Screens and ViewModels |
 | `:macrobenchmark` | Baseline/startup profiles, performance measurements |

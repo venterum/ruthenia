@@ -12,6 +12,7 @@ In a nutshell, **Ruthenia Store does not collect personal data, does not use ana
 |------------|-----|
 | `INTERNET` | The only network access; only to the hosts listed below |
 | `POST_NOTIFICATIONS` | A single grouped "updates available" notification (Android 13+); requested only when background checks are enabled |
+| `POST_PROMOTED_NOTIFICATIONS` | Android 16+ Live Updates for active download progress; normal (non-runtime) permission, no additional data access |
 | `REQUEST_INSTALL_PACKAGES` | Installing downloaded APKs via the system `PackageInstaller` |
 | `QUERY_ALL_PACKAGES` | Reading the list of installed apps **locally** (never sent anywhere) |
 | `ACCESS_NETWORK_STATE` | Network checks in WorkManager (Wi-Fi / availability) |
@@ -113,6 +114,6 @@ Good! Below is a simple guide on how to verify everything yourself.
 Checking permissions and APK contents:
 
 ```bash
-aapt2 dump badging app/build/outputs/apk/release/app-release*.apk
-unzip -l app/build/outputs/apk/release/app-release*.apk | grep -E "res/.*\.cer"
+aapt2 dump badging app/build/outputs/apk/release/*.apk
+unzip -l app/build/outputs/apk/release/*.apk | grep -E "res/.*\.cer"
 ```

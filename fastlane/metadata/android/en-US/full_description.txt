@@ -5,6 +5,8 @@ Features
 • Home feed: "Recommended", "Getting started" and category sections.
 • App details: screenshots, description, rating, "what's new", "more from developer".
 • Download and install, including multi-APK/split builds, in one install session.
+• Download manager with pause/resume, retry, recovery actions and download history.
+• Android 16+ Live Updates for active download progress on the lock screen and status bar.
 • Library with "up to date / update available" status.
 • Background update checks via WorkManager with a grouped notification.
 • Hide individual updates and "Update all".

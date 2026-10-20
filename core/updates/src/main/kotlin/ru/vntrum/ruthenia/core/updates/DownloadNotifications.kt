@@ -36,18 +36,32 @@ class DownloadNotifications @Inject constructor(
         if (!canNotify()) return
         ensureChannel()
 
+        val percent = fraction?.let { (it * MAX_PROGRESS).toInt() }
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification_update)
             .setContentTitle(appName)
             .setContentText(progressText(fraction))
             .setOngoing(true)
             .setOnlyAlertOnce(true)
+            .setCategory(NotificationCompat.CATEGORY_PROGRESS)
             .setContentIntent(contentIntent())
-            .setProgress(
-                MAX_PROGRESS,
-                fraction?.let { (it * MAX_PROGRESS).toInt() } ?: 0,
-                fraction == null,
+            // Android 16+ Live Updates: promotes the ongoing download to the status
+            // bar chip and lock screen. Ignored on older releases.
+            .setRequestPromotedOngoing(true)
+            .setProgress(MAX_PROGRESS, percent ?: 0, fraction == null)
+
+        DownloadNotificationText.shortProgress(
+            fraction = fraction,
+            template = context.getString(R.string.notification_download_short_progress),
+        )?.let(builder::setShortCriticalText)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
+            builder.setStyle(
+                NotificationCompat.ProgressStyle()
+                    .setProgress(percent ?: 0)
+                    .setProgressIndeterminate(fraction == null),
             )
+        }
 
         notify(packageName, builder.build())
     }
@@ -228,5 +242,13 @@ object DownloadNotificationText {
     ): String = when {
         fraction == null -> downloading
         else -> String.format(downloadedTemplate, (fraction * 100).toInt())
+    }
+
+    /**
+     * Compact status-chip text for Android 16+ Live Updates. The chip is narrow,
+     * so only the percentage is shown; indeterminate progress leaves it empty.
+     */
+    fun shortProgress(fraction: Float?, template: String): String? = fraction?.let {
+        String.format(template, (it * 100).toInt())
     }
 }

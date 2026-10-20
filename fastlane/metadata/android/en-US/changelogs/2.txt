@@ -1,0 +1,2 @@
+Download manager with pause/resume, retry, recovery actions and history; Android 16+ Live Updates for download notifications.
+Менеджер загрузок с паузой/продолжением, повторами, действиями восстановления и историей; Live Updates для уведомлений о загрузках в Android 16+.
