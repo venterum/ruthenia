@@ -33,6 +33,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -47,7 +48,9 @@ import com.vntrum.ruthenia.core.designsystem.component.progressSemantics
 import com.vntrum.ruthenia.core.designsystem.haptics.rememberRutheniaHaptics
 import com.vntrum.ruthenia.core.designsystem.text.appCountLabel
 import com.vntrum.ruthenia.core.updates.DownloadState
+import com.vntrum.ruthenia.core.updates.InstallState
 import com.vntrum.ruthenia.core.updates.isBusy
+import com.vntrum.ruthenia.core.updates.text
 
 /**
  * App card with an available update: version, background download progress, and
@@ -70,8 +73,11 @@ internal fun UpdateCard(
 ) {
     val app = row.app
     val state = row.download
+    val failure = (state as? DownloadState.Failed)?.failure
+        ?: (row.install as? InstallState.Failed)?.failure
     var menuExpanded by remember { mutableStateOf(false) }
     val motion = MaterialTheme.motionScheme
+    val context = LocalContext.current
 
     ExpressiveCard(
         onClick = { if (selectionMode) onSelectedChange(!selected) else onClick() },
@@ -117,11 +123,23 @@ internal fun UpdateCard(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
-                    if (state is DownloadState.Failed) {
+                    failure?.let {
+                        val copy = it.text(context)
                         Text(
-                            text = state.message,
+                            text = copy.title,
                             style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.error,
+                            color = if (copy.isError) {
+                                MaterialTheme.colorScheme.error
+                            } else {
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            },
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                        Text(
+                            text = copy.message,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             maxLines = 2,
                             overflow = TextOverflow.Ellipsis,
                         )
@@ -130,6 +148,7 @@ internal fun UpdateCard(
 
                 DownloadActionButton(
                     state = state,
+                    install = row.install,
                     installing = installing,
                     startLabel = stringResource(R.string.updates_start),
                     onStart = onUpdate,
@@ -177,10 +196,14 @@ internal fun DownloadActionButton(
     onStart: () -> Unit,
     onCancel: () -> Unit,
     onInstall: () -> Unit,
+    install: InstallState = InstallState.Idle,
 ) {
     val haptics = rememberRutheniaHaptics()
+    val isInstalling = installing ||
+        install is InstallState.Installing ||
+        install is InstallState.AwaitingUser
     when {
-        installing -> Row(
+        isInstalling -> Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
@@ -213,7 +236,7 @@ internal fun DownloadActionButton(
         ) {
             Icon(
                 painter = painterResource(R.drawable.ic_close),
-                contentDescription = stringResource(R.string.common_cancel_download),
+                contentDescription = stringResource(R.string.downloads_pause),
             )
         }
 
@@ -223,7 +246,13 @@ internal fun DownloadActionButton(
                 onStart()
             },
         ) {
-            Text(text = startLabel)
+            Text(
+                text = if (state is DownloadState.Paused) {
+                    stringResource(R.string.downloads_resume)
+                } else {
+                    startLabel
+                },
+            )
         }
     }
 }

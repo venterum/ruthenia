@@ -4,7 +4,6 @@
 
 package com.vntrum.ruthenia
 
-import android.content.Intent
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -14,6 +13,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -86,13 +86,16 @@ class MainViewModel @Inject constructor(
         initialValue = 0,
     )
 
-    /** Intent for the system install dialog — launched by MainActivity. */
-    private val _pendingConfirmation = MutableStateFlow<Intent?>(null)
-    val pendingConfirmation: StateFlow<Intent?> = _pendingConfirmation.asStateFlow()
-
     /** Package name from an external link that should be opened in navigation. */
     private val _deepLink = MutableStateFlow<String?>(null)
     val deepLink: StateFlow<String?> = _deepLink.asStateFlow()
+
+    /** Notification asked to open the Library downloads card. */
+    private val _openDownloads = MutableStateFlow(0)
+    val openDownloads: StateFlow<Int> = _openDownloads.asStateFlow()
+
+    private var foreground = false
+    private var autoInstallEnabled = false
 
     fun openApp(packageName: String) {
         _deepLink.value = packageName
@@ -100,6 +103,37 @@ class MainViewModel @Inject constructor(
 
     fun consumeDeepLink() {
         _deepLink.value = null
+    }
+
+    fun requestOpenDownloads() {
+        _openDownloads.value += 1
+    }
+
+    /** MainActivity forwards its lifecycle; auto-install needs a foreground Activity. */
+    fun setForeground(isForeground: Boolean) {
+        foreground = isForeground
+        if (isForeground) maybeAutoInstall()
+    }
+
+    /** Notification "Retry" action. */
+    fun retryPackage(packageName: String) {
+        viewModelScope.launch {
+            // Do not rely on the in-memory snapshot: a notification can start
+            // the process before the downloads collector has emitted.
+            val task = runCatching {
+                downloadManager.downloads.first().firstOrNull {
+                    it.packageName == packageName
+                }
+            }.getOrNull()
+            when {
+                task == null -> Unit
+                // A Ready task with an install failure must retry the install,
+                // not download the package again.
+                task.isReady -> startInstall(task)
+                task.isPaused -> downloadManager.resume(packageName)
+                else -> downloadManager.retry(task)
+            }
+        }
     }
 
     /** Latest downloads snapshot — used to find a task by package name. */
@@ -116,50 +150,44 @@ class MainViewModel @Inject constructor(
             ) { tasks, settings -> tasks to settings.autoInstall }
                 .collect { (tasks, autoInstall) ->
                     downloads = tasks
-                    if (!autoInstall) return@collect
-                    tasks.filter { it.isReady }.forEach { task ->
-                        if (autoInstalled.add("${task.packageName}@${task.versionCode}")) {
-                            startInstall(task)
-                        }
-                    }
+                    autoInstallEnabled = autoInstall
+                    maybeAutoInstall()
                 }
+        }
+    }
+
+    private fun maybeAutoInstall() {
+        if (!autoInstallEnabled || !foreground) return
+        // The system install dialog cannot be opened from the background;
+        // the ready notification handles that case.
+        downloads.filter { it.isReady && !it.isActive }.forEach { task ->
+            if (autoInstalled.add("${task.packageName}@${task.versionCode}")) {
+                startInstall(task)
+            }
         }
     }
 
     /** Install triggered by the "Install" notification action. */
     fun installPackage(packageName: String) {
-        val task = downloads.firstOrNull { it.packageName == packageName }
-        if (task != null) {
-            startInstall(task)
-            return
-        }
         viewModelScope.launch {
+            val task = runCatching {
+                downloadManager.downloads.first().firstOrNull {
+                    it.packageName == packageName
+                }
+            }.getOrNull()
+            // A stale notification may point at a task that was paused,
+            // removed or failed after it was posted.
+            if (task != null && !task.isReady) return@launch
             runCatching {
-                downloadManager.install(
-                    packageName = packageName,
-                    appId = null,
-                    name = null,
-                    iconUrl = null,
-                    publisher = null,
-                ) { intent -> _pendingConfirmation.value = intent }
+                downloadManager.install(packageName)
             }
         }
-    }
-
-    fun onConfirmationLaunched() {
-        _pendingConfirmation.value = null
     }
 
     private fun startInstall(task: DownloadTask) {
         viewModelScope.launch {
             runCatching {
-                downloadManager.install(
-                    packageName = task.packageName,
-                    appId = task.appId,
-                    name = task.name,
-                    iconUrl = task.iconUrl,
-                    publisher = task.publisher,
-                ) { intent -> _pendingConfirmation.value = intent }
+                downloadManager.install(task.packageName)
             }
         }
     }

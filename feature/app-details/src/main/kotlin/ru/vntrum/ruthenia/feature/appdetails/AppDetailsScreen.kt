@@ -142,21 +142,12 @@ fun AppDetailsScreen(
     viewModel: AppDetailsViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    val confirmation by viewModel.pendingConfirmation.collectAsStateWithLifecycle()
     val message by viewModel.message.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
     val haptics = rememberRutheniaHaptics()
     val motion = MaterialTheme.motionScheme
     var showUninstallDialog by remember { mutableStateOf(false) }
-
-    // We launch the system install confirmation dialog from the Activity.
-    LaunchedEffect(confirmation) {
-        confirmation?.let { intent ->
-            runCatching { context.startActivity(intent) }
-            viewModel.onConfirmationLaunched()
-        }
-    }
 
     LaunchedEffect(state.install) {
         if (state.install is InstallUiState.Done) {
@@ -298,6 +289,7 @@ fun AppDetailsScreen(
                             onInstall = viewModel::install,
                             onOpen = { openIntent?.let { context.startActivity(it) } },
                             onCancelDownload = viewModel::cancelDownload,
+                            onResumeDownload = viewModel::resumeDownload,
                             onSaveApk = viewModel::exportApk,
                             onReinstall = viewModel::install,
                             onUninstall = { showUninstallDialog = true },
@@ -809,6 +801,7 @@ private val DetailsActionButtonHeight = ButtonDefaults.MediumContainerHeight
 /** Which button the action bar shows; drives the morph between states. */
 private enum class DetailsActionState {
     DOWNLOADING,
+    PAUSED,
     INSTALLING,
     READY,
     INSTALL,
@@ -833,6 +826,7 @@ private fun DetailsActionBar(
     onInstall: () -> Unit,
     onOpen: () -> Unit,
     onCancelDownload: () -> Unit,
+    onResumeDownload: () -> Unit,
     onSaveApk: () -> Unit,
     onReinstall: () -> Unit,
     onUninstall: () -> Unit,
@@ -846,6 +840,7 @@ private fun DetailsActionBar(
 
     val action = when {
         install is InstallUiState.Downloading -> DetailsActionState.DOWNLOADING
+        install is InstallUiState.Paused -> DetailsActionState.PAUSED
         install is InstallUiState.Installing -> DetailsActionState.INSTALLING
         install is InstallUiState.Ready -> DetailsActionState.READY
         state.installed == null -> DetailsActionState.INSTALL
@@ -876,6 +871,15 @@ private fun DetailsActionBar(
                 progress = downloadFraction,
                 onCancel = onCancelDownload,
             )
+
+            DetailsActionState.PAUSED -> Button(
+                onClick = onResumeDownload,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(DetailsActionButtonHeight),
+            ) {
+                Text(stringResource(R.string.app_details_resume))
+            }
 
             DetailsActionState.INSTALLING -> BusyButton(
                 text = stringResource(R.string.app_details_installing),

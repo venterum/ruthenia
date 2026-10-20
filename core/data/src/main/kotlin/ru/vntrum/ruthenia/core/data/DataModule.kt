@@ -21,6 +21,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 import com.vntrum.ruthenia.core.data.db.CatalogAppDao
+import com.vntrum.ruthenia.core.data.db.DownloadTaskDao
 import com.vntrum.ruthenia.core.data.db.HomeFeedDao
 import com.vntrum.ruthenia.core.data.db.InstalledAppDao
 import com.vntrum.ruthenia.core.data.db.RutheniaDatabase
@@ -37,7 +38,7 @@ internal object DataModule {
     @Singleton
     internal fun provideDatabase(@ApplicationContext context: Context): RutheniaDatabase =
         Room.databaseBuilder(context, RutheniaDatabase::class.java, RutheniaDatabase.NAME)
-            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
             .build()
 
     @Provides
@@ -55,6 +56,10 @@ internal object DataModule {
     @Provides
     internal fun provideUnresolvedAppDao(database: RutheniaDatabase): UnresolvedAppDao =
         database.unresolvedAppDao()
+
+    @Provides
+    internal fun provideDownloadTaskDao(database: RutheniaDatabase): DownloadTaskDao =
+        database.downloadTaskDao()
 
     @Provides
     @Singleton
@@ -108,6 +113,42 @@ internal object DataModule {
                     `downloadsText` TEXT,
                     `cachedAt` INTEGER NOT NULL,
                     PRIMARY KEY(`sectionId`, `packageName`)
+                )
+                """.trimIndent(),
+            )
+        }
+    }
+
+    /**
+     * Adds the durable download-manager ledger. WorkManager is still the
+     * executor, but failures, pause state and completed history must survive
+     * process death and WorkManager pruning.
+     */
+    private val MIGRATION_4_5 = object : Migration(4, 5) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(
+                """
+                CREATE TABLE IF NOT EXISTS `download_tasks` (
+                    `packageName` TEXT NOT NULL,
+                    `appId` INTEGER,
+                    `name` TEXT,
+                    `iconUrl` TEXT,
+                    `publisher` TEXT,
+                    `versionCode` INTEGER,
+                    `versionName` TEXT,
+                    `totalBytes` INTEGER,
+                    `stage` TEXT NOT NULL,
+                    `workId` TEXT,
+                    `failureCode` TEXT,
+                    `failureDetail` TEXT,
+                    `installStage` TEXT NOT NULL,
+                    `installFailureCode` TEXT,
+                    `installFailureDetail` TEXT,
+                    `attemptCount` INTEGER NOT NULL,
+                    `createdAt` INTEGER NOT NULL,
+                    `updatedAt` INTEGER NOT NULL,
+                    `completedAt` INTEGER,
+                    PRIMARY KEY(`packageName`)
                 )
                 """.trimIndent(),
             )

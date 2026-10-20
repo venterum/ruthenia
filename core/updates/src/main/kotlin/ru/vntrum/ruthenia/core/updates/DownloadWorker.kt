@@ -7,6 +7,8 @@
 package com.vntrum.ruthenia.core.updates
 
 import android.content.Context
+import android.content.pm.PackageManager
+import androidx.core.content.pm.PackageInfoCompat
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.Data
@@ -22,34 +24,24 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import com.vntrum.ruthenia.core.data.model.toUserMessage
+import com.vntrum.ruthenia.core.data.db.DownloadTaskEntity
 import com.vntrum.ruthenia.core.data.repository.LibraryRepository
 import com.vntrum.ruthenia.core.data.settings.SettingsRepository
-import com.vntrum.ruthenia.core.updates.R
 import com.vntrum.ruthenia.core.installer.ApkDownloader
 import com.vntrum.ruthenia.core.installer.ApkSignatureVerifier
 import com.vntrum.ruthenia.core.installer.ApkSource
+import com.vntrum.ruthenia.core.installer.ApkVerification
 import com.vntrum.ruthenia.core.installer.DownloadProgress
-import com.vntrum.ruthenia.core.installer.InstallException
-import com.vntrum.ruthenia.core.installer.SignatureCheck
 import com.vntrum.ruthenia.core.network.DownloadUrl
 import com.vntrum.ruthenia.core.network.RuStoreApi
-import com.vntrum.ruthenia.core.network.RuStoreException
 
 /**
  * Background APK download — for an update or a first-time install.
  *
- * The worker only **downloads** files and verifies the signature; the install
- * is always started by the user from the download manager (the system dialog
- * cannot and should not be bypassed). The state lives in WorkManager, so
- * progress is not lost when leaving the screen or restarting the process. A
- * foreground service is deliberately not used: the app does not need extra
- * permissions.
- *
- * The app metadata (name, icon, publisher) comes in the input data, and the
- * missing parts are taken from the library. The worker publishes them in the
- * progress and the result so the download manager shows a human-readable row
- * even after a process restart.
+ * The worker only **downloads** files and verifies them; the install is always
+ * started by the user from the download manager (the system dialog cannot and
+ * should not be bypassed). Durable state lives in [DownloadRepository]; live
+ * progress is published to WorkManager for the UI and notifications.
  */
 @HiltWorker
 class DownloadWorker @AssistedInject constructor(
@@ -60,6 +52,7 @@ class DownloadWorker @AssistedInject constructor(
     private val downloader: ApkDownloader,
     private val signatureVerifier: ApkSignatureVerifier,
     private val settingsRepository: SettingsRepository,
+    private val repository: DownloadRepository,
     private val notifications: DownloadNotifications,
 ) : CoroutineWorker(appContext, params) {
 
@@ -68,33 +61,93 @@ class DownloadWorker @AssistedInject constructor(
         val packageName = inputData.getString(KEY_PACKAGE)
             ?: return Result.failure(
                 failureData(
-                    applicationContext.getString(R.string.download_error_unknown_package),
-                    targetVersion,
+                    TaskFailure(TaskFailureCode.UNKNOWN, "missing package name"),
+                    UNKNOWN_VERSION,
                 ),
             )
-        val app = libraryRepository.get(packageName)
+
+        val record = repository.get(packageName)
+        // A replacement worker may have already taken over this package. The
+        // old worker must not touch the new ledger row.
+        if (record?.workId != null && record.workId != id.toString()) {
+            return Result.failure()
+        }
+        val installed = libraryRepository.get(packageName)
         val meta = Meta(
-            appId = inputData.getLong(KEY_APP_ID, UNKNOWN_APP_ID).takeIf { it > 0 } ?: app?.appId,
-            name = inputData.stringOrNull(KEY_NAME) ?: app?.name ?: packageName,
-            iconUrl = inputData.stringOrNull(KEY_ICON) ?: app?.iconUrl,
-            publisher = inputData.stringOrNull(KEY_PUBLISHER) ?: app?.publisher,
+            appId = inputData.getLong(KEY_APP_ID, UNKNOWN_APP_ID).takeIf { it > 0 }
+                ?: record?.appId
+                ?: installed?.appId,
+            name = inputData.stringOrNull(KEY_NAME) ?: record?.name ?: installed?.name ?: packageName,
+            iconUrl = inputData.stringOrNull(KEY_ICON) ?: record?.iconUrl ?: installed?.iconUrl,
+            publisher = inputData.stringOrNull(KEY_PUBLISHER)
+                ?: record?.publisher
+                ?: installed?.publisher,
+            versionName = inputData.stringOrNull(KEY_VERSION_NAME)
+                ?: record?.versionName
+                ?: installed?.latestVersionName,
         )
 
+        // A legacy WorkManager task may have no ledger row (for example, after
+        // an app update). Seed one so the manager has a durable task.
+        if (record == null) {
+            repository.upsert(
+                DownloadTaskEntity(
+                    packageName = packageName,
+                    appId = meta.appId,
+                    name = meta.name,
+                    iconUrl = meta.iconUrl,
+                    publisher = meta.publisher,
+                    versionCode = targetVersion.takeIf { it >= 0 },
+                    versionName = meta.versionName,
+                    totalBytes = null,
+                    stage = DownloadStage.QUEUED,
+                    workId = id.toString(),
+                    failureCode = null,
+                    failureDetail = null,
+                    installStage = InstallStage.IDLE,
+                    installFailureCode = null,
+                    installFailureDetail = null,
+                    attemptCount = runAttemptCount,
+                    createdAt = System.currentTimeMillis(),
+                    updatedAt = System.currentTimeMillis(),
+                    completedAt = null,
+                ),
+            )
+        }
+
         return try {
+            if (runAttemptCount > 0) {
+                repository.markQueued(packageName, runAttemptCount)
+            }
+            repository.markDownloading(packageName)
+
             // The appId from the request saves a request; if it is absent, we ask the catalog.
             val appId = meta.appId ?: api.overallInfo(packageName).appId
             val links = api.downloadLinks(appId)
             if (links.urls.isEmpty()) {
                 return failed(
-                    packageName,
-                    meta,
-                    applicationContext.getString(R.string.download_error_no_files),
-                    targetVersion,
+                    packageName = packageName,
+                    meta = meta,
+                    failure = TaskFailure(TaskFailureCode.NO_FILES),
+                    versionCode = targetVersion,
                 )
             }
             val versionCode = links.versionCode ?: targetVersion
 
-            publish(meta, PHASE_DOWNLOADING, fraction = null)
+            // Another install may have completed while we were queued.
+            val installedNow = installedVersionCode(packageName)
+            if (versionCode >= 0 && installedNow != null && installedNow >= versionCode) {
+                downloader.clear(packageName)
+                repository.markCompleted(packageName, installedNow, System.currentTimeMillis())
+                notifications.clear(packageName)
+                return Result.success(successData(meta, installedNow))
+            }
+
+            publish(
+                meta = meta,
+                phase = PHASE_DOWNLOADING,
+                progress = DownloadProgress(0L, links.urls.sumOf { it.size ?: 0L }),
+            )
             notifications.showProgress(packageName, meta.name, fraction = null)
 
             val files = downloadFiles(
@@ -104,57 +157,83 @@ class DownloadWorker @AssistedInject constructor(
             )
             if (files.isEmpty()) {
                 return failed(
-                    packageName,
-                    meta,
-                    applicationContext.getString(R.string.download_error_no_files),
-                    versionCode,
+                    packageName = packageName,
+                    meta = meta,
+                    failure = TaskFailure(TaskFailureCode.NO_FILES),
+                    versionCode = versionCode,
                 )
             }
 
-            // Signature verification before install: an update can only be
-            // installed over the same build. The user can disable the check in
-            // the settings — then the files are accepted as is.
-            if (settingsRepository.settings.first().verifySignatures) {
-                publish(meta, PHASE_VERIFYING, fraction = null)
+            // Verification before install: structure, package name, version,
+            // minSdk and — when enabled — the signature of the installed app.
+            val verifySignatures = settingsRepository.settings.first().verifySignatures
+            if (verifySignatures) {
+                publish(
+                    meta = meta,
+                    phase = PHASE_VERIFYING,
+                    progress = DownloadProgress(0L, 0L),
+                )
                 notifications.showProgress(packageName, meta.name, fraction = null)
-
-                if (signatureVerifier.verify(packageName, files) is SignatureCheck.Mismatch) {
+            }
+            when (val verification = signatureVerifier.verifyPackage(
+                packageName = packageName,
+                expectedVersionCode = versionCode.takeIf { it >= 0 },
+                apkFiles = files,
+                verifySignature = verifySignatures,
+            )) {
+                ApkVerification.Valid -> Unit
+                is ApkVerification.Failed -> {
                     return failed(
-                        packageName,
-                        meta,
-                        applicationContext.getString(R.string.download_error_signature_mismatch),
-                        versionCode,
+                        packageName = packageName,
+                        meta = meta,
+                        failure = verification.toTaskFailure(),
+                        versionCode = versionCode,
                     )
                 }
             }
 
+            val totalBytes = files.sumOf { it.length() }
+            repository.markReady(packageName, versionCode, totalBytes)
             notifications.showReady(packageName, meta.name)
             Result.success(successData(meta, versionCode))
         } catch (cancellation: CancellationException) {
             // The coroutine is already cancelled — cleanup must survive the cancellation.
             withContext(NonCancellable) {
-                downloader.clear(packageName)
+                handleCancellation(packageName)
             }
-            notifications.clear(packageName)
             throw cancellation
         } catch (error: Throwable) {
-            if (runAttemptCount < MAX_ATTEMPTS && error.isTransient()) {
+            val failure = error.toTaskFailure()
+            if (failure.isRetryable && runAttemptCount < MAX_ATTEMPTS) {
+                repository.markQueued(packageName, runAttemptCount + 1)
+                notifications.clear(packageName)
                 Result.retry()
             } else {
-                failed(packageName, meta, error.toDownloadMessage(), targetVersion)
+                failed(packageName, meta, failure, targetVersion)
             }
         }
     }
 
-    /** Downloader errors with a clear message; the rest go through the general mapping. */
-    private fun Throwable.toDownloadMessage(): String = when (this) {
-        is InstallException.IntegrityMismatch ->
-            applicationContext.getString(R.string.download_error_integrity)
+    private suspend fun handleCancellation(packageName: String) {
+        val record = repository.get(packageName)
+        if (record?.workId != null && record.workId != id.toString()) return
+        when (record?.stage) {
+            DownloadStage.REMOVING -> {
+                downloader.clear(packageName)
+                notifications.clear(packageName)
+            }
 
-        is InstallException.ContainerHasNoApk ->
-            applicationContext.getString(R.string.download_error_container)
+            DownloadStage.PAUSED -> {
+                notifications.clear(packageName)
+            }
 
-        else -> toUserMessage(applicationContext)
+            else -> {
+                // A work replacement or system cancellation must not throw
+                // away a resumable partial file. Only an explicit Remove does.
+                notifications.clear(packageName)
+                repository.markInterrupted(packageName)
+            }
+        }
     }
 
     /** Downloading with progress publishing: the channel conflates frequent updates. */
@@ -163,11 +242,11 @@ class DownloadWorker @AssistedInject constructor(
         meta: Meta,
         urls: List<DownloadUrl>,
     ): List<File> = coroutineScope {
-        val progress = Channel<Float?>(Channel.CONFLATED)
+        val progress = Channel<DownloadProgress>(Channel.CONFLATED)
         val publisher = launch {
-            for (fraction in progress) {
-                publish(meta = meta, phase = PHASE_DOWNLOADING, fraction = fraction)
-                notifications.showProgress(packageName, meta.name, fraction)
+            for (report in progress) {
+                publish(meta = meta, phase = PHASE_DOWNLOADING, progress = report)
+                notifications.showProgress(packageName, meta.name, report.fraction)
             }
         }
 
@@ -175,7 +254,7 @@ class DownloadWorker @AssistedInject constructor(
             downloader.download(
                 packageName = packageName,
                 sources = urls.map { ApkSource(url = it.url, size = it.size) },
-                onProgress = { report: DownloadProgress -> progress.trySend(report.fraction) },
+                onProgress = { report: DownloadProgress -> progress.trySend(report) },
             )
         } finally {
             progress.close()
@@ -183,15 +262,18 @@ class DownloadWorker @AssistedInject constructor(
         }
     }
 
-    private suspend fun publish(meta: Meta, phase: String, fraction: Float?) {
+    private suspend fun publish(meta: Meta, phase: String, progress: DownloadProgress) {
         setProgress(
             workDataOf(
                 KEY_PHASE to phase,
-                KEY_FRACTION to (fraction ?: UNKNOWN_FRACTION),
+                KEY_FRACTION to (progress.fraction ?: UNKNOWN_FRACTION),
+                KEY_DOWNLOADED_BYTES to progress.downloadedBytes,
+                KEY_TOTAL_BYTES to progress.totalBytes,
                 KEY_APP_ID to (meta.appId ?: UNKNOWN_APP_ID),
                 KEY_NAME to meta.name,
                 KEY_ICON to meta.iconUrl,
                 KEY_PUBLISHER to meta.publisher,
+                KEY_VERSION_NAME to meta.versionName,
             ),
         )
     }
@@ -199,22 +281,36 @@ class DownloadWorker @AssistedInject constructor(
     private suspend fun failed(
         packageName: String,
         meta: Meta,
-        message: String,
+        failure: TaskFailure,
         versionCode: Long,
     ): Result {
-        downloader.clear(packageName)
-        notifications.clear(packageName)
-        return Result.failure(
-            workDataOf(
-                KEY_MESSAGE to message,
-                KEY_VERSION_CODE to versionCode,
-                KEY_APP_ID to (meta.appId ?: UNKNOWN_APP_ID),
-                KEY_NAME to meta.name,
-                KEY_ICON to meta.iconUrl,
-                KEY_PUBLISHER to meta.publisher,
-            ),
-        )
+        // The user may have paused or removed the task while the error was
+        // being handled; do not resurrect a paused row with a failure notice.
+        val current = repository.get(packageName)
+        if (current?.workId != null && current.workId != id.toString()) {
+            return Result.failure(failureData(failure, versionCode))
+        }
+        if (current?.stage == DownloadStage.PAUSED || current?.stage == DownloadStage.REMOVING) {
+            notifications.clear(packageName)
+            return Result.failure(failureData(failure, versionCode))
+        }
+
+        // Corrupt/invalid files are useless for a retry. Network/storage
+        // failures keep the partial file so "Retry" can resume it.
+        if (failure.shouldClearFiles) {
+            downloader.clear(packageName)
+        }
+        repository.markFailed(packageName, failure, runAttemptCount)
+        notifications.showFailed(packageName, meta.name, failure)
+        return Result.failure(failureData(failure, versionCode))
     }
+
+    private fun failureData(failure: TaskFailure, versionCode: Long): Data = workDataOf(
+        KEY_FAILURE_CODE to failure.code.name,
+        KEY_FAILURE_DETAIL to failure.detail,
+        KEY_MESSAGE to failure.detail.orEmpty(),
+        KEY_VERSION_CODE to versionCode,
+    )
 
     private fun successData(meta: Meta, versionCode: Long): Data = workDataOf(
         KEY_VERSION_CODE to versionCode,
@@ -222,16 +318,18 @@ class DownloadWorker @AssistedInject constructor(
         KEY_NAME to meta.name,
         KEY_ICON to meta.iconUrl,
         KEY_PUBLISHER to meta.publisher,
+        KEY_VERSION_NAME to meta.versionName,
     )
 
-    private fun failureData(message: String, versionCode: Long): Data =
-        workDataOf(KEY_MESSAGE to message, KEY_VERSION_CODE to versionCode)
-
-    private fun Throwable.isTransient(): Boolean = when (this) {
-        is RuStoreException.Network -> true
-        is RuStoreException.Http -> code == HTTP_TOO_MANY_REQUESTS || code in SERVER_ERROR_RANGE
-        is InstallException.DownloadFailed, is InstallException.SessionFailed -> true
-        else -> false
+    @Suppress("DEPRECATION")
+    private fun installedVersionCode(packageName: String): Long? = try {
+        PackageInfoCompat.getLongVersionCode(
+            applicationContext.packageManager.getPackageInfo(packageName, 0),
+        )
+    } catch (_: PackageManager.NameNotFoundException) {
+        null
+    } catch (_: Exception) {
+        null
     }
 
     /** Download metadata sufficient for the manager's list row. */
@@ -240,6 +338,7 @@ class DownloadWorker @AssistedInject constructor(
         val name: String,
         val iconUrl: String?,
         val publisher: String?,
+        val versionName: String?,
     )
 
     companion object {
@@ -252,12 +351,17 @@ class DownloadWorker @AssistedInject constructor(
         const val KEY_PACKAGE = "packageName"
         const val KEY_APP_ID = "appId"
         const val KEY_VERSION_CODE = "versionCode"
+        const val KEY_VERSION_NAME = "versionName"
         const val KEY_NAME = "name"
         const val KEY_ICON = "iconUrl"
         const val KEY_PUBLISHER = "publisher"
         const val KEY_PHASE = "phase"
         const val KEY_FRACTION = "fraction"
+        const val KEY_DOWNLOADED_BYTES = "downloadedBytes"
+        const val KEY_TOTAL_BYTES = "totalBytes"
         const val KEY_MESSAGE = "message"
+        const val KEY_FAILURE_CODE = "failureCode"
+        const val KEY_FAILURE_DETAIL = "failureDetail"
 
         const val PHASE_DOWNLOADING = "downloading"
         const val PHASE_VERIFYING = "verifying"
@@ -266,16 +370,29 @@ class DownloadWorker @AssistedInject constructor(
         const val UNKNOWN_APP_ID = -1L
         const val UNKNOWN_VERSION = -1L
 
-        /** We retry transient network failures; the partial file is resumed in the process. */
-        private const val MAX_ATTEMPTS = 3
-        private const val HTTP_TOO_MANY_REQUESTS = 429
-        private val SERVER_ERROR_RANGE = 500..599
+        /** We retry transient failures; the partial file is resumed in the process. */
+        private const val MAX_ATTEMPTS = 4
 
         fun uniqueName(packageName: String): String = "ruthenia-download-$packageName"
 
         fun packageTag(packageName: String): String = "$PKG_TAG_PREFIX$packageName"
     }
 }
+
+private val TaskFailure.shouldClearFiles: Boolean
+    get() = code in setOf(
+        TaskFailureCode.APP_UNAVAILABLE,
+        TaskFailureCode.NO_FILES,
+        TaskFailureCode.INVALID_RESPONSE,
+        TaskFailureCode.INVALID_APK,
+        TaskFailureCode.CORRUPTED,
+        TaskFailureCode.SIZE_MISMATCH,
+        TaskFailureCode.SIGNATURE_MISMATCH,
+        TaskFailureCode.PACKAGE_MISMATCH,
+        TaskFailureCode.VERSION_MISMATCH,
+        TaskFailureCode.INCOMPATIBLE,
+        TaskFailureCode.INSTALL_INVALID,
+    )
 
 /** A string from [Data] only if it is non-blank. */
 private fun Data.stringOrNull(key: String): String? =

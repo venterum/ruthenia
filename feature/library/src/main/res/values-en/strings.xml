@@ -14,6 +14,54 @@
     <string name="downloads_title">Downloads</string>
     <string name="downloads_expand">Expand</string>
     <string name="downloads_collapse">Collapse</string>
+    <string name="downloads_section_active">Active</string>
+    <string name="downloads_section_ready">Ready to install</string>
+    <string name="downloads_section_attention">Needs attention</string>
+    <string name="downloads_section_paused">Paused</string>
+    <string name="downloads_section_completed">Completed</string>
+    <string name="downloads_empty_idle">No active downloads</string>
+    <string name="downloads_empty_title">No downloads yet</string>
+    <string name="downloads_empty_hint">Downloaded apps and installation errors will appear here.</string>
+    <string name="downloads_active_in_progress">In progress…</string>
+    <string name="downloads_cache">Cache %1$s</string>
+    <string name="downloads_cache_actions">Download cache: %1$s</string>
+    <string name="downloads_clear_history">Clear history</string>
+    <string name="downloads_clear_cache">Clear cache</string>
+    <string name="downloads_retry_all">Retry failed</string>
+    <string name="downloads_remove_all_failed">Remove failed</string>
+    <string name="downloads_show_all">Show all</string>
+    <string name="downloads_show_less">Show less</string>
+    <string name="downloads_open">Open</string>
+    <string name="downloads_pause">Pause</string>
+    <string name="downloads_resume">Resume</string>
+    <string name="downloads_install_again">Install again</string>
+    <string name="downloads_remove">Remove</string>
+    <string name="downloads_unknown_error">Unknown error</string>
+    <string name="downloads_paused">Paused</string>
+    <string name="downloads_details">Details</string>
+    <string name="downloads_hide_details">Hide details</string>
+    <string name="downloads_details_copied">Details copied</string>
+    <string name="downloads_queue">Queued</string>
+    <string name="downloads_queue_network">Waiting for network</string>
+    <string name="downloads_queue_wifi">Waiting for Wi-Fi</string>
+    <string name="downloads_queue_retrying">Retrying…</string>
+    <string name="downloads_installing">Installing…</string>
+    <string name="downloads_waiting_confirmation">Waiting for confirmation</string>
+    <string name="downloads_size_progress">%1$s of %2$s</string>
+    <string name="downloads_size">%1$s</string>
+    <string name="downloads_installed_just_now">Installed just now</string>
+    <string name="downloads_installed_relative">Installed %1$s</string>
+    <string name="downloads_version_arrow">%1$s → %2$s</string>
+    <string name="downloads_attention_summary">Needs attention: %1$d</string>
+    <string name="downloads_cache_cleared">Download cache cleared.</string>
+    <string name="downloads_retry_all_result">Retried downloads: %1$d.</string>
+    <string name="downloads_removed_failed">Failed downloads removed.</string>
+    <string name="downloads_confirm_clear_cache_title">Clear download cache?</string>
+    <string name="downloads_confirm_clear_cache_text">Downloaded files will be deleted. Ready-to-install tasks will need to be downloaded again.</string>
+    <string name="downloads_confirm_remove_all_title">Remove failed downloads?</string>
+    <string name="downloads_confirm_remove_all_text">Partially downloaded files and error records will be deleted.</string>
+    <string name="downloads_cancel">Cancel</string>
+    <string name="downloads_confirm">Clear</string>
 
     <string name="my_apps_find">Find my apps</string>
     <string name="my_apps_title">My apps</string>
@@ -83,6 +131,16 @@
     <plurals name="download_failed_count">
         <item quantity="one">%d failed</item>
         <item quantity="other">%d failed</item>
+    </plurals>
+
+    <plurals name="download_completed_count">
+        <item quantity="one">%d installed</item>
+        <item quantity="other">%d installed</item>
+    </plurals>
+
+    <plurals name="download_paused_count">
+        <item quantity="one">%d paused</item>
+        <item quantity="other">%d paused</item>
     </plurals>
 
     <string name="download_summary_active">%1$s · %2$d%%</string>

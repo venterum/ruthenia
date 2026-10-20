@@ -7,7 +7,6 @@
 package com.vntrum.ruthenia.feature.library
 
 import android.content.Context
-import android.content.Intent
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -40,12 +39,17 @@ import com.vntrum.ruthenia.core.updates.DownloadManager
 import com.vntrum.ruthenia.core.updates.DownloadRequest
 import com.vntrum.ruthenia.core.updates.DownloadState
 import com.vntrum.ruthenia.core.updates.DownloadTask
+import com.vntrum.ruthenia.core.updates.InstallState
 import com.vntrum.ruthenia.core.updates.isActionable
+import com.vntrum.ruthenia.core.updates.needsRedownload
+import com.vntrum.ruthenia.core.updates.text
+import com.vntrum.ruthenia.core.updates.toTaskFailure
 
-/** Updates section row: an app and the state of its background download. */
+/** Updates section row: an app and the state of its background download/install. */
 data class UpdateRow(
     val app: InstalledApp,
     val download: DownloadState,
+    val install: InstallState = InstallState.Idle,
 )
 
 @HiltViewModel
@@ -85,7 +89,14 @@ class LibraryViewModel @Inject constructor(
                     it.isVisibleInLibrary(settings) &&
                     !it.isUpdateIgnored(settings.ignoredUpdates)
             }
-            .map { app -> UpdateRow(app = app, download = byPackage[app.packageName]?.state.forApp(app)) }
+            .map { app ->
+                val task = byPackage[app.packageName]
+                UpdateRow(
+                    app = app,
+                    download = task?.download.forApp(app),
+                    install = task?.install ?: InstallState.Idle,
+                )
+            }
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(SUBSCRIPTION_TIMEOUT_MS),
@@ -108,17 +119,29 @@ class LibraryViewModel @Inject constructor(
         initialValue = 0,
     )
 
-    /**
-     * Download manager rows: active, ready to install, and failed. Completed and
-     * canceled records don't linger in the list.
-     */
+    /** Download manager rows: active, paused, ready, failed and completed history. */
     val downloadTasks: StateFlow<List<DownloadTask>> = downloadManager.downloads
-        .map { tasks -> tasks.filter { it.isActive || it.isReady || it.isFailed } }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(SUBSCRIPTION_TIMEOUT_MS),
             initialValue = emptyList(),
         )
+
+    /** Package currently being installed, derived from the durable task state. */
+    val installingPackage: StateFlow<String?> = downloadTasks
+        .map { tasks ->
+            tasks.firstOrNull {
+                it.install is InstallState.Installing || it.install is InstallState.AwaitingUser
+            }?.packageName
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(SUBSCRIPTION_TIMEOUT_MS),
+            initialValue = null,
+        )
+
+    private val _cacheBytes = MutableStateFlow(0L)
+    val cacheBytes: StateFlow<Long> = _cacheBytes.asStateFlow()
 
     private val _isChecking = MutableStateFlow(false)
     val isChecking: StateFlow<Boolean> = _isChecking.asStateFlow()
@@ -133,13 +156,6 @@ class LibraryViewModel @Inject constructor(
     /** Progress of importing installed apps; `null` when no import is running. */
     private val _importProgress = MutableStateFlow<ImportProgress?>(null)
     val importProgress: StateFlow<ImportProgress?> = _importProgress.asStateFlow()
-
-    private val _installingPackage = MutableStateFlow<String?>(null)
-    val installingPackage: StateFlow<String?> = _installingPackage.asStateFlow()
-
-    /** Intent of the system install dialog — launched from the Activity. */
-    private val _pendingConfirmation = MutableStateFlow<Intent?>(null)
-    val pendingConfirmation: StateFlow<Intent?> = _pendingConfirmation.asStateFlow()
 
     private var importJob: Job? = null
     private var autoCheckDone = false
@@ -157,6 +173,13 @@ class LibraryViewModel @Inject constructor(
             libraryRepository.observeLibrary().collect {
                 _libraryLoaded.value = true
             }
+        }
+        refreshCacheSize()
+    }
+
+    fun refreshCacheSize() {
+        viewModelScope.launch {
+            _cacheBytes.value = downloadManager.cacheSizeBytes()
         }
     }
 
@@ -230,10 +253,17 @@ class LibraryViewModel @Inject constructor(
         }
     }
 
-    /** Queues a single update for background download. */
+    /** Queues a single update, resumes a paused one, or retries a failure. */
     fun update(app: InstalledApp) {
+        val task = downloadTasks.value.firstOrNull { it.packageName == app.packageName }
         viewModelScope.launch {
-            downloadManager.request(app.toDownloadRequest())
+            when {
+                task?.isActive == true || task?.isReady == true -> Unit
+                task?.isPaused == true -> downloadManager.resume(app.packageName)
+                task?.isFailed == true -> downloadManager.retry(task)
+                else -> downloadManager.request(app.toDownloadRequest())
+            }
+            refreshCacheSize()
         }
     }
 
@@ -285,79 +315,117 @@ class LibraryViewModel @Inject constructor(
     /** Retries a failed download from the manager. */
     fun retry(task: DownloadTask) {
         viewModelScope.launch {
-            downloadManager.request(task.toDownloadRequest())
+            downloadManager.retry(task)
+            refreshCacheSize()
         }
     }
 
-    fun cancelDownload(app: InstalledApp) {
-        downloadManager.cancel(app.packageName)
+    /** Keeps partial files and pauses the task. */
+    fun pauseDownload(app: InstalledApp) = pauseDownload(app.packageName)
+
+    fun pauseDownload(task: DownloadTask) = pauseDownload(task.packageName)
+
+    private fun pauseDownload(packageName: String) {
+        viewModelScope.launch {
+            downloadManager.pause(packageName)
+        }
     }
 
-    fun cancelDownload(task: DownloadTask) {
-        downloadManager.cancel(task.packageName)
+    fun resumeDownload(task: DownloadTask) {
+        viewModelScope.launch {
+            downloadManager.resume(task.packageName)
+        }
     }
 
-    /** Removes a ready/failed record from the download manager. */
-    fun forget(task: DownloadTask) {
-        downloadManager.forget(task.packageName)
+    /** Backwards-compatible name for the old "cancel" action: keeps partial files. */
+    fun cancelDownload(app: InstalledApp) = pauseDownload(app)
+
+    fun cancelDownload(task: DownloadTask) = pauseDownload(task)
+
+    /** Deletes downloaded files and removes the row. */
+    fun remove(task: DownloadTask) {
+        viewModelScope.launch {
+            downloadManager.remove(task.packageName)
+            refreshCacheSize()
+        }
     }
 
-    fun install(app: InstalledApp) = install(
-        packageName = app.packageName,
-        appId = app.appId,
-        name = app.name,
-        iconUrl = app.iconUrl,
-        publisher = app.publisher,
-    )
+    fun redownload(task: DownloadTask) {
+        viewModelScope.launch {
+            downloadManager.redownload(task)
+            refreshCacheSize()
+        }
+    }
 
-    fun install(task: DownloadTask) = install(
-        packageName = task.packageName,
-        appId = task.appId,
-        name = task.name,
-        iconUrl = task.iconUrl,
-        publisher = task.publisher,
-    )
+    fun clearCompleted() {
+        viewModelScope.launch {
+            downloadManager.clearCompleted()
+        }
+    }
+
+    fun clearCache() {
+        viewModelScope.launch {
+            val count = downloadManager.clearCache()
+            refreshCacheSize()
+            _message.value = context.getString(R.string.downloads_cache_cleared)
+        }
+    }
+
+    fun retryAllFailed() {
+        viewModelScope.launch {
+            val count = downloadManager.retryAllFailed()
+            refreshCacheSize()
+            _message.value = context.getString(R.string.downloads_retry_all_result, count)
+        }
+    }
+
+    fun removeAllFailed() {
+        viewModelScope.launch {
+            downloadTasks.value.filter { it.isFailed }.forEach {
+                downloadManager.remove(it.packageName)
+            }
+            refreshCacheSize()
+            _message.value = context.getString(R.string.downloads_removed_failed)
+        }
+    }
+
+    fun install(app: InstalledApp) = install(app.packageName)
+
+    fun install(task: DownloadTask) = install(task.packageName)
+
+    fun retryInstall(task: DownloadTask) {
+        if (task.failure?.needsRedownload == true) {
+            redownload(task)
+        } else {
+            install(task.packageName)
+        }
+    }
 
     /**
      * Starts installing an already-downloaded update. The system confirmation
      * dialog is opened from the Activity; the worker doesn't bypass it.
      */
-    private fun install(
-        packageName: String,
-        appId: Long?,
-        name: String?,
-        iconUrl: String?,
-        publisher: String?,
-    ) {
-        if (_installingPackage.value != null) return
-
+    private fun install(packageName: String) {
         viewModelScope.launch {
-            _installingPackage.value = packageName
             runCatching {
-                downloadManager.install(
-                    packageName = packageName,
-                    appId = appId,
-                    name = name,
-                    iconUrl = iconUrl,
-                    publisher = publisher,
-                ) { intent -> _pendingConfirmation.value = intent }
+                downloadManager.install(packageName)
             }
                 .onSuccess { result ->
+                    val appName = downloadTasks.value
+                        .firstOrNull { it.packageName == packageName }
+                        ?.name
+                        ?: packageName
                     when (result) {
                         InstallResult.Success -> _message.value =
-                            context.getString(R.string.message_installed, name ?: packageName)
+                            context.getString(R.string.message_installed, appName)
 
-                        is InstallResult.Failure -> _message.value = result.message
+                        is InstallResult.Failure -> _message.value =
+                            result.toTaskFailure().text(context).message
                     }
                 }
                 .onFailure { throwable -> _message.value = throwable.toUserMessage(context) }
-
-            _installingPackage.value = null
+            refreshCacheSize()
         }
-    }
-
-    fun onConfirmationLaunched() {
-        _pendingConfirmation.value = null
     }
 
     /**
@@ -448,6 +516,7 @@ private fun DownloadTask.toDownloadRequest(): DownloadRequest = DownloadRequest(
     name = name,
     iconUrl = iconUrl,
     publisher = publisher,
+    versionName = versionName,
 )
 
 /** Readiness to install becomes stale if the catalog already has a different version. */

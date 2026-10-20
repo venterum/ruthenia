@@ -33,6 +33,8 @@ import com.vntrum.ruthenia.core.data.model.UpdateStatus
 import com.vntrum.ruthenia.core.data.repository.ImportProgress
 import com.vntrum.ruthenia.core.designsystem.component.AppRow
 import com.vntrum.ruthenia.core.designsystem.component.RutheniaWavyProgress
+import com.vntrum.ruthenia.core.updates.DownloadState
+import com.vntrum.ruthenia.core.updates.InstallState
 
 /** Installed app card — shared by "My apps". */
 @Composable
@@ -42,6 +44,12 @@ internal fun LibraryCard(
     iconModifier: Modifier = Modifier,
     onClick: () -> Unit,
     onUpdate: (() -> Unit)? = null,
+    download: DownloadState? = null,
+    install: InstallState = InstallState.Idle,
+    installing: Boolean = false,
+    onStart: (() -> Unit)? = null,
+    onCancel: (() -> Unit)? = null,
+    onInstall: (() -> Unit)? = null,
 ) {
     AppRow(
         title = app.name ?: app.packageName,
@@ -52,12 +60,24 @@ internal fun LibraryCard(
         onClick = onClick,
         modifier = modifier,
         trailing = {
-            if (app.status == UpdateStatus.UPDATE_AVAILABLE && onUpdate != null) {
-                FilledTonalButton(onClick = onUpdate) {
-                    Text(stringResource(R.string.updates_start))
-                }
-            } else {
-                StatusIndicator(app.status)
+            when {
+                download != null && onStart != null && onCancel != null && onInstall != null ->
+                    DownloadActionButton(
+                        state = download,
+                        install = install,
+                        installing = installing,
+                        startLabel = stringResource(R.string.updates_start),
+                        onStart = onStart,
+                        onCancel = onCancel,
+                        onInstall = onInstall,
+                    )
+
+                app.status == UpdateStatus.UPDATE_AVAILABLE && onUpdate != null ->
+                    FilledTonalButton(onClick = onUpdate) {
+                        Text(stringResource(R.string.updates_start))
+                    }
+
+                else -> StatusIndicator(app.status)
             }
         },
     )

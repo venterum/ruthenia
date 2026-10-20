@@ -21,12 +21,14 @@ data class DownloadRequest(
     val name: String? = null,
     val iconUrl: String? = null,
     val publisher: String? = null,
+    /** Target version name for the manager row and completed history. */
+    val versionName: String? = null,
 )
 
 /**
  * A download manager row: the app metadata along with the state of its
- * background download. Assembled from WorkManager and the request that queued
- * the download.
+ * background download and install. The durable source is the Room ledger;
+ * live progress is merged in from WorkManager.
  */
 data class DownloadTask(
     val packageName: String,
@@ -35,18 +37,51 @@ data class DownloadTask(
     val iconUrl: String?,
     val publisher: String?,
     val versionCode: Long?,
-    val state: DownloadState,
+    val versionName: String? = null,
+    val totalBytes: Long? = null,
+    val download: DownloadState,
+    val install: InstallState = InstallState.Idle,
+    val completedAt: Long? = null,
 ) {
 
-    /** The download is active: queued, downloading, or verifying. */
+    /** The download is active: queued, downloading, verifying, or installing. */
     val isActive: Boolean
-        get() = state.isBusy
+        get() = download.isBusy ||
+            install is InstallState.Installing ||
+            install is InstallState.AwaitingUser
 
     /** Files are downloaded and waiting for the user to start the install. */
     val isReady: Boolean
-        get() = state is DownloadState.Ready
+        get() = download is DownloadState.Ready
 
-    /** The download failed — a retry can be offered. */
+    /** The download or the install needs the user's attention. */
     val isFailed: Boolean
-        get() = state is DownloadState.Failed
+        get() = download is DownloadState.Failed || install is InstallState.Failed
+
+    /** The app was installed and the record is kept as history. */
+    val isCompleted: Boolean
+        get() = download is DownloadState.Completed
+
+    /** Paused with partial files on disk. */
+    val isPaused: Boolean
+        get() = download is DownloadState.Paused
+
+    /** The primary failure, if any. */
+    val failure: TaskFailure?
+        get() = (download as? DownloadState.Failed)?.failure
+            ?: (install as? InstallState.Failed)?.failure
+
+    val canPause: Boolean
+        get() = download is DownloadState.Queued ||
+            download is DownloadState.Downloading ||
+            download is DownloadState.Verifying
+
+    val canResume: Boolean
+        get() = download is DownloadState.Paused
+
+    val canInstall: Boolean
+        get() = download is DownloadState.Ready && install !is InstallState.Installing
+
+    val canRedownload: Boolean
+        get() = failure?.needsRedownload == true || download is DownloadState.Failed
 }

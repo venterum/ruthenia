@@ -11,8 +11,10 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageInstaller
+import android.content.pm.PackageManager
 import android.os.Build
 import androidx.core.content.ContextCompat
+import androidx.core.content.pm.PackageInfoCompat
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.File
 import javax.inject.Inject
@@ -27,8 +29,8 @@ import kotlinx.coroutines.withTimeoutOrNull
  *
  * All files (base APK and config splits) are written into a **single** session, so a
  * split app is installed entirely, without manual additional steps.
- * The system confirmation dialog is not bypassed: if Android requires it,
- * [InstallResult.UserActionRequired] with an intent is returned to the caller.
+ * The system confirmation dialog is not bypassed: when Android asks for it,
+ * the confirmation intent is passed to the caller.
  */
 @Singleton
 class ApkInstaller @Inject constructor(
@@ -38,9 +40,18 @@ class ApkInstaller @Inject constructor(
     suspend fun install(
         packageName: String,
         apks: List<File>,
+        expectedVersionCode: Long? = null,
         onUserActionRequired: (Intent) -> Unit = {},
     ): InstallResult {
         require(apks.isNotEmpty()) { "No APK files to install" }
+
+        // Checked before creating a session so the user gets a direct settings
+        // action instead of an opaque installer failure.
+        if (!canRequestPackageInstalls()) {
+            return InstallResult.Failure(
+                InstallFailure(InstallFailureCode.PERMISSION_REQUIRED),
+            )
+        }
 
         val packageInstaller = context.packageManager.packageInstaller
         val sessionParams = PackageInstaller.SessionParams(
@@ -52,7 +63,9 @@ class ApkInstaller @Inject constructor(
         val sessionId = try {
             packageInstaller.createSession(sessionParams)
         } catch (e: Exception) {
-            return InstallResult.Failure(e.message ?: "Failed to create install session")
+            return InstallResult.Failure(
+                InstallFailure(InstallFailureCode.SESSION_FAILED, e.message?.take(MAX_DETAIL_LENGTH)),
+            )
         }
 
         val pendingIntent = PendingIntentFactory.installResult(context, sessionId)
@@ -73,7 +86,9 @@ class ApkInstaller @Inject constructor(
                             onUserActionRequired(confirmation)
                         } else {
                             results.complete(
-                                InstallResult.Failure("System requested confirmation but sent no intent"),
+                                InstallResult.Failure(
+                                    InstallFailure(InstallFailureCode.SESSION_FAILED),
+                                ),
                             )
                         }
                     }
@@ -82,8 +97,12 @@ class ApkInstaller @Inject constructor(
 
                     else -> results.complete(
                         InstallResult.Failure(
-                            intent.getStringExtra(PackageInstaller.EXTRA_STATUS_MESSAGE)
-                                ?: "Installer status $status",
+                            InstallFailureMapper.fromStatus(
+                                status = status,
+                                systemMessage = intent.getStringExtra(
+                                    PackageInstaller.EXTRA_STATUS_MESSAGE,
+                                ),
+                            ),
                         ),
                     )
                 }
@@ -112,16 +131,52 @@ class ApkInstaller @Inject constructor(
                 session.commit(pendingIntent.intentSender)
             } catch (e: Exception) {
                 session.abandon()
-                return InstallResult.Failure(e.message ?: "Install session failed")
+                return InstallResult.Failure(
+                    InstallFailure(
+                        InstallFailureCode.SESSION_FAILED,
+                        e.message?.take(MAX_DETAIL_LENGTH),
+                    ),
+                )
             } finally {
                 session.close()
             }
 
-            return withTimeoutOrNull(INSTALL_TIMEOUT_MS) { results.await() }
-                ?: InstallResult.Failure("Install result timed out")
+            val result = withTimeoutOrNull(INSTALL_TIMEOUT_MS) { results.await() }
+            if (result != null) return result
+
+            // A timeout does not always mean failure: the system dialog may have
+            // been confirmed after our wait expired. Trust PackageManager.
+            if (isInstalledAtLeast(packageName, expectedVersionCode)) {
+                return InstallResult.Success
+            }
+            return InstallResult.Failure(InstallFailure(InstallFailureCode.TIMEOUT))
         } finally {
             runCatching { context.unregisterReceiver(receiver) }
         }
+    }
+
+    private fun canRequestPackageInstalls(): Boolean =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            context.packageManager.canRequestPackageInstalls()
+        } else {
+            true
+        }
+
+    private fun isInstalledAtLeast(packageName: String, expectedVersionCode: Long?): Boolean {
+        if (expectedVersionCode == null) return isInstalled(packageName)
+        return try {
+            val info = context.packageManager.getPackageInfo(packageName, 0)
+            PackageInfoCompat.getLongVersionCode(info) >= expectedVersionCode
+        } catch (_: PackageManager.NameNotFoundException) {
+            false
+        }
+    }
+
+    private fun isInstalled(packageName: String): Boolean = try {
+        context.packageManager.getPackageInfo(packageName, 0)
+        true
+    } catch (_: PackageManager.NameNotFoundException) {
+        false
     }
 
     @Suppress("DEPRECATION")
@@ -137,6 +192,7 @@ class ApkInstaller @Inject constructor(
             "com.vntrum.ruthenia.core.installer.INSTALL_RESULT"
 
         private const val INSTALL_TIMEOUT_MS = 10 * 60 * 1000L
+        private const val MAX_DETAIL_LENGTH = 300
     }
 }
 

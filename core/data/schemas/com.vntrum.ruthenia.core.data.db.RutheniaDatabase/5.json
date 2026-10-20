@@ -1,0 +1,397 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 5,
+    "identityHash": "f37b033f86edda55c342f00f52759e65",
+    "entities": [
+      {
+        "tableName": "installed_apps",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`packageName` TEXT NOT NULL, `appId` INTEGER, `name` TEXT, `iconUrl` TEXT, `publisher` TEXT, `installedVersionCode` INTEGER, `installedVersionName` TEXT, `latestVersionCode` INTEGER, `latestVersionName` TEXT, `whatsNew` TEXT, `lastCheckedAt` INTEGER, `lastInstalledAt` INTEGER, `source` TEXT NOT NULL, `inCatalog` INTEGER NOT NULL, PRIMARY KEY(`packageName`))",
+        "fields": [
+          {
+            "fieldPath": "packageName",
+            "columnName": "packageName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "appId",
+            "columnName": "appId",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "iconUrl",
+            "columnName": "iconUrl",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "publisher",
+            "columnName": "publisher",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "installedVersionCode",
+            "columnName": "installedVersionCode",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "installedVersionName",
+            "columnName": "installedVersionName",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "latestVersionCode",
+            "columnName": "latestVersionCode",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "latestVersionName",
+            "columnName": "latestVersionName",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "whatsNew",
+            "columnName": "whatsNew",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "lastCheckedAt",
+            "columnName": "lastCheckedAt",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "lastInstalledAt",
+            "columnName": "lastInstalledAt",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "source",
+            "columnName": "source",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "inCatalog",
+            "columnName": "inCatalog",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "packageName"
+          ]
+        }
+      },
+      {
+        "tableName": "catalog_apps",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`packageName` TEXT NOT NULL, `appId` INTEGER NOT NULL, `name` TEXT NOT NULL, `shortDescription` TEXT, `iconUrl` TEXT, `versionCode` INTEGER, `averageUserRating` REAL, `totalRatings` INTEGER, `downloadsText` TEXT, `cachedAt` INTEGER NOT NULL, PRIMARY KEY(`packageName`))",
+        "fields": [
+          {
+            "fieldPath": "packageName",
+            "columnName": "packageName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "appId",
+            "columnName": "appId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "shortDescription",
+            "columnName": "shortDescription",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "iconUrl",
+            "columnName": "iconUrl",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "versionCode",
+            "columnName": "versionCode",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "averageUserRating",
+            "columnName": "averageUserRating",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "totalRatings",
+            "columnName": "totalRatings",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "downloadsText",
+            "columnName": "downloadsText",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "cachedAt",
+            "columnName": "cachedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "packageName"
+          ]
+        }
+      },
+      {
+        "tableName": "home_entries",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`sectionId` TEXT NOT NULL, `sectionTitle` TEXT NOT NULL, `sectionPosition` INTEGER NOT NULL, `itemPosition` INTEGER NOT NULL, `packageName` TEXT NOT NULL, `appId` INTEGER NOT NULL, `name` TEXT NOT NULL, `shortDescription` TEXT, `iconUrl` TEXT, `versionCode` INTEGER, `minSdkVersion` INTEGER, `averageUserRating` REAL, `totalRatings` INTEGER, `downloadsText` TEXT, `cachedAt` INTEGER NOT NULL, PRIMARY KEY(`sectionId`, `packageName`))",
+        "fields": [
+          {
+            "fieldPath": "sectionId",
+            "columnName": "sectionId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sectionTitle",
+            "columnName": "sectionTitle",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sectionPosition",
+            "columnName": "sectionPosition",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "itemPosition",
+            "columnName": "itemPosition",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "packageName",
+            "columnName": "packageName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "appId",
+            "columnName": "appId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "shortDescription",
+            "columnName": "shortDescription",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "iconUrl",
+            "columnName": "iconUrl",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "versionCode",
+            "columnName": "versionCode",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "minSdkVersion",
+            "columnName": "minSdkVersion",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "averageUserRating",
+            "columnName": "averageUserRating",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "totalRatings",
+            "columnName": "totalRatings",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "downloadsText",
+            "columnName": "downloadsText",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "cachedAt",
+            "columnName": "cachedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "sectionId",
+            "packageName"
+          ]
+        }
+      },
+      {
+        "tableName": "unresolved_apps",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`packageName` TEXT NOT NULL, `attemptedAt` INTEGER NOT NULL, PRIMARY KEY(`packageName`))",
+        "fields": [
+          {
+            "fieldPath": "packageName",
+            "columnName": "packageName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "attemptedAt",
+            "columnName": "attemptedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "packageName"
+          ]
+        }
+      },
+      {
+        "tableName": "download_tasks",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`packageName` TEXT NOT NULL, `appId` INTEGER, `name` TEXT, `iconUrl` TEXT, `publisher` TEXT, `versionCode` INTEGER, `versionName` TEXT, `totalBytes` INTEGER, `stage` TEXT NOT NULL, `workId` TEXT, `failureCode` TEXT, `failureDetail` TEXT, `installStage` TEXT NOT NULL, `installFailureCode` TEXT, `installFailureDetail` TEXT, `attemptCount` INTEGER NOT NULL, `createdAt` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL, `completedAt` INTEGER, PRIMARY KEY(`packageName`))",
+        "fields": [
+          {
+            "fieldPath": "packageName",
+            "columnName": "packageName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "appId",
+            "columnName": "appId",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "iconUrl",
+            "columnName": "iconUrl",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "publisher",
+            "columnName": "publisher",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "versionCode",
+            "columnName": "versionCode",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "versionName",
+            "columnName": "versionName",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "totalBytes",
+            "columnName": "totalBytes",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "stage",
+            "columnName": "stage",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "workId",
+            "columnName": "workId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "failureCode",
+            "columnName": "failureCode",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "failureDetail",
+            "columnName": "failureDetail",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "installStage",
+            "columnName": "installStage",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "installFailureCode",
+            "columnName": "installFailureCode",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "installFailureDetail",
+            "columnName": "installFailureDetail",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "attemptCount",
+            "columnName": "attemptCount",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "createdAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updatedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "completedAt",
+            "columnName": "completedAt",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "packageName"
+          ]
+        }
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'f37b033f86edda55c342f00f52759e65')"
+    ]
+  }
+}

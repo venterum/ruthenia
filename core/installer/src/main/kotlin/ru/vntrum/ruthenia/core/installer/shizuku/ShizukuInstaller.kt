@@ -28,6 +28,9 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import rikka.shizuku.Shizuku
 import rikka.sui.Sui
+import com.vntrum.ruthenia.core.installer.InstallFailure
+import com.vntrum.ruthenia.core.installer.InstallFailureCode
+import com.vntrum.ruthenia.core.installer.InstallFailureMapper
 import com.vntrum.ruthenia.core.installer.InstallResult
 import com.vntrum.ruthenia.core.installer.R
 
@@ -135,15 +138,32 @@ class ShizukuInstaller @Inject constructor(
     suspend fun install(packageName: String, apks: List<File>): InstallResult {
         require(apks.isNotEmpty()) { "No APK files to install" }
         if (computeStatus() != ShizukuStatus.READY) {
-            return InstallResult.Failure(context.getString(R.string.installer_shizuku_not_ready))
+            return InstallResult.Failure(
+                InstallFailure(
+                    InstallFailureCode.SHIZUKU_UNAVAILABLE,
+                    context.getString(R.string.installer_shizuku_not_ready),
+                ),
+            )
         }
         installMutex.withLock {
             val bound = connect()
                 ?: return InstallResult.Failure(
-                    context.getString(R.string.installer_shizuku_not_connected),
+                    InstallFailure(
+                        InstallFailureCode.SHIZUKU_UNAVAILABLE,
+                        context.getString(R.string.installer_shizuku_not_connected),
+                    ),
                 )
-            val descriptors = apks.map {
-                ParcelFileDescriptor.open(it, ParcelFileDescriptor.MODE_READ_ONLY)
+            val descriptors = try {
+                apks.map {
+                    ParcelFileDescriptor.open(it, ParcelFileDescriptor.MODE_READ_ONLY)
+                }
+            } catch (e: Exception) {
+                return InstallResult.Failure(
+                    InstallFailure(
+                        InstallFailureCode.SESSION_FAILED,
+                        e.message?.take(MAX_DETAIL_LENGTH),
+                    ),
+                )
             }
             return try {
                 val error = withContext(Dispatchers.IO) {
@@ -152,10 +172,20 @@ class ShizukuInstaller @Inject constructor(
                 if (error.isNullOrEmpty()) {
                     InstallResult.Success
                 } else {
-                    InstallResult.Failure(error)
+                    InstallResult.Failure(
+                        InstallFailure(
+                            code = InstallFailureMapper.fromMessage(error),
+                            detail = error.take(MAX_DETAIL_LENGTH),
+                        ),
+                    )
                 }
             } catch (e: Exception) {
-                InstallResult.Failure(e.message ?: e.javaClass.simpleName)
+                InstallResult.Failure(
+                    InstallFailure(
+                        InstallFailureCode.SESSION_FAILED,
+                        e.message?.take(MAX_DETAIL_LENGTH),
+                    ),
+                )
             } finally {
                 descriptors.forEach { runCatching { it.close() } }
             }
@@ -209,5 +239,6 @@ class ShizukuInstaller @Inject constructor(
         private const val REQUEST_CODE = 9001
         private const val CONNECT_TIMEOUT_MS = 10_000L
         private const val MIN_SHIZUKU_VERSION = 11
+        private const val MAX_DETAIL_LENGTH = 300
     }
 }

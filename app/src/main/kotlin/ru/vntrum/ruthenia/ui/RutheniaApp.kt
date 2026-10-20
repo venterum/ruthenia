@@ -127,6 +127,7 @@ fun RutheniaApp(viewModel: MainViewModel = hiltViewModel()) {
     // Badge on the "Library" tab: how many apps are waiting for an update.
     val updateCount by viewModel.updateCount.collectAsStateWithLifecycle()
     val deepLink by viewModel.deepLink.collectAsStateWithLifecycle()
+    val openDownloadsRequest by viewModel.openDownloads.collectAsStateWithLifecycle()
     // null means settings are not read yet; wait so we don't flash the onboarding.
     val onboardingCompleted by viewModel.onboardingCompleted.collectAsStateWithLifecycle()
     val settings by viewModel.settings.collectAsStateWithLifecycle()
@@ -142,6 +143,15 @@ fun RutheniaApp(viewModel: MainViewModel = hiltViewModel()) {
                 launchSingleTop = true
             }
             viewModel.consumeDeepLink()
+        }
+    }
+
+    // A download notification should land on the Library tab regardless of
+    // which screen is currently open.
+    LaunchedEffect(openDownloadsRequest, onboardingCompleted) {
+        if (onboardingCompleted != true || openDownloadsRequest <= 0) return@LaunchedEffect
+        navController.navigate(RutheniaRoutes.MAIN) {
+            launchSingleTop = true
         }
     }
 
@@ -207,6 +217,7 @@ fun RutheniaApp(viewModel: MainViewModel = hiltViewModel()) {
                         onAboutClick = { navController.navigate(RutheniaRoutes.ABOUT) },
                         onOpenLibraryApps = { navController.navigate(RutheniaRoutes.LIBRARY_APPS) },
                         onOpenLibraryUpdates = { navController.navigate(RutheniaRoutes.LIBRARY_UPDATES) },
+                        openDownloadsRequest = openDownloadsRequest,
                     )
                 }
             }
@@ -316,6 +327,7 @@ private fun MainTabs(
     onAboutClick: () -> Unit,
     onOpenLibraryApps: () -> Unit,
     onOpenLibraryUpdates: () -> Unit,
+    openDownloadsRequest: Int,
 ) {
     val haptics = rememberRutheniaHaptics()
     val motion = MaterialTheme.motionScheme
@@ -336,6 +348,21 @@ private fun MainTabs(
     var selectedTab by remember { mutableIntStateOf(pagerState.currentPage) }
     // The local device-profile sheet, opened from the Apps header avatar.
     var showProfileSheet by rememberSaveable { mutableStateOf(false) }
+    var handledDownloadsRequest by rememberSaveable { mutableIntStateOf(0) }
+    var expandDownloadsSignal by rememberSaveable { mutableIntStateOf(0) }
+
+    LaunchedEffect(openDownloadsRequest, tabs) {
+        if (openDownloadsRequest <= handledDownloadsRequest) return@LaunchedEffect
+        handledDownloadsRequest = openDownloadsRequest
+        val libraryIndex = tabs.indexOf(MainTab.LIBRARY)
+        if (libraryIndex >= 0) {
+            pagerState.animateScrollToPage(
+                page = libraryIndex,
+                animationSpec = motion.defaultSpatialSpec(),
+            )
+            expandDownloadsSignal += 1
+        }
+    }
 
     // A tab disappears when games are disabled in settings; keep the pager on
     // an existing page.
@@ -442,6 +469,7 @@ private fun MainTabs(
                                 onOpenApps = onOpenLibraryApps,
                                 onOpenUpdates = onOpenLibraryUpdates,
                                 onAppClick = onAppClick,
+                                expandDownloadsSignal = expandDownloadsSignal,
                             )
                             // The page can be composed for a frame longer than
                             // the tab exists while the list shrinks.

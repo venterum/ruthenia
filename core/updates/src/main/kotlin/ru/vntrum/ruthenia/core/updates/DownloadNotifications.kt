@@ -76,6 +76,31 @@ class DownloadNotifications @Inject constructor(
         notify(packageName, builder.build())
     }
 
+    /** A final download failure; retries in progress do not produce a notification. */
+    fun showFailed(packageName: String, appName: String, failure: TaskFailure) {
+        if (!canNotify()) return
+        ensureChannel()
+
+        val text = failure.text(context)
+        val builder = NotificationCompat.Builder(context, CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_notification_update)
+            .setContentTitle("$appName · ${text.title}")
+            .setContentText(text.message)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(text.message))
+            .setOngoing(false)
+            .setAutoCancel(true)
+            .setContentIntent(contentIntent())
+        if (failure.isRetryable || failure.needsRedownload) {
+            builder.addAction(
+                0,
+                context.getString(R.string.failure_action_retry),
+                retryIntent(packageName),
+            )
+        }
+
+        notify(packageName, builder.build())
+    }
+
     /** Done: the APK was saved to the selected folder. */
     fun showExportDone(packageName: String, appName: String) {
         if (!canNotify()) return
@@ -129,7 +154,21 @@ class DownloadNotifications @Inject constructor(
         0,
         Intent().setPackage(context.packageName)
             .setAction(Intent.ACTION_MAIN)
-            .addCategory(Intent.CATEGORY_LAUNCHER),
+            .addCategory(Intent.CATEGORY_LAUNCHER)
+            .putExtra(EXTRA_OPEN_DOWNLOADS, true),
+        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+    )
+
+    /** Retry action from a failure notification. */
+    private fun retryIntent(packageName: String): PendingIntent = PendingIntent.getActivity(
+        context,
+        packageName.hashCode(),
+        Intent().setPackage(context.packageName)
+            .setAction(Intent.ACTION_MAIN)
+            .addCategory(Intent.CATEGORY_LAUNCHER)
+            .putExtra(EXTRA_RETRY_PACKAGE, packageName)
+            .putExtra(EXTRA_OPEN_DOWNLOADS, true)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
         PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
     )
 
@@ -162,6 +201,12 @@ class DownloadNotifications @Inject constructor(
 
         /** Extra with the package name for which the install starts right away. */
         const val EXTRA_INSTALL_PACKAGE = "com.vntrum.ruthenia.extra.INSTALL_PACKAGE"
+
+        /** Extra asking the app to open the Library downloads card. */
+        const val EXTRA_OPEN_DOWNLOADS = "com.vntrum.ruthenia.extra.OPEN_DOWNLOADS"
+
+        /** Extra asking the app to retry a failed download. */
+        const val EXTRA_RETRY_PACKAGE = "com.vntrum.ruthenia.extra.RETRY_PACKAGE"
 
         private const val CHANNEL_ID = "downloads"
         private const val MAX_PROGRESS = 100

@@ -26,7 +26,7 @@ Grab the latest APK from the [Releases page](https://github.com/venterum/rutheni
 - **Home feed** — "Recommended" plus category sections (banks, government services, games, etc.)
 - **Games page** — popular games and genre feeds (can be hidden in settings)
 - **App details** — screenshots, "what's new", rating, "More from developer"
-- **Install and update** — split-APK support, a single install session, background downloads via WorkManager
+- **Install and update** — split-APK support, a single install session, background downloads via WorkManager, pause/resume and a download manager with recovery actions in the Library
 - **Silent install via Shizuku** — optionally installs APKs without the system dialog (off by default, signature verification still applies)
 - **Device token** — a locally generated identity (name, motif, colour, frame) instead of an account; it never leaves the device
 - **Launcher icon** — pick the app icon colour in settings; themed (monochrome) icons keep working

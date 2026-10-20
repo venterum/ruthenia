@@ -74,6 +74,7 @@ import com.vntrum.ruthenia.core.designsystem.component.rutheniaContentWidth
 import com.vntrum.ruthenia.core.designsystem.haptics.rememberRutheniaHaptics
 import com.vntrum.ruthenia.core.designsystem.theme.RutheniaPillShape
 import com.vntrum.ruthenia.core.designsystem.text.appCountLabel
+import com.vntrum.ruthenia.core.updates.InstallState
 
 /** Filter for the "My apps" list. */
 private enum class MyAppsFilter { ALL, UPDATES, UP_TO_DATE }
@@ -98,6 +99,8 @@ fun MyAppsScreen(
     viewModel: LibraryViewModel = hiltViewModel(),
 ) {
     val library by viewModel.library.collectAsStateWithLifecycle()
+    val downloads by viewModel.downloadTasks.collectAsStateWithLifecycle()
+    val installingPackage by viewModel.installingPackage.collectAsStateWithLifecycle()
     val importProgress by viewModel.importProgress.collectAsStateWithLifecycle()
     val message by viewModel.message.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -110,6 +113,9 @@ fun MyAppsScreen(
     var sort by rememberSaveable { mutableStateOf(MyAppsSort.NAME) }
     var grid by rememberSaveable { mutableStateOf(false) }
     var menuExpanded by remember { mutableStateOf(false) }
+    val downloadByPackage = remember(downloads) {
+        downloads.filterNot { it.isCompleted }.associateBy { it.packageName }
+    }
 
     LaunchedEffect(message) {
         message?.let {
@@ -382,6 +388,8 @@ fun MyAppsScreen(
                                 gridItems(visible, key = { it.packageName }) { app ->
                                     LibraryGridTile(
                                         app = app,
+                                        task = downloadByPackage[app.packageName],
+                                        installing = installingPackage == app.packageName,
                                         // Only the current layout carries shared
                                         // elements: during the crossfade both
                                         // layouts are composed, and two elements
@@ -400,6 +408,13 @@ fun MyAppsScreen(
                                         },
                                         onClick = { onAppClick(app.packageName) },
                                         onUpdate = { viewModel.update(app) },
+                                        onCancel = {
+                                            downloadByPackage[app.packageName]?.let(viewModel::pauseDownload)
+                                        },
+                                        onInstall = {
+                                            downloadByPackage[app.packageName]?.let(viewModel::install)
+                                                ?: viewModel.install(app)
+                                        },
                                     )
                                 }
                             }
@@ -413,6 +428,10 @@ fun MyAppsScreen(
                                 items(visible, key = { it.packageName }) { app ->
                                     LibraryCard(
                                         app = app,
+                                        download = downloadByPackage[app.packageName]?.download,
+                                        install = downloadByPackage[app.packageName]?.install
+                                            ?: InstallState.Idle,
+                                        installing = installingPackage == app.packageName,
                                         modifier = Modifier.animateItem(
                                             fadeInSpec = motion.defaultEffectsSpec(),
                                             placementSpec = motion.defaultSpatialSpec(),
@@ -434,6 +453,13 @@ fun MyAppsScreen(
                                         },
                                         onClick = { onAppClick(app.packageName) },
                                         onUpdate = { viewModel.update(app) },
+                                        onCancel = {
+                                            downloadByPackage[app.packageName]?.let(viewModel::pauseDownload)
+                                        },
+                                        onInstall = {
+                                            downloadByPackage[app.packageName]?.let(viewModel::install)
+                                                ?: viewModel.install(app)
+                                        },
                                     )
                                 }
                             }
@@ -449,9 +475,13 @@ fun MyAppsScreen(
 @Composable
 private fun LibraryGridTile(
     app: InstalledApp,
+    task: com.vntrum.ruthenia.core.updates.DownloadTask?,
+    installing: Boolean,
     iconModifier: Modifier = Modifier,
     onClick: () -> Unit,
     onUpdate: () -> Unit,
+    onCancel: () -> Unit,
+    onInstall: () -> Unit,
 ) {
     ExpressiveCard(
         onClick = onClick,
@@ -478,10 +508,22 @@ private fun LibraryGridTile(
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.fillMaxWidth(),
             )
-            StatusIndicator(app.status)
-            if (app.status == UpdateStatus.UPDATE_AVAILABLE) {
-                FilledTonalButton(onClick = onUpdate) {
-                    Text(stringResource(R.string.updates_start))
+            if (task != null) {
+                DownloadActionButton(
+                    state = task.download,
+                    install = task.install,
+                    installing = installing,
+                    startLabel = stringResource(R.string.updates_start),
+                    onStart = onUpdate,
+                    onCancel = onCancel,
+                    onInstall = onInstall,
+                )
+            } else {
+                StatusIndicator(app.status)
+                if (app.status == UpdateStatus.UPDATE_AVAILABLE) {
+                    FilledTonalButton(onClick = onUpdate) {
+                        Text(stringResource(R.string.updates_start))
+                    }
                 }
             }
         }

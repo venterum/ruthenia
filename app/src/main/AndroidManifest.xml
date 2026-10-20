@@ -10,6 +10,10 @@
     <!-- Network access is only needed for the RuStore API and its CDN. -->
     <uses-permission android:name="android.permission.INTERNET" />
 
+    <!-- Reading the active network tells the download manager whether it is
+         waiting for connectivity or for an unmetered Wi-Fi connection. -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
     <!-- Group notification "updates available" (Android 13+). -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 

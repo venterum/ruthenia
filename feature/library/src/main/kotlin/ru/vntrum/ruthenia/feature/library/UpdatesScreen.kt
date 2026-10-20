@@ -95,7 +95,6 @@ fun UpdatesScreen(
     val selectedPackages by viewModel.selectedPackages.collectAsStateWithLifecycle()
     val isChecking by viewModel.isChecking.collectAsStateWithLifecycle()
     val message by viewModel.message.collectAsStateWithLifecycle()
-    val confirmation by viewModel.pendingConfirmation.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val context = LocalContext.current
@@ -104,14 +103,6 @@ fun UpdatesScreen(
     val haptics = rememberRutheniaHaptics()
     var fabExpanded by rememberSaveable { mutableStateOf(false) }
     var selectionMode by rememberSaveable { mutableStateOf(false) }
-
-    // We launch the system install dialog from the Activity — it can't be bypassed.
-    LaunchedEffect(confirmation) {
-        confirmation?.let { intent ->
-            runCatching { context.startActivity(intent) }
-            viewModel.onConfirmationLaunched()
-        }
-    }
 
     LaunchedEffect(message) {
         message?.let {
@@ -302,7 +293,7 @@ fun UpdatesScreen(
                                     ),
                                     onClick = { onAppClick(row.app.packageName) },
                                     onUpdate = { viewModel.update(row.app) },
-                                    onCancel = { viewModel.cancelDownload(row.app) },
+                                    onCancel = { viewModel.pauseDownload(row.app) },
                                     onInstall = { viewModel.install(row.app) },
                                     onHide = {
                                         viewModel.hideUpdate(row.app)

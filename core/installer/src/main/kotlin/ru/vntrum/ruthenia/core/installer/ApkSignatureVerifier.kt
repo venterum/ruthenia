@@ -7,10 +7,10 @@
 package com.vntrum.ruthenia.core.installer
 
 import android.content.Context
+import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.content.pm.PackageManager.PackageInfoFlags
 import android.content.pm.PackageManager.NameNotFoundException
-import android.content.pm.Signature
 import android.os.Build
 import androidx.core.content.pm.PackageInfoCompat
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -21,19 +21,97 @@ import javax.inject.Singleton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
+/** Result of the full pre-install APK check. */
+sealed interface ApkVerification {
+
+    /** The package is structurally valid, matches the request and can be installed. */
+    data object Valid : ApkVerification
+
+    data class Failed(
+        val code: ApkVerificationFailure,
+        val detail: String? = null,
+    ) : ApkVerification
+}
+
+/** Why a downloaded package cannot be handed to the installer. */
+enum class ApkVerificationFailure {
+    INVALID_APK,
+    PACKAGE_MISMATCH,
+    VERSION_MISMATCH,
+    INCOMPATIBLE,
+    SIGNATURE_MISMATCH,
+}
+
 /**
- * Verifies the signature of the downloaded APK against the signature of the installed app.
+ * Verifies the downloaded APK against the request and the installed app.
  *
  * Why: an update can only be installed over the same build. If RuStore
  * has an app with the same package name but signed with a different key
  * (for example, a version from another store), the installation will either fail or
- * replace the app. So before starting the installer we compare the signature
- * fingerprints and refuse to install if they differ.
+ * replace the app. We also catch corrupt archives, wrong packages, older
+ * versions and incompatible minSdk before the user sees the installer.
  */
 @Singleton
 class ApkSignatureVerifier @Inject constructor(
     @ApplicationContext private val context: Context,
 ) {
+
+    /**
+     * Full validation before the download is marked ready.
+     *
+     * @param expectedVersionCode target version from the download link/request.
+     */
+    suspend fun verifyPackage(
+        packageName: String,
+        expectedVersionCode: Long?,
+        apkFiles: List<File>,
+        verifySignature: Boolean = true,
+    ): ApkVerification = withContext(Dispatchers.IO) {
+        if (apkFiles.isEmpty()) {
+            return@withContext ApkVerification.Failed(ApkVerificationFailure.INVALID_APK)
+        }
+
+        val base = baseArchive(apkFiles)
+            ?: return@withContext ApkVerification.Failed(ApkVerificationFailure.INVALID_APK)
+
+        if (base.packageName != packageName) {
+            return@withContext ApkVerification.Failed(
+                code = ApkVerificationFailure.PACKAGE_MISMATCH,
+                detail = base.packageName,
+            )
+        }
+
+        val versionCode = PackageInfoCompat.getLongVersionCode(base)
+        if (expectedVersionCode != null && versionCode < expectedVersionCode) {
+            return@withContext ApkVerification.Failed(
+                code = ApkVerificationFailure.VERSION_MISMATCH,
+                detail = "$versionCode < $expectedVersionCode",
+            )
+        }
+
+        val minSdk = base.applicationInfo?.minSdkVersion ?: 0
+        if (minSdk > Build.VERSION.SDK_INT) {
+            return@withContext ApkVerification.Failed(
+                code = ApkVerificationFailure.INCOMPATIBLE,
+                detail = "minSdk $minSdk",
+            )
+        }
+
+        // Every installable APK must carry a signing certificate. An unsigned
+        // archive would only fail later inside PackageInstaller.
+        if (apkFiles.none { apkSignatures(it).orEmpty().isNotEmpty() }) {
+            return@withContext ApkVerification.Failed(ApkVerificationFailure.INVALID_APK)
+        }
+
+        if (!verifySignature) return@withContext ApkVerification.Valid
+
+        when (val signature = verify(packageName, apkFiles)) {
+            SignatureCheck.Match, is SignatureCheck.Unknown -> ApkVerification.Valid
+            SignatureCheck.Mismatch -> ApkVerification.Failed(
+                ApkVerificationFailure.SIGNATURE_MISMATCH,
+            )
+        }
+    }
 
     /**
      * @return [SignatureCheck.Match] if the signatures match;
@@ -65,6 +143,30 @@ class ApkSignatureVerifier @Inject constructor(
         } else {
             SignatureCheck.Mismatch
         }
+    }
+
+    private fun baseArchive(files: List<File>): PackageInfo? {
+        val parsed = files.mapNotNull { file -> archiveInfo(file)?.let { file to it } }
+        return parsed.firstOrNull { (_, info) -> info.splitNames.isNullOrEmpty() }?.second
+            ?: parsed.firstOrNull()?.second
+    }
+
+    private fun archiveInfo(file: File): PackageInfo? = try {
+        val packageManager = context.packageManager
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            packageManager.getPackageArchiveInfo(
+                file.absolutePath,
+                PackageInfoFlags.of(PackageManager.GET_SIGNING_CERTIFICATES.toLong()),
+            )
+        } else {
+            @Suppress("DEPRECATION")
+            packageManager.getPackageArchiveInfo(
+                file.absolutePath,
+                PackageManager.GET_SIGNING_CERTIFICATES,
+            )
+        }
+    } catch (_: Exception) {
+        null
     }
 
     /** SHA-256 fingerprints of the installed app's signatures. */
@@ -106,20 +208,7 @@ class ApkSignatureVerifier @Inject constructor(
 
     /** SHA-256 fingerprints of the APK file's signatures. */
     private fun apkSignatures(file: File): List<ByteArray>? = try {
-        val packageManager = context.packageManager
-        val info = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            packageManager.getPackageArchiveInfo(
-                file.absolutePath,
-                PackageInfoFlags.of(PackageManager.GET_SIGNING_CERTIFICATES.toLong()),
-            )
-        } else {
-            @Suppress("DEPRECATION")
-            packageManager.getPackageArchiveInfo(
-                file.absolutePath,
-                PackageManager.GET_SIGNING_CERTIFICATES,
-            )
-        } ?: return null
-
+        val info = archiveInfo(file) ?: return null
         val signingInfo = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             info.signingInfo
         } else {
@@ -146,16 +235,7 @@ class ApkSignatureVerifier @Inject constructor(
 
     /** Comparison of the downloaded APK and installed versions — for the error message. */
     fun downloadedVersionCode(file: File): Long? = try {
-        val info = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            context.packageManager.getPackageArchiveInfo(
-                file.absolutePath,
-                PackageInfoFlags.of(0L),
-            )
-        } else {
-            @Suppress("DEPRECATION")
-            context.packageManager.getPackageArchiveInfo(file.absolutePath, 0)
-        }
-        info?.let { PackageInfoCompat.getLongVersionCode(it) }
+        archiveInfo(file)?.let { PackageInfoCompat.getLongVersionCode(it) }
     } catch (_: Exception) {
         null
     }

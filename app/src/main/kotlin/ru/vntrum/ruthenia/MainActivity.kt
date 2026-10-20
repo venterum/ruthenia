@@ -32,6 +32,7 @@ import com.vntrum.ruthenia.core.designsystem.component.LocalRutheniaIconShape
 import com.vntrum.ruthenia.core.designsystem.component.RutheniaIconShape
 import com.vntrum.ruthenia.core.designsystem.theme.RutheniaAccent
 import com.vntrum.ruthenia.core.designsystem.theme.RutheniaTheme
+import com.vntrum.ruthenia.core.updates.DownloadManager
 import com.vntrum.ruthenia.core.updates.DownloadNotifications
 import com.vntrum.ruthenia.ui.RutheniaApp
 
@@ -46,13 +47,16 @@ class MainActivity : AppCompatActivity() {
     @Inject
     lateinit var settingsRepository: SettingsRepository
 
+    @Inject
+    lateinit var downloadManager: DownloadManager
+
     override fun onCreate(savedInstanceState: Bundle?) {
         // Install the system splash before super.onCreate: the cold-start
         // theme switches to Theme.Ruthenia once Compose renders its first frame.
         installSplashScreen()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        handleInstallIntent(intent)
+        handleDownloadIntent(intent)
         handleDeepLinkIntent(intent)
 
         // Keep the launcher icon in sync with the stored choice: an app update
@@ -61,9 +65,16 @@ class MainActivity : AppCompatActivity() {
             launcherIconController.reconcile(settingsRepository.settings.first().appIconVariant)
         }
 
+        // System install confirmation can be requested from any screen or from
+        // background auto-install; launch it from the Activity in one place.
+        lifecycleScope.launch {
+            downloadManager.userActions.collect { intent ->
+                runCatching { startActivity(intent) }
+            }
+        }
+
         setContent {
             val settings by viewModel.settings.collectAsStateWithLifecycle()
-            val confirmation by viewModel.pendingConfirmation.collectAsStateWithLifecycle()
             val darkTheme = when (settings.themeMode) {
                 ThemeMode.SYSTEM -> isSystemInDarkTheme()
                 ThemeMode.LIGHT -> false
@@ -88,14 +99,6 @@ class MainActivity : AppCompatActivity() {
                 .firstOrNull { it.name == settings.accent.name }
                 ?: RutheniaAccent.TEAL
 
-            // The system install dialog is launched from the Activity — it cannot be bypassed.
-            LaunchedEffect(confirmation) {
-                confirmation?.let {
-                    runCatching { startActivity(it) }
-                    viewModel.onConfirmationLaunched()
-                }
-            }
-
             RutheniaTheme(
                 darkTheme = darkTheme,
                 dynamicColor = settings.dynamicColor,
@@ -115,16 +118,32 @@ class MainActivity : AppCompatActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
-        handleInstallIntent(intent)
+        handleDownloadIntent(intent)
         handleDeepLinkIntent(intent)
     }
 
-    /** "Install" action from a notification: opens the app and installs the package. */
-    private fun handleInstallIntent(intent: Intent?) {
-        val packageName = intent
-            ?.getStringExtra(DownloadNotifications.EXTRA_INSTALL_PACKAGE)
-            ?: return
-        viewModel.installPackage(packageName)
+    override fun onStart() {
+        super.onStart()
+        viewModel.setForeground(true)
+    }
+
+    override fun onStop() {
+        viewModel.setForeground(false)
+        super.onStop()
+    }
+
+    /** Actions from download notifications: install, retry, or open the manager. */
+    private fun handleDownloadIntent(intent: Intent?) {
+        if (intent == null) return
+        intent.getStringExtra(DownloadNotifications.EXTRA_INSTALL_PACKAGE)?.let {
+            viewModel.installPackage(it)
+        }
+        intent.getStringExtra(DownloadNotifications.EXTRA_RETRY_PACKAGE)?.let {
+            viewModel.retryPackage(it)
+        }
+        if (intent.getBooleanExtra(DownloadNotifications.EXTRA_OPEN_DOWNLOADS, false)) {
+            viewModel.requestOpenDownloads()
+        }
     }
 
     /**

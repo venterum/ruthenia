@@ -52,7 +52,8 @@
     <string name="app_details_reinstall">Переустановить</string>
     <string name="app_details_downloading_percent">Скачивание %1$d%%</string>
     <string name="app_details_downloading">Скачивание…</string>
-    <string name="app_details_cancel_download">Отменить загрузку</string>
+    <string name="app_details_cancel_download">Приостановить загрузку</string>
+    <string name="app_details_resume">Продолжить</string>
     <string name="app_details_installing">Установка…</string>
 
     <string name="app_details_files_note">Файлы скачиваются с CDN RuStore, подпись сверяется перед установкой — обновление не поставится поверх сборки из другого источника.</string>

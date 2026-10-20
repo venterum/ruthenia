@@ -14,6 +14,54 @@
     <string name="downloads_title">Загрузки</string>
     <string name="downloads_expand">Развернуть</string>
     <string name="downloads_collapse">Свернуть</string>
+    <string name="downloads_section_active">Активные</string>
+    <string name="downloads_section_ready">Готовы к установке</string>
+    <string name="downloads_section_attention">Требуют внимания</string>
+    <string name="downloads_section_paused">Приостановлены</string>
+    <string name="downloads_section_completed">Завершены</string>
+    <string name="downloads_empty_idle">Активных загрузок нет</string>
+    <string name="downloads_empty_title">Пока нет загрузок</string>
+    <string name="downloads_empty_hint">Скачанные приложения и ошибки установки появятся здесь.</string>
+    <string name="downloads_active_in_progress">Выполняется…</string>
+    <string name="downloads_cache">Кэш %1$s</string>
+    <string name="downloads_cache_actions">Кэш загрузок: %1$s</string>
+    <string name="downloads_clear_history">Очистить историю</string>
+    <string name="downloads_clear_cache">Очистить кэш</string>
+    <string name="downloads_retry_all">Повторить неудачные</string>
+    <string name="downloads_remove_all_failed">Удалить неудачные</string>
+    <string name="downloads_show_all">Показать все</string>
+    <string name="downloads_show_less">Свернуть</string>
+    <string name="downloads_open">Открыть</string>
+    <string name="downloads_pause">Приостановить</string>
+    <string name="downloads_resume">Продолжить</string>
+    <string name="downloads_install_again">Установить снова</string>
+    <string name="downloads_remove">Удалить</string>
+    <string name="downloads_unknown_error">Неизвестная ошибка</string>
+    <string name="downloads_paused">На паузе</string>
+    <string name="downloads_details">Подробности</string>
+    <string name="downloads_hide_details">Скрыть подробности</string>
+    <string name="downloads_details_copied">Подробности скопированы</string>
+    <string name="downloads_queue">В очереди</string>
+    <string name="downloads_queue_network">Ожидание сети</string>
+    <string name="downloads_queue_wifi">Ожидание Wi-Fi</string>
+    <string name="downloads_queue_retrying">Повторная попытка…</string>
+    <string name="downloads_installing">Установка…</string>
+    <string name="downloads_waiting_confirmation">Ожидание подтверждения</string>
+    <string name="downloads_size_progress">%1$s из %2$s</string>
+    <string name="downloads_size">%1$s</string>
+    <string name="downloads_installed_just_now">Установлено только что</string>
+    <string name="downloads_installed_relative">Установлено %1$s</string>
+    <string name="downloads_version_arrow">%1$s → %2$s</string>
+    <string name="downloads_attention_summary">Требуют внимания: %1$d</string>
+    <string name="downloads_cache_cleared">Кэш загрузок очищен.</string>
+    <string name="downloads_retry_all_result">Повторно запущено загрузок: %1$d.</string>
+    <string name="downloads_removed_failed">Неудачные загрузки удалены.</string>
+    <string name="downloads_confirm_clear_cache_title">Очистить кэш загрузок?</string>
+    <string name="downloads_confirm_clear_cache_text">Скачанные файлы будут удалены. Готовые к установке задачи придётся скачать заново.</string>
+    <string name="downloads_confirm_remove_all_title">Удалить неудачные загрузки?</string>
+    <string name="downloads_confirm_remove_all_text">Частично скачанные файлы и записи об ошибках будут удалены.</string>
+    <string name="downloads_cancel">Отмена</string>
+    <string name="downloads_confirm">Очистить</string>
 
     <string name="my_apps_find">Найти мои приложения</string>
     <string name="my_apps_title">Мои приложения</string>
@@ -91,6 +139,20 @@
         <item quantity="few">%d с ошибкой</item>
         <item quantity="many">%d с ошибкой</item>
         <item quantity="other">%d с ошибкой</item>
+    </plurals>
+
+    <plurals name="download_completed_count">
+        <item quantity="one">%d установлено</item>
+        <item quantity="few">%d установлено</item>
+        <item quantity="many">%d установлено</item>
+        <item quantity="other">%d установлено</item>
+    </plurals>
+
+    <plurals name="download_paused_count">
+        <item quantity="one">%d на паузе</item>
+        <item quantity="few">%d на паузе</item>
+        <item quantity="many">%d на паузе</item>
+        <item quantity="other">%d на паузе</item>
     </plurals>
 
     <string name="download_summary_active">%1$s · %2$d%%</string>

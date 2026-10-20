@@ -12,13 +12,63 @@ data class ApkSource(
     val size: Long?,
 )
 
-/** Final result of the `PackageInstaller` install session. */
+/**
+ * Typed reasons why an install could not be completed.
+ *
+ * The codes are persisted and translated in the UI layer: a raw
+ * `PackageInstaller` message is only kept as sanitized [InstallFailure.detail].
+ */
+enum class InstallFailureCode {
+    /** The user dismissed the system install dialog. */
+    USER_CANCELLED,
+
+    /** Installing apps from this source is not allowed in system settings. */
+    PERMISSION_REQUIRED,
+
+    /** Device policy, Play Protect or another system restriction blocked it. */
+    BLOCKED,
+
+    /** The installed package conflicts with the downloaded one (signature/version). */
+    CONFLICT,
+
+    /** The downloaded package is corrupt or not a valid APK. */
+    INVALID_APK,
+
+    /** Not enough free space to install. */
+    STORAGE_FULL,
+
+    /** The package requires a newer Android version, ABI or feature. */
+    INCOMPATIBLE,
+
+    /** The installer did not report a result in time. */
+    TIMEOUT,
+
+    /** Shizuku was requested but is not available; the system installer should be used. */
+    SHIZUKU_UNAVAILABLE,
+
+    /** The app process or install session was interrupted. */
+    INTERRUPTED,
+
+    /** Creating/writing the PackageInstaller session failed. */
+    SESSION_FAILED,
+
+    /** Anything not covered above. */
+    UNKNOWN,
+}
+
+/** A typed install failure. [detail] never contains signed download URLs. */
+data class InstallFailure(
+    val code: InstallFailureCode,
+    val detail: String? = null,
+)
+
+/** Final result of the install pipeline. */
 sealed interface InstallResult {
 
     /** Installation completed. */
     data object Success : InstallResult
 
-    data class Failure(val message: String) : InstallResult
+    data class Failure(val failure: InstallFailure) : InstallResult
 }
 
 /** Package download progress. */
@@ -47,4 +97,23 @@ sealed class InstallException(message: String, cause: Throwable? = null) : Excep
      */
     class IntegrityMismatch(val url: String, val expected: Long, val actual: Long) :
         InstallException("Size mismatch for $url: expected $expected bytes, got $actual")
+
+    /** The downloaded file is not a readable APK/ZIP archive. */
+    class InvalidApk(val fileName: String) :
+        InstallException("Invalid APK file: $fileName")
+
+    /** The catalog returned a package for a different application. */
+    class PackageMismatch(val expected: String, val actual: String?) :
+        InstallException("Expected package $expected, got ${actual ?: "unreadable"}")
+
+    /** The downloaded version is older than the requested one. */
+    class VersionMismatch(val expected: Long?, val actual: Long?) :
+        InstallException("Expected version $expected, got ${actual ?: "unreadable"}")
+
+    /** The app cannot run on this device. */
+    class Incompatible(val reason: String) : InstallException(reason)
+
+    /** The download needs more free space than is available. */
+    class StorageFull(val required: Long, val available: Long) :
+        InstallException("Not enough storage: need $required bytes, have $available")
 }

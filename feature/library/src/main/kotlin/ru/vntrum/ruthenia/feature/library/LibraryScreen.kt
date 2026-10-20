@@ -41,7 +41,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -63,6 +62,7 @@ import com.vntrum.ruthenia.core.designsystem.component.rememberSkeletonShimmer
 import com.vntrum.ruthenia.core.designsystem.haptics.rememberRutheniaHaptics
 import com.vntrum.ruthenia.core.designsystem.text.appCountLabel
 import com.vntrum.ruthenia.core.designsystem.theme.RutheniaSpacing
+import com.vntrum.ruthenia.core.updates.InstallState
 import com.vntrum.ruthenia.core.updates.isActionable
 
 /**
@@ -85,6 +85,7 @@ fun LibraryScreen(
     onOpenApps: () -> Unit,
     onOpenUpdates: () -> Unit,
     onAppClick: (String) -> Unit,
+    expandDownloadsSignal: Int = 0,
     viewModel: LibraryViewModel = hiltViewModel(),
 ) {
     val library by viewModel.library.collectAsStateWithLifecycle()
@@ -92,22 +93,22 @@ fun LibraryScreen(
     val updateRows by viewModel.updateRows.collectAsStateWithLifecycle()
     val downloads by viewModel.downloadTasks.collectAsStateWithLifecycle()
     val installingPackage by viewModel.installingPackage.collectAsStateWithLifecycle()
+    val cacheBytes by viewModel.cacheBytes.collectAsStateWithLifecycle()
     val message by viewModel.message.collectAsStateWithLifecycle()
-    val confirmation by viewModel.pendingConfirmation.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
-    val context = LocalContext.current
 
     // One quiet run per session so the update counter stays current.
     LaunchedEffect(Unit) {
         viewModel.autoCheckOnce()
     }
 
-    // We launch the system install dialog from the Activity — it can't be bypassed.
-    LaunchedEffect(confirmation) {
-        confirmation?.let { intent ->
-            runCatching { context.startActivity(intent) }
-            viewModel.onConfirmationLaunched()
-        }
+    LaunchedEffect(
+        downloads.size,
+        downloads.count { it.isReady },
+        downloads.count { it.isFailed },
+        downloads.count { it.isCompleted },
+    ) {
+        viewModel.refreshCacheSize()
     }
 
     LaunchedEffect(message) {
@@ -117,7 +118,9 @@ fun LibraryScreen(
         }
     }
 
-    val actionable = updateRows.count { it.download.isActionable }
+    val actionable = updateRows.count {
+        it.download.isActionable || it.install is InstallState.Failed
+    }
 
     Scaffold(
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
@@ -140,9 +143,20 @@ fun LibraryScreen(
                 DownloadManagerCard(
                     tasks = downloads,
                     installingPackage = installingPackage,
+                    cacheBytes = cacheBytes,
+                    expandSignal = expandDownloadsSignal,
                     onInstall = viewModel::install,
-                    onCancel = viewModel::cancelDownload,
+                    onPause = viewModel::pauseDownload,
+                    onResume = viewModel::resumeDownload,
                     onRetry = viewModel::retry,
+                    onRedownload = viewModel::redownload,
+                    onRemove = viewModel::remove,
+                    onClearCompleted = viewModel::clearCompleted,
+                    onClearCache = viewModel::clearCache,
+                    onRetryAllFailed = viewModel::retryAllFailed,
+                    onRemoveAllFailed = viewModel::removeAllFailed,
+                    onOpenAppDetails = onAppClick,
+                    onCheckUpdates = { viewModel.checkUpdates() },
                 )
 
                 if (!libraryLoaded) {
@@ -172,10 +186,11 @@ fun LibraryScreen(
                                 trailing = {
                                     DownloadActionButton(
                                         state = row.download,
+                                        install = row.install,
                                         installing = installingPackage == row.app.packageName,
                                         startLabel = stringResource(R.string.updates_start),
                                         onStart = { viewModel.update(row.app) },
-                                        onCancel = { viewModel.cancelDownload(row.app) },
+                                        onCancel = { viewModel.pauseDownload(row.app) },
                                         onInstall = { viewModel.install(row.app) },
                                     )
                                 },

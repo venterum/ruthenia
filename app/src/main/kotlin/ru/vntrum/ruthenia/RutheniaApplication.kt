@@ -25,6 +25,7 @@ import okhttp3.OkHttpClient
 import com.vntrum.ruthenia.core.data.repository.LibraryRepository
 import com.vntrum.ruthenia.core.data.settings.SettingsRepository
 import com.vntrum.ruthenia.core.security.RuStoreImageClient
+import com.vntrum.ruthenia.core.updates.DownloadManager
 import com.vntrum.ruthenia.core.updates.UpdateScheduler
 
 @HiltAndroidApp
@@ -41,6 +42,9 @@ class RutheniaApplication : Application(), Configuration.Provider, SingletonImag
 
     @Inject
     lateinit var libraryRepository: LibraryRepository
+
+    @Inject
+    lateinit var downloadManager: DownloadManager
 
     /**
      * Icons live on the RuStore CDN, which is served by a Russian Trusted CA
@@ -77,6 +81,9 @@ class RutheniaApplication : Application(), Configuration.Provider, SingletonImag
         // The installed list may have changed while the app was closed.
         applicationScope.launch {
             libraryRepository.syncInstalledVersions()
+            // WorkManager may have finished (or been pruned) while the process
+            // was dead; rebuild the manager rows from the durable ledger.
+            downloadManager.reconcile()
         }
     }
 }

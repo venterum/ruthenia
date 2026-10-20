@@ -52,7 +52,8 @@
     <string name="app_details_reinstall">Reinstall</string>
     <string name="app_details_downloading_percent">Downloading %1$d%%</string>
     <string name="app_details_downloading">Downloading…</string>
-    <string name="app_details_cancel_download">Cancel download</string>
+    <string name="app_details_cancel_download">Pause download</string>
+    <string name="app_details_resume">Resume</string>
     <string name="app_details_installing">Installing…</string>
 
     <string name="app_details_files_note">Files are downloaded from the RuStore CDN and the signature is verified before installation — an update won\'t be installed over a build from another source.</string>

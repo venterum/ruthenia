@@ -7,7 +7,6 @@
 package com.vntrum.ruthenia.feature.appdetails
 
 import android.content.Context
-import android.content.Intent
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -37,7 +36,11 @@ import com.vntrum.ruthenia.core.updates.DownloadManager
 import com.vntrum.ruthenia.core.updates.DownloadRequest
 import com.vntrum.ruthenia.core.updates.DownloadState
 import com.vntrum.ruthenia.core.updates.DownloadTask
+import com.vntrum.ruthenia.core.updates.InstallState
 import com.vntrum.ruthenia.core.updates.isBusy
+import com.vntrum.ruthenia.core.updates.needsRedownload
+import com.vntrum.ruthenia.core.updates.text
+import com.vntrum.ruthenia.core.updates.toTaskFailure
 
 /** State of the installation process on the detail screen. */
 sealed interface InstallUiState {
@@ -47,6 +50,8 @@ sealed interface InstallUiState {
 
     /** Files are downloaded, awaiting a tap on "Install". */
     data object Ready : InstallUiState
+
+    data object Paused : InstallUiState
 
     data object Installing : InstallUiState
 
@@ -101,10 +106,6 @@ class AppDetailsViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(AppDetailsUiState())
     val uiState: StateFlow<AppDetailsUiState> = _uiState.asStateFlow()
 
-    /** Intent of the system confirmation dialog — launched from the Activity. */
-    private val _pendingConfirmation = MutableStateFlow<Intent?>(null)
-    val pendingConfirmation: StateFlow<Intent?> = _pendingConfirmation.asStateFlow()
-
     /** One-off hint messages (for example, about the APK folder). */
     private val _message = MutableStateFlow<String?>(null)
     val message: StateFlow<String?> = _message.asStateFlow()
@@ -117,6 +118,7 @@ class AppDetailsViewModel @Inject constructor(
 
     /** Last known download state from the manager. */
     private var downloadState: DownloadState = DownloadState.Idle
+    private var installState: InstallState = InstallState.Idle
     private var downloadTask: DownloadTask? = null
 
     init {
@@ -134,7 +136,8 @@ class AppDetailsViewModel @Inject constructor(
         viewModelScope.launch {
             downloadManager.downloads.collect { tasks ->
                 downloadTask = tasks.firstOrNull { it.packageName == packageName }
-                downloadState = downloadTask?.state ?: DownloadState.Idle
+                downloadState = downloadTask?.download ?: DownloadState.Idle
+                installState = downloadTask?.install ?: InstallState.Idle
                 publishInstallState()
             }
         }
@@ -269,9 +272,17 @@ class AppDetailsViewModel @Inject constructor(
         }
     }
 
-    /** Cancels an in-flight download — the action bar offers it while busy. */
+    /** Pauses an in-flight download — partial files are kept for resume. */
     fun cancelDownload() {
-        downloadManager.cancel(packageName)
+        viewModelScope.launch {
+            downloadManager.pause(packageName)
+        }
+    }
+
+    fun resumeDownload() {
+        viewModelScope.launch {
+            downloadManager.resume(packageName)
+        }
     }
 
     /**
@@ -286,16 +297,21 @@ class AppDetailsViewModel @Inject constructor(
             installDownloaded(details)
         } else {
             viewModelScope.launch {
-                downloadManager.request(
-                    DownloadRequest(
-                        packageName = packageName,
-                        appId = details.appId,
-                        versionCode = details.versionCode,
-                        name = details.name,
-                        iconUrl = details.iconUrl,
-                        publisher = details.publisher,
-                    ),
-                )
+                if (downloadTask?.failure?.needsRedownload == true) {
+                    downloadTask?.let { downloadManager.redownload(it) }
+                } else {
+                    downloadManager.request(
+                        DownloadRequest(
+                            packageName = packageName,
+                            appId = details.appId,
+                            versionCode = details.versionCode,
+                            name = details.name,
+                            iconUrl = details.iconUrl,
+                            publisher = details.publisher,
+                            versionName = details.versionName,
+                        ),
+                    )
+                }
             }
         }
     }
@@ -307,18 +323,13 @@ class AppDetailsViewModel @Inject constructor(
             publishInstallState()
 
             runCatching {
-                downloadManager.install(
-                    packageName = packageName,
-                    appId = details.appId,
-                    name = details.name,
-                    iconUrl = details.iconUrl,
-                    publisher = details.publisher,
-                ) { intent -> _pendingConfirmation.value = intent }
+                downloadManager.install(packageName)
             }
                 .onSuccess { result ->
                     transientInstall.value = when (result) {
                         InstallResult.Success -> InstallUiState.Done
-                        is InstallResult.Failure -> InstallUiState.Failed(result.message)
+                        is InstallResult.Failure ->
+                            InstallUiState.Failed(result.toTaskFailure().text(context).message)
                     }
                     publishInstallState()
                     if (result is InstallResult.Success) refresh()
@@ -330,10 +341,6 @@ class AppDetailsViewModel @Inject constructor(
         }
     }
 
-    fun onConfirmationLaunched() {
-        _pendingConfirmation.value = null
-    }
-
     fun dismissInstallState() {
         transientInstall.value = null
         publishInstallState()
@@ -342,15 +349,29 @@ class AppDetailsViewModel @Inject constructor(
     /** Merges the short-lived installation state and the download state into the UI. */
     private fun publishInstallState() {
         val transient = transientInstall.value
-        val install = transient ?: when (val state = downloadState) {
-            is DownloadState.Downloading -> InstallUiState.Downloading(state.fraction)
-            DownloadState.Queued,
-            DownloadState.Verifying,
-            -> InstallUiState.Downloading(null)
+        val currentInstall = installState
+        val currentDownload = downloadState
+        val install = transient ?: when {
+            currentInstall is InstallState.Installing ||
+                currentInstall is InstallState.AwaitingUser -> InstallUiState.Installing
 
-            is DownloadState.Ready -> InstallUiState.Ready
-            is DownloadState.Failed -> InstallUiState.Failed(state.message)
-            else -> if (state.isBusy) InstallUiState.Downloading(null) else InstallUiState.Idle
+            currentInstall is InstallState.Failed ->
+                InstallUiState.Failed(currentInstall.failure.text(context).message)
+
+            currentDownload is DownloadState.Downloading ->
+                InstallUiState.Downloading(currentDownload.fraction)
+
+            currentDownload is DownloadState.Paused -> InstallUiState.Paused
+
+            currentDownload is DownloadState.Queued ||
+                currentDownload is DownloadState.Verifying ->
+                InstallUiState.Downloading(null)
+
+            currentDownload is DownloadState.Ready -> InstallUiState.Ready
+            currentDownload is DownloadState.Failed ->
+                InstallUiState.Failed(currentDownload.failure.text(context).message)
+
+            else -> InstallUiState.Idle
         }
         _uiState.update { it.copy(install = install) }
     }
