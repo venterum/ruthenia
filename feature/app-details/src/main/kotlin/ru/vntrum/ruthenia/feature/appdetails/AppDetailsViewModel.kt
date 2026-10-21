@@ -229,7 +229,9 @@ class AppDetailsViewModel @Inject constructor(
                 updatedAt = release.publishedAt?.let {
                     java.time.Instant.ofEpochMilli(it).toString()
                 },
-                iconUrl = link.avatarUrl,
+                // The app's real icon, when it is already known locally; the
+                // repository avatar is only the last resort.
+                iconUrl = installed?.iconUrl ?: downloadTask?.iconUrl ?: link.avatarUrl,
                 minSdkVersion = null,
                 targetSdkVersion = null,
                 fileSize = asset.size,
@@ -291,7 +293,7 @@ class AppDetailsViewModel @Inject constructor(
             updatedAt = link.latestPublishedAt?.let {
                 java.time.Instant.ofEpochMilli(it).toString()
             },
-            iconUrl = installed?.iconUrl ?: link.avatarUrl,
+            iconUrl = installed?.iconUrl ?: downloadTask?.iconUrl ?: link.avatarUrl,
             minSdkVersion = null,
             targetSdkVersion = null,
             fileSize = link.latestAssetSize,

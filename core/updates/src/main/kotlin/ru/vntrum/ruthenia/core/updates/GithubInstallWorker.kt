@@ -22,6 +22,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import com.vntrum.ruthenia.core.data.icons.AppIconStore
 import com.vntrum.ruthenia.core.data.repository.GithubRepository
 import com.vntrum.ruthenia.core.data.repository.LibraryRepository
 import com.vntrum.ruthenia.core.github.GithubAsset
@@ -54,6 +55,7 @@ class GithubInstallWorker @AssistedInject constructor(
     private val githubRepository: GithubRepository,
     private val libraryRepository: LibraryRepository,
     private val githubTokenStore: GithubTokenStore,
+    private val appIconStore: AppIconStore,
 ) : CoroutineWorker(appContext, params) {
 
     override suspend fun doWork(): Result {
@@ -102,11 +104,22 @@ class GithubInstallWorker @AssistedInject constructor(
             }
 
             val packageName = metadata.packageName
+            // The real launcher icon from the APK: a GitHub release only has
+            // the owner's avatar, which is not the app's icon.
+            val iconUrl = appIconStore.fromApk(files, packageName, metadata.versionCode)
             if (installed != null && metadata.versionCode == installed) {
-                // The same build is already installed: only link the source.
+                // The same build is already installed: link the source and
+                // start tracking the app — without a library row it would
+                // never be checked for updates.
                 downloader.clear(tempKey)
                 link(request, packageName)
-                libraryRepository.markGithubSource(packageName)
+                libraryRepository.trackInstalled(
+                    packageName = packageName,
+                    appId = null,
+                    name = label,
+                    iconUrl = iconUrl,
+                    publisher = request.owner,
+                )
                 notifications.clear(tempKey)
                 return Result.success(
                     workDataOf(
@@ -123,7 +136,7 @@ class GithubInstallWorker @AssistedInject constructor(
                 packageName = packageName,
                 appId = null,
                 name = label,
-                iconUrl = request.avatarUrl,
+                iconUrl = iconUrl,
                 publisher = request.owner,
                 versionCode = metadata.versionCode,
                 versionName = metadata.versionName ?: request.releaseVersionName,

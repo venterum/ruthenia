@@ -26,6 +26,7 @@ import kotlinx.coroutines.sync.withPermit
 import com.vntrum.ruthenia.core.data.db.GithubAppDao
 import com.vntrum.ruthenia.core.data.db.InstalledAppDao
 import com.vntrum.ruthenia.core.data.db.InstalledAppEntity
+import com.vntrum.ruthenia.core.data.icons.AppIconStore
 import com.vntrum.ruthenia.core.data.model.AppSource
 import com.vntrum.ruthenia.core.data.model.DeviceApp
 import com.vntrum.ruthenia.core.data.model.InstalledApp
@@ -50,6 +51,7 @@ class LibraryRepository @Inject constructor(
     private val installedAppDao: InstalledAppDao,
     private val githubAppDao: GithubAppDao,
     private val githubRepository: GithubRepository,
+    private val appIconStore: AppIconStore,
 ) {
 
     /** Limiter for concurrent catalog requests: it rate limits. */
@@ -113,31 +115,66 @@ class LibraryRepository @Inject constructor(
         )
     }
 
-    /** Marks an existing library row as GitHub-sourced without changing install time. */
-    suspend fun markGithubSource(packageName: String) {
-        val existing = installedAppDao.get(packageName) ?: return
-        installedAppDao.upsert(existing.copy(source = AppSource.GITHUB, inCatalog = false))
-    }
-
-    /** Reconciles tracked apps with the actually installed ones. */
+    /**
+     * Reconciles tracked apps with the actually installed ones.
+     *
+     * Also adopts GitHub links whose package is installed but has no library
+     * row: without it the app would never be checked for updates. GitHub cards
+     * show the real app icon from the local [AppIconStore], so rows still
+     * carrying the repository avatar are refreshed as well.
+     */
     suspend fun syncInstalledVersions() {
-        installedAppDao.getAll().forEach { entity ->
+        val entities = installedAppDao.getAll()
+        val tracked = entities.mapTo(mutableSetOf()) { it.packageName }
+        entities.forEach { entity ->
             val installed = readInstalledVersion(entity.packageName)
-            when {
-                installed == null -> {
-                    installedAppDao.delete(entity.packageName)
-                    githubAppDao.delete(entity.packageName)
-                }
-
-                installed.first != entity.installedVersionCode ||
-                    installed.second != entity.installedVersionName ->
-                    installedAppDao.upsert(
-                        entity.copy(
-                            installedVersionCode = installed.first,
-                            installedVersionName = installed.second,
-                        ),
-                    )
+            if (installed == null) {
+                installedAppDao.delete(entity.packageName)
+                githubAppDao.delete(entity.packageName)
+                return@forEach
             }
+
+            val versionChanged = installed.first != entity.installedVersionCode ||
+                installed.second != entity.installedVersionName
+            val icon = if (entity.source == AppSource.GITHUB &&
+                (versionChanged || !appIconStore.isLocal(entity.iconUrl))
+            ) {
+                appIconStore.fromInstalledApp(entity.packageName, installed.first)
+            } else {
+                null
+            }
+            if (versionChanged || icon != null) {
+                installedAppDao.upsert(
+                    entity.copy(
+                        installedVersionCode = installed.first,
+                        installedVersionName = installed.second,
+                        iconUrl = icon ?: entity.iconUrl,
+                    ),
+                )
+            }
+        }
+
+        githubAppDao.getAll().forEach { link ->
+            if (link.packageName in tracked) return@forEach
+            val installed = readInstalledVersion(link.packageName) ?: return@forEach
+            installedAppDao.upsert(
+                InstalledAppEntity(
+                    packageName = link.packageName,
+                    appId = null,
+                    name = link.displayName,
+                    iconUrl = appIconStore.fromInstalledApp(link.packageName, installed.first),
+                    publisher = link.owner,
+                    installedVersionCode = installed.first,
+                    installedVersionName = installed.second,
+                    latestVersionCode = null,
+                    latestVersionName = null,
+                    whatsNew = null,
+                    lastCheckedAt = null,
+                    lastInstalledAt = null,
+                    source = AppSource.GITHUB,
+                    inCatalog = false,
+                ),
+            )
         }
     }
 

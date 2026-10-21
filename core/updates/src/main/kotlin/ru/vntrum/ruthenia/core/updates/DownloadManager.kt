@@ -26,6 +26,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import com.vntrum.ruthenia.core.data.db.DownloadTaskEntity
+import com.vntrum.ruthenia.core.data.icons.AppIconStore
 import com.vntrum.ruthenia.core.data.repository.LibraryRepository
 import com.vntrum.ruthenia.core.data.settings.InstallMethod
 import com.vntrum.ruthenia.core.data.settings.SettingsRepository
@@ -55,6 +56,7 @@ class DownloadManager @Inject constructor(
     private val settingsRepository: SettingsRepository,
     private val libraryRepository: LibraryRepository,
     private val notifications: DownloadNotifications,
+    private val appIconStore: AppIconStore,
 ) {
 
     /**
@@ -178,6 +180,15 @@ class DownloadManager @Inject constructor(
         // prepared (or by a previous install whose result was lost).
         val installedNow = installedVersionCode(packageName)
         if (installedNow != null && versionCode != null && installedNow >= versionCode) {
+            // The app got on the device without us: start tracking it anyway,
+            // otherwise a GitHub-linked app would never be checked for updates.
+            libraryRepository.trackInstalled(
+                packageName = packageName,
+                appId = record?.appId ?: installed?.appId,
+                name = name,
+                iconUrl = record?.iconUrl ?: installed?.iconUrl,
+                publisher = record?.publisher ?: installed?.publisher,
+            )
             downloader.clear(packageName)
             repository.markCompleted(packageName, installedNow, System.currentTimeMillis())
             notifications.clear(packageName)
@@ -225,17 +236,26 @@ class DownloadManager @Inject constructor(
         }
 
         if (result is InstallResult.Success) {
+            val newVersionCode = installedVersionCode(packageName) ?: versionCode
+            // GitHub releases carry no app icon: read the real one from the
+            // installed files instead of keeping the repository avatar.
+            val iconUrl = if (record?.sourceType == DownloadWorker.SOURCE_GITHUB) {
+                appIconStore.fromApk(files, packageName, newVersionCode ?: 0L)
+                    ?: record.iconUrl ?: installed?.iconUrl
+            } else {
+                record?.iconUrl ?: installed?.iconUrl
+            }
             libraryRepository.trackInstalled(
                 packageName = packageName,
                 appId = record?.appId ?: installed?.appId,
                 name = name,
-                iconUrl = record?.iconUrl ?: installed?.iconUrl,
+                iconUrl = iconUrl,
                 publisher = record?.publisher ?: installed?.publisher,
             )
             downloader.clear(packageName)
             repository.markCompleted(
                 packageName = packageName,
-                versionCode = installedVersionCode(packageName) ?: versionCode,
+                versionCode = newVersionCode,
                 completedAt = System.currentTimeMillis(),
             )
             runCatching { repository.trimHistory(MAX_HISTORY, historyCutoff()) }
