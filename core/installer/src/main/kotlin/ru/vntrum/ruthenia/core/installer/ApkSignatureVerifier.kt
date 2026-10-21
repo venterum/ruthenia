@@ -239,6 +239,26 @@ class ApkSignatureVerifier @Inject constructor(
     } catch (_: Exception) {
         null
     }
+
+    /** Package identity, version and label read from an APK archive. */
+    fun metadata(file: File): ApkMetadata? {
+        return try {
+            val info = archiveInfo(file) ?: return null
+            val label = info.applicationInfo?.let { applicationInfo ->
+                runCatching {
+                    context.packageManager.getApplicationLabel(applicationInfo).toString()
+                }.getOrNull()
+            }
+            ApkMetadata(
+                packageName = info.packageName,
+                versionCode = PackageInfoCompat.getLongVersionCode(info),
+                versionName = info.versionName,
+                label = label,
+            )
+        } catch (_: Exception) {
+            null
+        }
+    }
 }
 
 /** Result of the signature comparison. */

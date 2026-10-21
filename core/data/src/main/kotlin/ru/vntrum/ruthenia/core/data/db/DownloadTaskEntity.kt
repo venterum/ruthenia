@@ -6,6 +6,7 @@
 
 package com.vntrum.ruthenia.core.data.db
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
@@ -26,6 +27,12 @@ data class DownloadTaskEntity(
     val publisher: String?,
     val versionCode: Long?,
     val versionName: String?,
+    /** RUSTORE or GITHUB. */
+    @ColumnInfo(defaultValue = "RUSTORE")
+    val sourceType: String = "RUSTORE",
+    val sourceUrl: String? = null,
+    val sourceSize: Long? = null,
+    val sourceSha256: String? = null,
     val totalBytes: Long?,
     /** QUEUED, DOWNLOADING, VERIFYING, READY, PAUSED, FAILED, COMPLETED. */
     val stage: String,

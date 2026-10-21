@@ -115,6 +115,28 @@ class DownloadNotifications @Inject constructor(
         notify(packageName, builder.build())
     }
 
+    /**
+     * A terminal GitHub first-install failure. The normal retry action is not
+     * used here because there is no package-keyed ledger row yet; the user can
+     * reopen the GitHub screen and try again.
+     */
+    fun showGithubFailed(key: String, appName: String, failure: TaskFailure) {
+        if (!canNotify()) return
+        ensureChannel()
+
+        val text = failure.text(context)
+        val builder = NotificationCompat.Builder(context, CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_notification_update)
+            .setContentTitle("$appName · ${text.title}")
+            .setContentText(text.message)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(text.message))
+            .setOngoing(false)
+            .setAutoCancel(true)
+            .setContentIntent(contentIntent())
+
+        notify(key, builder.build())
+    }
+
     /** Done: the APK was saved to the selected folder. */
     fun showExportDone(packageName: String, appName: String) {
         if (!canNotify()) return

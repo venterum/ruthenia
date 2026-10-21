@@ -33,6 +33,17 @@ class BackupSerializationTest {
                     inCatalog = true,
                 ),
             ),
+            githubApps = listOf(
+                BackupGithubApp(
+                    packageName = "com.example.github",
+                    owner = "owner",
+                    repo = "repo",
+                    assetName = "app.apk",
+                    installedReleaseId = 10L,
+                    latestReleaseId = 11L,
+                    latestVersionName = "1.1.0",
+                ),
+            ),
             settings = BackupSettings(
                 themeMode = "DARK",
                 navBarStyle = "NORMAL",
@@ -58,5 +69,6 @@ class BackupSerializationTest {
 
         assertEquals(0, decoded.apps.size)
         assertEquals(1, decoded.version)
+        assertEquals(0, decoded.githubApps.size)
     }
 }

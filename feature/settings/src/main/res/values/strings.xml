@@ -94,6 +94,15 @@
     <string name="settings_shizuku_warning_confirm">Включить</string>
 
     <string name="settings_section_security">Безопасность</string>
+    <string name="settings_section_github">GitHub</string>
+    <string name="settings_github_token">Токен GitHub</string>
+    <string name="settings_github_token_desc">Необязательный токен для приватных репозиториев и более высокого лимита GitHub API. Хранится зашифрованным и не попадает в резервные копии.</string>
+    <string name="settings_github_token_hint">github_pat_… или ghp_…</string>
+    <string name="settings_github_token_save">Сохранить</string>
+    <string name="settings_github_token_remove">Удалить</string>
+    <string name="settings_github_token_saved">Токен GitHub сохранён.</string>
+    <string name="settings_github_token_cleared">Токен GitHub удалён.</string>
+    <string name="settings_github_token_invalid">GitHub отклонил токен. Проверьте права и срок действия.</string>
     <string name="settings_certs">Сертификаты RuStore</string>
     <string name="settings_certs_source_bundled">Используется встроенный набор pin-хэшей.</string>
     <string name="settings_certs_source_refreshed">Обновлено %1$s.</string>

@@ -29,11 +29,22 @@ In a nutshell, **Ruthenia Store does not collect personal data, does not use ana
 | `static-m.rustore.ru` | APK/ZIP downloads, icons | **Russian Trusted Root/Sub CA** | ✅ |
 | `static.rustore.ru` | Possible icon CDN | System | ✅ |
 | `gu-st.ru` | Official Russian Trusted CA certificates (Mintsifry); only on a manual certificate refresh | System (GlobalSign) | — |
+| `api.github.com` | Repository/release metadata and optional token validation for GitHub sources | System | — |
+| `github.com` | GitHub repository pages and release-asset redirects | System | — |
+| `release-assets.githubusercontent.com` | Release APK downloads | System | — |
+| `avatars.githubusercontent.com` | Repository avatars | System | — |
 
 - All requests use **HTTPS only** (`usesCleartextTraffic=false`)
 - The APK bundles the Russian Trusted CA, used only to reach `static-m.rustore.ru` over HTTPS.
 - A request is rejected if the chain does not match the known pins
 - Pins are baked into the APK. They can be refreshed manually: Settings → "Security" → "RuStore certificates". The app checks the live RuStore host chains and the official Mintsifry certificates (`gu-st.ru`). Nothing happens automatically.
+
+### GitHub sources
+
+- GitHub API requests contain only the repository name explicitly added by the user and the standard GitHub `User-Agent`. No device identifier, installed-app list or RuStore data is sent.
+- The optional GitHub token is stored with an AES/GCM key in Android Keystore, never in plaintext preferences, logs or backups.
+- The token is sent only to `api.github.com` and to the authenticated asset download on `github.com`; it is not forwarded to the CDN redirect host.
+- GitHub APK downloads are checked against the asset size and, when GitHub provides one, the SHA-256 digest, plus the usual APK package/signature checks.
 
 ---
 
@@ -48,6 +59,7 @@ In a nutshell, **Ruthenia Store does not collect personal data, does not use ana
 | `User-Agent` | `RuStore/<ver> (Android …)` |
 | `X-Client-Signature` | `base64(HMAC-SHA256(key, nonce ‖ certSha256))` — computed locally |
 | `download-link` body | `appId`, `firstInstall`, `supportedAbis`, `sdkVersion`, `screenDensity` — the real profile needed for correct split-APKs |
+| GitHub repository | The `owner/repo` you explicitly add, plus an optional `Authorization` header only when a token is configured |
 
 ---
 

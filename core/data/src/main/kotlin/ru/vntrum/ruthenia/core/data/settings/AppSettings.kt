@@ -168,5 +168,9 @@ data class AppSettings(
         /** Record key in [ignoredUpdates] for a specific version. */
         fun ignoredUpdateKey(packageName: String, versionCode: Long?): String =
             if (versionCode == null) packageName else "$packageName@$versionCode"
+
+        /** Record key for sources without a numeric version code (GitHub tags). */
+        fun ignoredUpdateKey(packageName: String, version: String): String =
+            "$packageName@$version"
     }
 }

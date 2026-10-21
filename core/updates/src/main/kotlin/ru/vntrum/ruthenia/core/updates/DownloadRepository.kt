@@ -90,6 +90,10 @@ class DownloadRepository @Inject constructor(
                 publisher = request.publisher ?: existing?.publisher,
                 versionCode = request.versionCode ?: existing?.versionCode,
                 versionName = request.versionName ?: existing?.versionName,
+                sourceType = request.source.type,
+                sourceUrl = request.source.url,
+                sourceSize = request.source.size,
+                sourceSha256 = request.source.sha256,
                 totalBytes = null,
                 stage = DownloadStage.QUEUED,
                 workId = work.id.toString(),
@@ -109,6 +113,54 @@ class DownloadRepository @Inject constructor(
             DownloadWorker.uniqueName(request.packageName),
             ExistingWorkPolicy.REPLACE,
             work,
+        )
+    }
+
+    /**
+     * Creates a READY ledger row for files downloaded outside [DownloadWorker]
+     * (the first install from GitHub, where the package name is unknown until
+     * the APK has been inspected). The normal install path takes it from here.
+     */
+    suspend fun adoptReady(
+        packageName: String,
+        appId: Long?,
+        name: String?,
+        iconUrl: String?,
+        publisher: String?,
+        versionCode: Long?,
+        versionName: String?,
+        totalBytes: Long?,
+        source: DownloadSource,
+    ) {
+        val now = System.currentTimeMillis()
+        val existing = dao.get(packageName)
+        workManager.cancelUniqueWork(DownloadWorker.uniqueName(packageName)).await()
+        dao.upsert(
+            DownloadTaskEntity(
+                packageName = packageName,
+                appId = appId,
+                name = name,
+                iconUrl = iconUrl,
+                publisher = publisher,
+                versionCode = versionCode,
+                versionName = versionName,
+                sourceType = source.type,
+                sourceUrl = source.url,
+                sourceSize = source.size,
+                sourceSha256 = source.sha256,
+                totalBytes = totalBytes,
+                stage = DownloadStage.READY,
+                workId = null,
+                failureCode = null,
+                failureDetail = null,
+                installStage = InstallStage.IDLE,
+                installFailureCode = null,
+                installFailureDetail = null,
+                attemptCount = 0,
+                createdAt = existing?.createdAt ?: now,
+                updatedAt = now,
+                completedAt = null,
+            ),
         )
     }
 
@@ -363,6 +415,10 @@ class DownloadRepository @Inject constructor(
                     DownloadWorker.KEY_ICON to request.iconUrl,
                     DownloadWorker.KEY_PUBLISHER to request.publisher,
                     DownloadWorker.KEY_VERSION_NAME to request.versionName,
+                    DownloadWorker.KEY_SOURCE_TYPE to request.source.type,
+                    DownloadWorker.KEY_SOURCE_URL to request.source.url,
+                    DownloadWorker.KEY_SOURCE_SIZE to request.source.size,
+                    DownloadWorker.KEY_SOURCE_SHA256 to request.source.sha256,
                 ),
             )
             // Exponential backoff before retrying a network failure.
@@ -383,6 +439,7 @@ class DownloadRepository @Inject constructor(
             versionCode = versionCode,
             versionName = versionName,
             totalBytes = totalBytes,
+            source = source(),
             download = download,
             install = installState(),
             completedAt = completedAt,
@@ -532,7 +589,18 @@ class DownloadRepository @Inject constructor(
         iconUrl = iconUrl,
         publisher = publisher,
         versionName = versionName,
+        source = source(),
     )
+
+    private fun DownloadTaskEntity.source(): DownloadSource = when (sourceType) {
+        "GITHUB" -> DownloadSource.GithubAsset(
+            url = sourceUrl.orEmpty(),
+            size = sourceSize,
+            sha256 = sourceSha256,
+        )
+
+        else -> DownloadSource.RuStore
+    }
 
     private suspend fun Operation.await() = suspendCancellableCoroutine { continuation ->
         result.addListener(

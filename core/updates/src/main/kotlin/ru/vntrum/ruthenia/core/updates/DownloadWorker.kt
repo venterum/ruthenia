@@ -27,11 +27,13 @@ import kotlinx.coroutines.withContext
 import com.vntrum.ruthenia.core.data.db.DownloadTaskEntity
 import com.vntrum.ruthenia.core.data.repository.LibraryRepository
 import com.vntrum.ruthenia.core.data.settings.SettingsRepository
+import com.vntrum.ruthenia.core.github.GithubTokenStore
 import com.vntrum.ruthenia.core.installer.ApkDownloader
 import com.vntrum.ruthenia.core.installer.ApkSignatureVerifier
 import com.vntrum.ruthenia.core.installer.ApkSource
 import com.vntrum.ruthenia.core.installer.ApkVerification
 import com.vntrum.ruthenia.core.installer.DownloadProgress
+import com.vntrum.ruthenia.core.network.DownloadLinks
 import com.vntrum.ruthenia.core.network.DownloadUrl
 import com.vntrum.ruthenia.core.network.RuStoreApi
 
@@ -54,10 +56,16 @@ class DownloadWorker @AssistedInject constructor(
     private val settingsRepository: SettingsRepository,
     private val repository: DownloadRepository,
     private val notifications: DownloadNotifications,
+    private val githubTokenStore: GithubTokenStore,
 ) : CoroutineWorker(appContext, params) {
 
     override suspend fun doWork(): Result {
         val targetVersion = inputData.getLong(KEY_VERSION_CODE, UNKNOWN_VERSION)
+        val sourceType = inputData.getString(KEY_SOURCE_TYPE) ?: SOURCE_RUSTORE
+        val directUrl = inputData.getString(KEY_SOURCE_URL)
+            ?.takeIf { sourceType == SOURCE_GITHUB && it.isNotBlank() }
+        val directSize = inputData.getLong(KEY_SOURCE_SIZE, UNKNOWN_SIZE)
+        val directSha256 = inputData.getString(KEY_SOURCE_SHA256)
         val packageName = inputData.getString(KEY_PACKAGE)
             ?: return Result.failure(
                 failureData(
@@ -122,8 +130,23 @@ class DownloadWorker @AssistedInject constructor(
             repository.markDownloading(packageName)
 
             // The appId from the request saves a request; if it is absent, we ask the catalog.
-            val appId = meta.appId ?: api.overallInfo(packageName).appId
-            val links = api.downloadLinks(appId)
+            // A direct GitHub asset already has its URL and does not touch RuStore.
+            val links = if (directUrl != null) {
+                DownloadLinks(
+                    appId = meta.appId,
+                    versionCode = targetVersion.takeIf { it >= 0 },
+                    urls = listOf(
+                        DownloadUrl(
+                            url = directUrl,
+                            size = directSize.takeIf { it >= 0 },
+                            hash = directSha256,
+                        ),
+                    ),
+                )
+            } else {
+                val appId = meta.appId ?: api.overallInfo(packageName).appId
+                api.downloadLinks(appId)
+            }
             if (links.urls.isEmpty()) {
                 return failed(
                     packageName = packageName,
@@ -154,6 +177,8 @@ class DownloadWorker @AssistedInject constructor(
                 packageName = packageName,
                 meta = meta,
                 urls = links.urls,
+                headers = if (directUrl != null) githubHeaders() else emptyMap(),
+                verifyDigest = directUrl != null,
             )
             if (files.isEmpty()) {
                 return failed(
@@ -193,9 +218,28 @@ class DownloadWorker @AssistedInject constructor(
             }
 
             val totalBytes = files.sumOf { it.length() }
-            repository.markReady(packageName, versionCode, totalBytes)
+            val readyVersionCode = if (directUrl != null) {
+                signatureVerifier.downloadedVersionCode(files.first()) ?: versionCode
+            } else {
+                versionCode
+            }
+            if (directUrl != null && readyVersionCode != null) {
+                val installedNow = installedVersionCode(packageName)
+                if (installedNow != null && readyVersionCode < installedNow) {
+                    return failed(
+                        packageName = packageName,
+                        meta = meta,
+                        failure = TaskFailure(
+                            TaskFailureCode.VERSION_MISMATCH,
+                            "$readyVersionCode < $installedNow",
+                        ),
+                        versionCode = readyVersionCode,
+                    )
+                }
+            }
+            repository.markReady(packageName, readyVersionCode, totalBytes)
             notifications.showReady(packageName, meta.name)
-            Result.success(successData(meta, versionCode))
+            Result.success(successData(meta, readyVersionCode))
         } catch (cancellation: CancellationException) {
             // The coroutine is already cancelled — cleanup must survive the cancellation.
             withContext(NonCancellable) {
@@ -241,6 +285,8 @@ class DownloadWorker @AssistedInject constructor(
         packageName: String,
         meta: Meta,
         urls: List<DownloadUrl>,
+        headers: Map<String, String>,
+        verifyDigest: Boolean,
     ): List<File> = coroutineScope {
         val progress = Channel<DownloadProgress>(Channel.CONFLATED)
         val publisher = launch {
@@ -253,7 +299,14 @@ class DownloadWorker @AssistedInject constructor(
         try {
             downloader.download(
                 packageName = packageName,
-                sources = urls.map { ApkSource(url = it.url, size = it.size) },
+                sources = urls.map {
+                    ApkSource(
+                        url = it.url,
+                        size = it.size,
+                        sha256 = if (verifyDigest) it.hash else null,
+                        headers = headers,
+                    )
+                },
                 onProgress = { report: DownloadProgress -> progress.trySend(report) },
             )
         } finally {
@@ -261,6 +314,9 @@ class DownloadWorker @AssistedInject constructor(
             publisher.join()
         }
     }
+
+    private fun githubHeaders(): Map<String, String> =
+        githubTokenStore.token()?.let { mapOf("Authorization" to "Bearer $it") }.orEmpty()
 
     private suspend fun publish(meta: Meta, phase: String, progress: DownloadProgress) {
         setProgress(
@@ -352,6 +408,10 @@ class DownloadWorker @AssistedInject constructor(
         const val KEY_APP_ID = "appId"
         const val KEY_VERSION_CODE = "versionCode"
         const val KEY_VERSION_NAME = "versionName"
+        const val KEY_SOURCE_TYPE = "sourceType"
+        const val KEY_SOURCE_URL = "sourceUrl"
+        const val KEY_SOURCE_SIZE = "sourceSize"
+        const val KEY_SOURCE_SHA256 = "sourceSha256"
         const val KEY_NAME = "name"
         const val KEY_ICON = "iconUrl"
         const val KEY_PUBLISHER = "publisher"
@@ -369,6 +429,9 @@ class DownloadWorker @AssistedInject constructor(
         const val UNKNOWN_FRACTION = -1f
         const val UNKNOWN_APP_ID = -1L
         const val UNKNOWN_VERSION = -1L
+        const val UNKNOWN_SIZE = -1L
+        const val SOURCE_RUSTORE = "RUSTORE"
+        const val SOURCE_GITHUB = "GITHUB"
 
         /** We retry transient failures; the partial file is resumed in the process. */
         private const val MAX_ATTEMPTS = 4

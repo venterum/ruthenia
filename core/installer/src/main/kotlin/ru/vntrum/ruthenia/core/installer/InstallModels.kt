@@ -10,6 +10,10 @@ package com.vntrum.ruthenia.core.installer
 data class ApkSource(
     val url: String,
     val size: Long?,
+    /** Expected SHA-256 hex digest of the downloaded file, when the source provides one. */
+    val sha256: String? = null,
+    /** Additional request headers, for example a private GitHub asset token. */
+    val headers: Map<String, String> = emptyMap(),
 )
 
 /**
@@ -71,6 +75,14 @@ sealed interface InstallResult {
     data class Failure(val failure: InstallFailure) : InstallResult
 }
 
+/** Metadata read from an APK before installation. */
+data class ApkMetadata(
+    val packageName: String,
+    val versionCode: Long,
+    val versionName: String?,
+    val label: String?,
+)
+
 /** Package download progress. */
 data class DownloadProgress(
     val downloadedBytes: Long,
@@ -97,6 +109,10 @@ sealed class InstallException(message: String, cause: Throwable? = null) : Excep
      */
     class IntegrityMismatch(val url: String, val expected: Long, val actual: Long) :
         InstallException("Size mismatch for $url: expected $expected bytes, got $actual")
+
+    /** A source-provided SHA-256 digest did not match the downloaded file. */
+    class DigestMismatch(val url: String, val expected: String) :
+        InstallException("SHA-256 mismatch for $url")
 
     /** The downloaded file is not a readable APK/ZIP archive. */
     class InvalidApk(val fileName: String) :

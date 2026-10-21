@@ -281,6 +281,7 @@ fun Throwable.toTaskFailure(): TaskFailure {
         }
 
         is InstallException.IntegrityMismatch -> TaskFailureCode.SIZE_MISMATCH
+        is InstallException.DigestMismatch -> TaskFailureCode.INVALID_APK
         is InstallException.ContainerHasNoApk -> TaskFailureCode.CORRUPTED
         is InstallException.InvalidApk -> TaskFailureCode.INVALID_APK
         is InstallException.PackageMismatch -> TaskFailureCode.PACKAGE_MISMATCH

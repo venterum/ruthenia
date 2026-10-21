@@ -19,8 +19,9 @@ import com.vntrum.ruthenia.core.data.model.AppSource
         HomeEntryEntity::class,
         UnresolvedAppEntity::class,
         DownloadTaskEntity::class,
+        GithubAppEntity::class,
     ],
-    version = 5,
+    version = 6,
     exportSchema = true,
 )
 @TypeConverters(AppSourceConverters::class)
@@ -35,6 +36,8 @@ abstract class RutheniaDatabase : RoomDatabase() {
     abstract fun unresolvedAppDao(): UnresolvedAppDao
 
     abstract fun downloadTaskDao(): DownloadTaskDao
+
+    abstract fun githubAppDao(): GithubAppDao
 
     companion object {
         const val NAME = "ruthenia.db"

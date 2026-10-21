@@ -20,20 +20,24 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import com.vntrum.ruthenia.core.data.model.GithubLink
 import com.vntrum.ruthenia.core.data.model.InstalledApp
 import com.vntrum.ruthenia.core.data.model.UpdateStatus
 import com.vntrum.ruthenia.core.data.model.isUpdateIgnored
 import com.vntrum.ruthenia.core.data.model.toUserMessage
 import com.vntrum.ruthenia.core.data.repository.CatalogRepository
+import com.vntrum.ruthenia.core.data.repository.GithubRepository
 import com.vntrum.ruthenia.core.data.repository.LibraryRepository
 import com.vntrum.ruthenia.core.data.settings.SettingsRepository
 import com.vntrum.ruthenia.core.installer.InstallException
 import com.vntrum.ruthenia.core.installer.InstallResult
 import com.vntrum.ruthenia.core.network.AppDetails
 import com.vntrum.ruthenia.core.network.CatalogApp
+import com.vntrum.ruthenia.core.github.GithubAssetSelector
 import com.vntrum.ruthenia.core.updates.ApkExportManager
 import com.vntrum.ruthenia.core.updates.DownloadManager
 import com.vntrum.ruthenia.core.updates.DownloadRequest
+import com.vntrum.ruthenia.core.updates.DownloadSource
 import com.vntrum.ruthenia.core.updates.DownloadState
 import com.vntrum.ruthenia.core.updates.DownloadTask
 import com.vntrum.ruthenia.core.updates.InstallState
@@ -74,9 +78,19 @@ data class AppDetailsUiState(
     val isOffline: Boolean = false,
     /** The app update is hidden by the user. */
     val updateHidden: Boolean = false,
+    /** Non-null when this app is tracked from a GitHub release. */
+    val githubRepo: String? = null,
+    val githubAssetName: String? = null,
+    val githubAssetUrl: String? = null,
+    val githubAssetSize: Long? = null,
+    val githubAssetSha256: String? = null,
+    val githubIncludePrereleases: Boolean = false,
+    /** RuStore APK export is not available for GitHub sources. */
+    val canExport: Boolean = true,
 ) {
     val canInstall: Boolean
         get() = details != null && details.isAggregated.not() &&
+            (githubRepo == null || githubAssetUrl != null) &&
             install !is InstallUiState.Downloading && install !is InstallUiState.Installing
 
     val updateAvailable: Boolean
@@ -93,6 +107,7 @@ class AppDetailsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val catalogRepository: CatalogRepository,
     private val libraryRepository: LibraryRepository,
+    private val githubRepository: GithubRepository,
     private val downloadManager: DownloadManager,
     private val settingsRepository: SettingsRepository,
     private val exportManager: ApkExportManager,
@@ -146,6 +161,12 @@ class AppDetailsViewModel @Inject constructor(
     fun refresh() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null, isOffline = false) }
+            val github = runCatching { githubRepository.getLink(packageName) }.getOrNull()
+            if (github != null) {
+                loadGithub(github)
+                return@launch
+            }
+
             runCatching { catalogRepository.appDetails(packageName) }
                 .onSuccess { details ->
                     _uiState.update {
@@ -154,6 +175,8 @@ class AppDetailsViewModel @Inject constructor(
                             details = details,
                             error = null,
                             isOffline = false,
+                            githubRepo = null,
+                            canExport = true,
                         )
                     }
                     details.publicCompanyId?.let(::loadDeveloperApps)
@@ -175,6 +198,111 @@ class AppDetailsViewModel @Inject constructor(
                 }
         }
     }
+
+    /** Loads the GitHub repository/release and maps it onto the shared details UI. */
+    private suspend fun loadGithub(link: GithubLink) {
+        val repo = try {
+            githubRepository.repo(link.owner, link.repo)
+        } catch (_: Throwable) {
+            null
+        }
+        val releases = try {
+            githubRepository.releases(link.owner, link.repo)
+        } catch (_: Throwable) {
+            emptyList()
+        }
+        val release = releases.firstOrNull {
+            link.includePrereleases || !it.prerelease
+        }
+        val asset = release?.let { GithubAssetSelector.select(it, link.assetName) }
+
+        if (release != null && asset != null) {
+            val installed = libraryRepository.get(packageName)
+            val details = AppDetails(
+                appId = 0L,
+                packageName = packageName,
+                name = installed?.name ?: link.displayName ?: repo?.name ?: link.repo,
+                publisher = link.owner,
+                versionName = release.versionName,
+                versionCode = null,
+                whatsNew = release.body,
+                updatedAt = release.publishedAt?.let {
+                    java.time.Instant.ofEpochMilli(it).toString()
+                },
+                iconUrl = link.avatarUrl,
+                minSdkVersion = null,
+                targetSdkVersion = null,
+                fileSize = asset.size,
+                isAggregated = false,
+                shortDescription = repo?.description,
+                fullDescription = repo?.description,
+                website = "https://github.com/${link.fullName}",
+            )
+            _uiState.update {
+                it.copy(
+                    isLoading = false,
+                    details = details,
+                    error = null,
+                    isOffline = false,
+                    githubRepo = link.fullName,
+                    githubAssetName = asset.name,
+                    githubAssetUrl = asset.downloadUrl,
+                    githubAssetSize = asset.size,
+                    githubAssetSha256 = asset.sha256,
+                    githubIncludePrereleases = link.includePrereleases,
+                    canExport = false,
+                )
+            }
+            return
+        }
+
+        val fallback = githubOfflineDetails(link)
+        _uiState.update {
+            it.copy(
+                isLoading = false,
+                details = fallback,
+                error = null,
+                isOffline = true,
+                githubRepo = link.fullName,
+                githubAssetName = link.assetName,
+                githubAssetUrl = link.latestAssetUrl,
+                githubAssetSize = link.latestAssetSize,
+                githubAssetSha256 = link.latestAssetSha256,
+                githubIncludePrereleases = link.includePrereleases,
+                canExport = false,
+            )
+        }
+    }
+
+    private suspend fun githubOfflineDetails(link: GithubLink): AppDetails {
+        val installed = libraryRepository.get(packageName)
+        return AppDetails(
+            appId = 0L,
+            packageName = packageName,
+            name = installed?.name ?: link.displayName ?: link.repo,
+            publisher = link.owner,
+            versionName = if (installed != null) {
+                displayVersionName(installed, link)
+            } else {
+                link.latestVersionName
+            },
+            versionCode = null,
+            whatsNew = null,
+            updatedAt = link.latestPublishedAt?.let {
+                java.time.Instant.ofEpochMilli(it).toString()
+            },
+            iconUrl = installed?.iconUrl ?: link.avatarUrl,
+            minSdkVersion = null,
+            targetSdkVersion = null,
+            fileSize = link.latestAssetSize,
+            isAggregated = false,
+            website = "https://github.com/${link.fullName}",
+        )
+    }
+
+    private fun displayVersionName(installed: InstalledApp, link: GithubLink): String? =
+        installed.installedVersionName ?: installed.installedVersionCode?.toString()
+            ?: link.latestVersionName
 
     /** Partial detail screen from the catalog and library caches. */
     private suspend fun offlineDetails(): AppDetails? {
@@ -231,15 +359,19 @@ class AppDetailsViewModel @Inject constructor(
             if (installed.isUpdateIgnored(settings.ignoredUpdates)) {
                 settingsRepository.restoreUpdateVisibility(packageName)
             } else {
-                settingsRepository.ignoreUpdate(packageName, installed.latestVersionCode)
+                settingsRepository.ignoreUpdate(
+                    packageName,
+                    installed.latestVersionCode ?: installed.github?.latestReleaseId,
+                )
             }
         }
     }
 
     /** Saves the APK to the folder from settings; without a folder, prompts to choose one. */
     fun exportApk() {
-        val details = _uiState.value.details ?: return
-        if (details.isAggregated) return
+        val state = _uiState.value
+        val details = state.details ?: return
+        if (details.isAggregated || !state.canExport || state.githubRepo != null) return
 
         viewModelScope.launch {
             val treeUri = settingsRepository.settings.first().apkExportTreeUri
@@ -290,15 +422,32 @@ class AppDetailsViewModel @Inject constructor(
      * otherwise queue the download in the shared manager.
      */
     fun install() {
-        val details = _uiState.value.details ?: return
-        if (!_uiState.value.canInstall) return
+        val state = _uiState.value
+        val details = state.details ?: return
+        if (!state.canInstall) return
 
         if (downloadState is DownloadState.Ready) {
             installDownloaded(details)
         } else {
             viewModelScope.launch {
+                val githubUrl = state.githubAssetUrl
                 if (downloadTask?.failure?.needsRedownload == true) {
                     downloadTask?.let { downloadManager.redownload(it) }
+                } else if (githubUrl != null) {
+                    downloadManager.request(
+                        DownloadRequest(
+                            packageName = packageName,
+                            name = details.name,
+                            iconUrl = details.iconUrl,
+                            publisher = details.publisher,
+                            versionName = details.versionName,
+                            source = DownloadSource.GithubAsset(
+                                url = githubUrl,
+                                size = state.githubAssetSize,
+                                sha256 = state.githubAssetSha256,
+                            ),
+                        ),
+                    )
                 } else {
                     downloadManager.request(
                         DownloadRequest(

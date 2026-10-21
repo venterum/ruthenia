@@ -168,7 +168,9 @@ internal fun ImportProgressCard(
 @Composable
 private fun versionLine(app: InstalledApp): String {
     val installed = app.installedVersionName ?: app.installedVersionCode?.toString()
-    val latest = app.latestVersionName ?: app.latestVersionCode?.toString()
+    val latest = app.github?.latestVersionName
+        ?: app.latestVersionName
+        ?: app.latestVersionCode?.toString()
     val base = when {
         installed == null -> app.packageName
         app.status == UpdateStatus.UPDATE_AVAILABLE && latest != null ->
@@ -184,6 +186,7 @@ private fun versionLine(app: InstalledApp): String {
 private fun AppSource.label(): String = stringResource(
     when (this) {
         AppSource.RUSTORE -> R.string.source_rustore
+        AppSource.GITHUB -> R.string.source_github
         AppSource.GOOGLE_PLAY -> R.string.source_gplay
         AppSource.SIDELOAD -> R.string.source_sideload
         AppSource.OTHER -> R.string.source_other

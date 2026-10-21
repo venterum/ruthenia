@@ -19,15 +19,18 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
+import com.vntrum.ruthenia.core.data.db.GithubAppDao
 import com.vntrum.ruthenia.core.data.db.InstalledAppDao
 import com.vntrum.ruthenia.core.data.db.InstalledAppEntity
 import com.vntrum.ruthenia.core.data.model.AppSource
 import com.vntrum.ruthenia.core.data.model.DeviceApp
 import com.vntrum.ruthenia.core.data.model.InstalledApp
 import com.vntrum.ruthenia.core.data.model.UpdateStatus
+import com.vntrum.ruthenia.core.data.model.toLink
 import com.vntrum.ruthenia.core.data.model.toModel
 import com.vntrum.ruthenia.core.network.AppDetails
 import com.vntrum.ruthenia.core.network.RuStoreApi
@@ -45,23 +48,38 @@ class LibraryRepository @Inject constructor(
     @ApplicationContext private val context: Context,
     private val api: RuStoreApi,
     private val installedAppDao: InstalledAppDao,
+    private val githubAppDao: GithubAppDao,
+    private val githubRepository: GithubRepository,
 ) {
 
     /** Limiter for concurrent catalog requests: it rate limits. */
     private val throttle = Semaphore(MAX_CONCURRENT_REQUESTS)
 
     fun observeLibrary(): Flow<List<InstalledApp>> =
-        installedAppDao.observeAll().map { entities -> entities.map { it.toModel() } }
+        combine(
+            installedAppDao.observeAll(),
+            githubAppDao.observeAll(),
+        ) { entities, links ->
+            val byPackage = links.associateBy { it.packageName }
+            entities.map { entity -> entity.toModel(byPackage[entity.packageName]?.toLink()) }
+        }
 
     /** One-off library read — for the worker and manual checks. */
-    suspend fun currentLibrary(): List<InstalledApp> =
-        installedAppDao.getAll().map { it.toModel() }
+    suspend fun currentLibrary(): List<InstalledApp> {
+        val links = githubAppDao.getAll().associateBy { it.packageName }
+        return installedAppDao.getAll().map { entity ->
+            entity.toModel(links[entity.packageName]?.toLink())
+        }
+    }
 
     fun observe(packageName: String): Flow<InstalledApp?> =
-        installedAppDao.observe(packageName).map { it?.toModel() }
+        combine(
+            installedAppDao.observe(packageName),
+            githubAppDao.observe(packageName),
+        ) { entity, link -> entity?.toModel(link?.toLink()) }
 
     suspend fun get(packageName: String): InstalledApp? =
-        installedAppDao.get(packageName)?.toModel()
+        installedAppDao.get(packageName)?.toModel(githubAppDao.get(packageName)?.toLink())
 
     /** Called after a successful install/update through Ruthenia Store. */
     suspend fun trackInstalled(
@@ -73,6 +91,7 @@ class LibraryRepository @Inject constructor(
     ) {
         val existing = installedAppDao.get(packageName)
         val installed = readInstalledVersion(packageName)
+        val github = githubAppDao.get(packageName)
 
         installedAppDao.upsert(
             InstalledAppEntity(
@@ -88,12 +107,16 @@ class LibraryRepository @Inject constructor(
                 whatsNew = existing?.whatsNew,
                 lastCheckedAt = existing?.lastCheckedAt,
                 lastInstalledAt = System.currentTimeMillis(),
-                // An install through Ruthenia Store is always RuStore,
-                // and the app is guaranteed to be in the catalog.
-                source = AppSource.RUSTORE,
-                inCatalog = true,
+                source = if (github != null) AppSource.GITHUB else AppSource.RUSTORE,
+                inCatalog = github == null,
             ),
         )
+    }
+
+    /** Marks an existing library row as GitHub-sourced without changing install time. */
+    suspend fun markGithubSource(packageName: String) {
+        val existing = installedAppDao.get(packageName) ?: return
+        installedAppDao.upsert(existing.copy(source = AppSource.GITHUB, inCatalog = false))
     }
 
     /** Reconciles tracked apps with the actually installed ones. */
@@ -101,7 +124,11 @@ class LibraryRepository @Inject constructor(
         installedAppDao.getAll().forEach { entity ->
             val installed = readInstalledVersion(entity.packageName)
             when {
-                installed == null -> installedAppDao.delete(entity.packageName)
+                installed == null -> {
+                    installedAppDao.delete(entity.packageName)
+                    githubAppDao.delete(entity.packageName)
+                }
+
                 installed.first != entity.installedVersionCode ||
                     installed.second != entity.installedVersionName ->
                     installedAppDao.upsert(
@@ -128,8 +155,17 @@ class LibraryRepository @Inject constructor(
         }
         if (targets.isEmpty()) return UpdateCheckSummary(checked = 0, available = 0, failed = 0)
 
+        val links = githubAppDao.getAll().associateBy { it.packageName }
+        val githubTargets = targets.mapNotNull { entity ->
+            links[entity.packageName]?.let { entity to it }
+        }
+        val ruStoreTargets = targets.filter { it.packageName !in links }
+
+        var available = 0
+        var failed = 0
+
         val results = coroutineScope {
-            targets.map { entity ->
+            ruStoreTargets.map { entity ->
                 async {
                     throttle.withPermit {
                         try {
@@ -148,8 +184,6 @@ class LibraryRepository @Inject constructor(
             }.awaitAll()
         }
 
-        var available = 0
-        var failed = 0
         for (result in results) {
             val details = result.details
             if (details == null) {
@@ -160,6 +194,7 @@ class LibraryRepository @Inject constructor(
             val installed = result.installed
             if (installed == null) {
                 installedAppDao.delete(result.entity.packageName)
+                githubAppDao.delete(result.entity.packageName)
                 continue
             }
 
@@ -182,12 +217,50 @@ class LibraryRepository @Inject constructor(
                 available++
             }
         }
+
+        // GitHub requests are sequential: the anonymous API has a much lower
+        // rate limit than RuStore, and one failing repo must not affect others.
+        for ((entity, link) in githubTargets) {
+            val installed = readInstalledVersion(entity.packageName)
+            if (installed == null) {
+                installedAppDao.delete(entity.packageName)
+                githubAppDao.delete(entity.packageName)
+                continue
+            }
+
+            if (entity.installedVersionCode != installed.first ||
+                entity.installedVersionName != installed.second
+            ) {
+                installedAppDao.upsert(
+                    entity.copy(
+                        installedVersionCode = installed.first,
+                        installedVersionName = installed.second,
+                    ),
+                )
+            }
+
+            try {
+                val result = githubRepository.checkForUpdate(
+                    packageName = entity.packageName,
+                    link = link.toLink(),
+                    installedVersionName = installed.second,
+                )
+                if (result.status == UpdateStatus.UPDATE_AVAILABLE) available++
+            } catch (cancellation: CancellationException) {
+                throw cancellation
+            } catch (_: Exception) {
+                failed++
+            }
+        }
+
         return UpdateCheckSummary(checked = targets.size, available = available, failed = failed)
     }
 
     /** The time of the last check — for throttling quiet auto-starts. */
-    suspend fun lastCheckedAt(): Long? =
-        installedAppDao.getAll().mapNotNull { it.lastCheckedAt }.maxOrNull()
+    suspend fun lastCheckedAt(): Long? = maxOf(
+        installedAppDao.getAll().mapNotNull { it.lastCheckedAt }.maxOrNull() ?: 0L,
+        githubAppDao.getAll().mapNotNull { it.lastCheckedAt }.maxOrNull() ?: 0L,
+    ).takeIf { it > 0L }
 
     /**
      * Imports already installed apps that are present in RuStore.
@@ -239,6 +312,7 @@ class LibraryRepository @Inject constructor(
                 updated++
             }
 
+            val github = githubAppDao.get(deviceApp.packageName)
             installedAppDao.upsert(
                 InstalledAppEntity(
                     packageName = deviceApp.packageName,
@@ -253,8 +327,8 @@ class LibraryRepository @Inject constructor(
                     whatsNew = details.whatsNew,
                     lastCheckedAt = System.currentTimeMillis(),
                     lastInstalledAt = previous?.lastInstalledAt,
-                    source = deviceApp.source,
-                    inCatalog = true,
+                    source = if (github != null) AppSource.GITHUB else deviceApp.source,
+                    inCatalog = github == null,
                 ),
             )
         }

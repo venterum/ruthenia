@@ -894,6 +894,7 @@ private fun DetailsActionBar(
                 installed = installed,
                 onPrimary = onInstall,
                 onSaveApk = onSaveApk,
+                showSaveApk = state.canExport,
                 onReinstall = onReinstall,
                 onUninstall = onUninstall,
                 updateHidden = state.updateHidden,
@@ -908,6 +909,7 @@ private fun DetailsActionBar(
                 installed = installed,
                 onPrimary = onInstall,
                 onSaveApk = onSaveApk,
+                showSaveApk = state.canExport,
                 onReinstall = onReinstall,
                 onUninstall = onUninstall,
                 updateHidden = state.updateHidden,
@@ -922,6 +924,7 @@ private fun DetailsActionBar(
                 installed = installed,
                 onPrimary = onInstall,
                 onSaveApk = onSaveApk,
+                showSaveApk = state.canExport,
                 onReinstall = onReinstall,
                 onUninstall = onUninstall,
                 updateHidden = state.updateHidden,
@@ -936,6 +939,7 @@ private fun DetailsActionBar(
                 installed = installed,
                 onPrimary = onOpen,
                 onSaveApk = onSaveApk,
+                showSaveApk = state.canExport,
                 onReinstall = onReinstall,
                 onUninstall = onUninstall,
                 updateHidden = state.updateHidden,
@@ -950,6 +954,7 @@ private fun DetailsActionBar(
                 installed = installed,
                 onPrimary = onInstall,
                 onSaveApk = onSaveApk,
+                showSaveApk = state.canExport,
                 onReinstall = onReinstall,
                 onUninstall = onUninstall,
                 updateHidden = state.updateHidden,
@@ -977,6 +982,7 @@ private fun SplitActionButton(
     installed: Boolean,
     onPrimary: () -> Unit,
     onSaveApk: () -> Unit,
+    showSaveApk: Boolean,
     onReinstall: () -> Unit,
     onUninstall: () -> Unit,
     updateHidden: Boolean,
@@ -1034,15 +1040,17 @@ private fun SplitActionButton(
     )
 
     DropdownMenu(expanded = menuExpanded, onDismissRequest = { menuExpanded = false }) {
-        DropdownMenuItem(
-            text = { Text(stringResource(R.string.app_details_save_apk)) },
-            enabled = canAct,
-            onClick = {
-                haptics.tick()
-                menuExpanded = false
-                onSaveApk()
-            },
-        )
+        if (showSaveApk) {
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.app_details_save_apk)) },
+                enabled = canAct,
+                onClick = {
+                    haptics.tick()
+                    menuExpanded = false
+                    onSaveApk()
+                },
+            )
+        }
         DropdownMenuItem(
             text = { Text(stringResource(R.string.app_details_reinstall)) },
             enabled = canAct,
@@ -1359,10 +1367,11 @@ private fun Context.openWebsite(url: String) {
     runCatching { startActivity(Intent(Intent.ACTION_VIEW, uri)) }
 }
 
-/** Shares a link to the app in the RuStore catalog. */
+/** Shares a RuStore catalog link, or the GitHub repository for GitHub sources. */
 private fun shareApp(context: Context, details: AppDetails?) {
     val packageName = details?.packageName ?: return
-    val url = "https://www.rustore.ru/catalog/app/$packageName"
+    val url = details.website?.takeIf { it.startsWith("https://github.com/") }
+        ?: "https://www.rustore.ru/catalog/app/$packageName"
     val text = context.getString(
         R.string.app_details_share_text,
         details.name ?: packageName,

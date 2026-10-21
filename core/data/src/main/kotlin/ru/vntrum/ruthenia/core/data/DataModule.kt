@@ -22,6 +22,7 @@ import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 import com.vntrum.ruthenia.core.data.db.CatalogAppDao
 import com.vntrum.ruthenia.core.data.db.DownloadTaskDao
+import com.vntrum.ruthenia.core.data.db.GithubAppDao
 import com.vntrum.ruthenia.core.data.db.HomeFeedDao
 import com.vntrum.ruthenia.core.data.db.InstalledAppDao
 import com.vntrum.ruthenia.core.data.db.RutheniaDatabase
@@ -38,7 +39,13 @@ internal object DataModule {
     @Singleton
     internal fun provideDatabase(@ApplicationContext context: Context): RutheniaDatabase =
         Room.databaseBuilder(context, RutheniaDatabase::class.java, RutheniaDatabase.NAME)
-            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
+            .addMigrations(
+                MIGRATION_1_2,
+                MIGRATION_2_3,
+                MIGRATION_3_4,
+                MIGRATION_4_5,
+                MIGRATION_5_6,
+            )
             .build()
 
     @Provides
@@ -60,6 +67,10 @@ internal object DataModule {
     @Provides
     internal fun provideDownloadTaskDao(database: RutheniaDatabase): DownloadTaskDao =
         database.downloadTaskDao()
+
+    @Provides
+    internal fun provideGithubAppDao(database: RutheniaDatabase): GithubAppDao =
+        database.githubAppDao()
 
     @Provides
     @Singleton
@@ -152,6 +163,47 @@ internal object DataModule {
                 )
                 """.trimIndent(),
             )
+        }
+    }
+
+    /**
+     * Adds GitHub release sources and the direct-download metadata needed by
+     * the download worker. Existing rows remain RuStore downloads.
+     */
+    private val MIGRATION_5_6 = object : Migration(5, 6) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(
+                """
+                CREATE TABLE IF NOT EXISTS `github_apps` (
+                    `packageName` TEXT NOT NULL,
+                    `owner` TEXT NOT NULL,
+                    `repo` TEXT NOT NULL,
+                    `repoId` INTEGER,
+                    `displayName` TEXT,
+                    `avatarUrl` TEXT,
+                    `assetName` TEXT,
+                    `includePrereleases` INTEGER NOT NULL,
+                    `etag` TEXT,
+                    `installedReleaseId` INTEGER,
+                    `installedTag` TEXT,
+                    `latestReleaseId` INTEGER,
+                    `latestTag` TEXT,
+                    `latestVersionName` TEXT,
+                    `latestPublishedAt` INTEGER,
+                    `latestAssetUrl` TEXT,
+                    `latestAssetSize` INTEGER,
+                    `latestAssetDigest` TEXT,
+                    `lastCheckedAt` INTEGER,
+                    PRIMARY KEY(`packageName`)
+                )
+                """.trimIndent(),
+            )
+            db.execSQL(
+                "ALTER TABLE download_tasks ADD COLUMN sourceType TEXT NOT NULL DEFAULT 'RUSTORE'",
+            )
+            db.execSQL("ALTER TABLE download_tasks ADD COLUMN sourceUrl TEXT")
+            db.execSQL("ALTER TABLE download_tasks ADD COLUMN sourceSize INTEGER")
+            db.execSQL("ALTER TABLE download_tasks ADD COLUMN sourceSha256 TEXT")
         }
     }
 

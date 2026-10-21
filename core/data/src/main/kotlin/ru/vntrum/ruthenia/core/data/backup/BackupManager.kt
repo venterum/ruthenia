@@ -11,6 +11,8 @@ import javax.inject.Singleton
 import kotlinx.coroutines.flow.first
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import com.vntrum.ruthenia.core.data.db.GithubAppDao
+import com.vntrum.ruthenia.core.data.db.GithubAppEntity
 import com.vntrum.ruthenia.core.data.db.InstalledAppDao
 import com.vntrum.ruthenia.core.data.db.InstalledAppEntity
 import com.vntrum.ruthenia.core.data.model.AppSource
@@ -34,10 +36,12 @@ data class RutheniaBackup(
     val version: Int = CURRENT_VERSION,
     val exportedAt: Long = 0L,
     val apps: List<BackupApp> = emptyList(),
+    /** GitHub repository links; absent in backups created before GitHub support. */
+    val githubApps: List<BackupGithubApp> = emptyList(),
     val settings: BackupSettings? = null,
 ) {
     companion object {
-        const val CURRENT_VERSION = 1
+        const val CURRENT_VERSION = 2
     }
 }
 
@@ -56,6 +60,29 @@ data class BackupApp(
     val whatsNew: String? = null,
     val source: String = AppSource.UNKNOWN.name,
     val inCatalog: Boolean = false,
+)
+
+/** A GitHub repository linked to an installed app in the backup. */
+@Serializable
+data class BackupGithubApp(
+    val packageName: String,
+    val owner: String,
+    val repo: String,
+    val repoId: Long? = null,
+    val displayName: String? = null,
+    val avatarUrl: String? = null,
+    val assetName: String? = null,
+    val includePrereleases: Boolean = false,
+    val installedReleaseId: Long? = null,
+    val installedTag: String? = null,
+    val latestReleaseId: Long? = null,
+    val latestTag: String? = null,
+    val latestVersionName: String? = null,
+    val latestPublishedAt: Long? = null,
+    val latestAssetUrl: String? = null,
+    val latestAssetSize: Long? = null,
+    val latestAssetDigest: String? = null,
+    val lastCheckedAt: Long? = null,
 )
 
 /** Settings that make sense when moving between devices. */
@@ -82,6 +109,7 @@ data class BackupSettings(
 @Singleton
 class BackupManager @Inject constructor(
     private val installedAppDao: InstalledAppDao,
+    private val githubAppDao: GithubAppDao,
     private val settingsRepository: SettingsRepository,
     private val json: Json,
 ) {
@@ -92,6 +120,7 @@ class BackupManager @Inject constructor(
         val backup = RutheniaBackup(
             exportedAt = System.currentTimeMillis(),
             apps = installedAppDao.getAll().map { it.toBackupApp() },
+            githubApps = githubAppDao.getAll().map { it.toBackupGithubApp() },
             settings = settings.toBackupSettings(),
         )
         return json.encodeToString(backup)
@@ -110,9 +139,53 @@ class BackupManager @Inject constructor(
         }
 
         installedAppDao.replaceAll(backup.apps.map { it.toEntity() })
+        githubAppDao.replaceAll(backup.githubApps.map { it.toEntity() })
         backup.settings?.let { settingsRepository.restore(it.toAppSettings()) }
     }
 }
+
+private fun GithubAppEntity.toBackupGithubApp(): BackupGithubApp = BackupGithubApp(
+    packageName = packageName,
+    owner = owner,
+    repo = repo,
+    repoId = repoId,
+    displayName = displayName,
+    avatarUrl = avatarUrl,
+    assetName = assetName,
+    includePrereleases = includePrereleases,
+    installedReleaseId = installedReleaseId,
+    installedTag = installedTag,
+    latestReleaseId = latestReleaseId,
+    latestTag = latestTag,
+    latestVersionName = latestVersionName,
+    latestPublishedAt = latestPublishedAt,
+    latestAssetUrl = latestAssetUrl,
+    latestAssetSize = latestAssetSize,
+    latestAssetDigest = latestAssetDigest,
+    lastCheckedAt = lastCheckedAt,
+)
+
+private fun BackupGithubApp.toEntity(): GithubAppEntity = GithubAppEntity(
+    packageName = packageName,
+    owner = owner,
+    repo = repo,
+    repoId = repoId,
+    displayName = displayName,
+    avatarUrl = avatarUrl,
+    assetName = assetName,
+    includePrereleases = includePrereleases,
+    etag = null,
+    installedReleaseId = installedReleaseId,
+    installedTag = installedTag,
+    latestReleaseId = latestReleaseId,
+    latestTag = latestTag,
+    latestVersionName = latestVersionName,
+    latestPublishedAt = latestPublishedAt,
+    latestAssetUrl = latestAssetUrl,
+    latestAssetSize = latestAssetSize,
+    latestAssetDigest = latestAssetDigest,
+    lastCheckedAt = lastCheckedAt,
+)
 
 private fun InstalledAppEntity.toBackupApp(): BackupApp = BackupApp(
     packageName = packageName,

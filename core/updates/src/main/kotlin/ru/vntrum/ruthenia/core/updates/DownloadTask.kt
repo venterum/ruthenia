@@ -6,6 +6,35 @@
 
 package com.vntrum.ruthenia.core.updates
 
+/** Where the APK files for a download come from. */
+sealed interface DownloadSource {
+
+    /** Resolve links through the RuStore API using [appId]. */
+    data object RuStore : DownloadSource
+
+    /** A direct GitHub release asset. */
+    data class GithubAsset(
+        val url: String,
+        val size: Long?,
+        val sha256: String?,
+    ) : DownloadSource
+}
+
+internal val DownloadSource.type: String
+    get() = when (this) {
+        DownloadSource.RuStore -> "RUSTORE"
+        is DownloadSource.GithubAsset -> "GITHUB"
+    }
+
+internal val DownloadSource.url: String?
+    get() = (this as? DownloadSource.GithubAsset)?.url
+
+internal val DownloadSource.size: Long?
+    get() = (this as? DownloadSource.GithubAsset)?.size
+
+internal val DownloadSource.sha256: String?
+    get() = (this as? DownloadSource.GithubAsset)?.sha256
+
 /**
  * Request for a background APK download.
  *
@@ -23,6 +52,7 @@ data class DownloadRequest(
     val publisher: String? = null,
     /** Target version name for the manager row and completed history. */
     val versionName: String? = null,
+    val source: DownloadSource = DownloadSource.RuStore,
 )
 
 /**
@@ -39,6 +69,7 @@ data class DownloadTask(
     val versionCode: Long?,
     val versionName: String? = null,
     val totalBytes: Long? = null,
+    val source: DownloadSource = DownloadSource.RuStore,
     val download: DownloadState,
     val install: InstallState = InstallState.Idle,
     val completedAt: Long? = null,

@@ -94,6 +94,15 @@
     <string name="settings_shizuku_warning_confirm">Enable</string>
 
     <string name="settings_section_security">Security</string>
+    <string name="settings_section_github">GitHub</string>
+    <string name="settings_github_token">GitHub token</string>
+    <string name="settings_github_token_desc">Optional token for private repositories and a higher GitHub API rate limit. Stored encrypted and excluded from backups.</string>
+    <string name="settings_github_token_hint">github_pat_… or ghp_…</string>
+    <string name="settings_github_token_save">Save</string>
+    <string name="settings_github_token_remove">Remove</string>
+    <string name="settings_github_token_saved">GitHub token saved.</string>
+    <string name="settings_github_token_cleared">GitHub token removed.</string>
+    <string name="settings_github_token_invalid">GitHub rejected the token. Check its permissions and expiry.</string>
     <string name="settings_certs">RuStore certificates</string>
     <string name="settings_certs_source_bundled">Using the built-in pin set.</string>
     <string name="settings_certs_source_refreshed">Updated %1$s.</string>

@@ -30,6 +30,7 @@ ksp {
 
 dependencies {
     api(project(":core:network"))
+    api(project(":core:github"))
 
     implementation(libs.room.runtime)
     ksp(libs.room.compiler)

@@ -37,6 +37,7 @@ import com.vntrum.ruthenia.core.data.settings.SettingsRepository
 import com.vntrum.ruthenia.core.installer.InstallResult
 import com.vntrum.ruthenia.core.updates.DownloadManager
 import com.vntrum.ruthenia.core.updates.DownloadRequest
+import com.vntrum.ruthenia.core.updates.DownloadSource
 import com.vntrum.ruthenia.core.updates.DownloadState
 import com.vntrum.ruthenia.core.updates.DownloadTask
 import com.vntrum.ruthenia.core.updates.InstallState
@@ -498,15 +499,33 @@ private fun InstalledApp.isVisibleInLibrary(settings: AppSettings): Boolean = wh
     else -> true
 }
 
-/** Update request: the target is always the latest version from the catalog. */
-private fun InstalledApp.toDownloadRequest(): DownloadRequest = DownloadRequest(
-    packageName = packageName,
-    appId = appId,
-    versionCode = latestVersionCode,
-    name = name,
-    iconUrl = iconUrl,
-    publisher = publisher,
-)
+/** Update request: RuStore catalog or the cached GitHub release asset. */
+private fun InstalledApp.toDownloadRequest(): DownloadRequest {
+    val github = github
+    val assetUrl = github?.latestAssetUrl
+    if (github != null && assetUrl != null) {
+        return DownloadRequest(
+            packageName = packageName,
+            name = name ?: github.displayName,
+            iconUrl = iconUrl ?: github.avatarUrl,
+            publisher = publisher ?: github.owner,
+            versionName = github.latestVersionName,
+            source = DownloadSource.GithubAsset(
+                url = assetUrl,
+                size = github.latestAssetSize,
+                sha256 = github.latestAssetSha256,
+            ),
+        )
+    }
+    return DownloadRequest(
+        packageName = packageName,
+        appId = appId,
+        versionCode = latestVersionCode,
+        name = name,
+        iconUrl = iconUrl,
+        publisher = publisher,
+    )
+}
 
 /** Request to retry a failed download — with the same metadata. */
 private fun DownloadTask.toDownloadRequest(): DownloadRequest = DownloadRequest(
@@ -517,6 +536,7 @@ private fun DownloadTask.toDownloadRequest(): DownloadRequest = DownloadRequest(
     iconUrl = iconUrl,
     publisher = publisher,
     versionName = versionName,
+    source = source,
 )
 
 /** Readiness to install becomes stale if the catalog already has a different version. */

@@ -19,6 +19,9 @@ enum class AppSource {
     /** Installed by the RuStore catalog. */
     RUSTORE,
 
+    /** Installed from a GitHub release tracked by Ruthenia Store. */
+    GITHUB,
+
     /** Installed by Google Play. */
     GOOGLE_PLAY,
 

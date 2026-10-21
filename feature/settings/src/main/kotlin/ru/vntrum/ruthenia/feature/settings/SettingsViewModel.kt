@@ -24,6 +24,7 @@ import kotlinx.coroutines.withContext
 import com.vntrum.ruthenia.core.data.backup.BackupManager
 import com.vntrum.ruthenia.core.data.launcher.LauncherIconController
 import com.vntrum.ruthenia.core.data.repository.FeedBuildProgress
+import com.vntrum.ruthenia.core.data.repository.GithubRepository
 import com.vntrum.ruthenia.core.data.repository.HomeRepository
 import com.vntrum.ruthenia.core.data.settings.AccentPalette
 import com.vntrum.ruthenia.core.data.settings.AppIconShape
@@ -34,6 +35,7 @@ import com.vntrum.ruthenia.core.data.settings.InstallMethod
 import com.vntrum.ruthenia.core.data.settings.NavBarStyle
 import com.vntrum.ruthenia.core.data.settings.SettingsRepository
 import com.vntrum.ruthenia.core.data.settings.ThemeMode
+import com.vntrum.ruthenia.core.github.GithubException
 import com.vntrum.ruthenia.core.installer.shizuku.ShizukuInstaller
 import com.vntrum.ruthenia.core.installer.shizuku.ShizukuStatus
 import com.vntrum.ruthenia.core.security.CertificateRefresher
@@ -48,6 +50,7 @@ class SettingsViewModel @Inject constructor(
     private val certificateRefresher: CertificateRefresher,
     private val launcherIconController: LauncherIconController,
     private val homeRepository: HomeRepository,
+    private val githubRepository: GithubRepository,
     @ApplicationContext private val context: Context,
 ) : ViewModel() {
 
@@ -59,6 +62,50 @@ class SettingsViewModel @Inject constructor(
 
     /** Availability of the optional silent install via Shizuku/Sui. */
     val shizukuStatus: StateFlow<ShizukuStatus> = shizukuInstaller.status
+
+    // --- Optional GitHub token (encrypted with Android Keystore) ---
+
+    private val _hasGithubToken = MutableStateFlow(githubRepository.hasToken())
+    val hasGithubToken: StateFlow<Boolean> = _hasGithubToken.asStateFlow()
+
+    private val _githubTokenBusy = MutableStateFlow(false)
+    val githubTokenBusy: StateFlow<Boolean> = _githubTokenBusy.asStateFlow()
+
+    fun saveGithubToken(token: String) = viewModelScope.launch {
+        if (_githubTokenBusy.value) return@launch
+        if (token.isBlank()) {
+            githubRepository.setToken(null)
+            _hasGithubToken.value = false
+            _message.value = context.getString(R.string.settings_github_token_cleared)
+            return@launch
+        }
+
+        _githubTokenBusy.value = true
+        runCatching {
+            githubRepository.setToken(token.trim())
+            githubRepository.validateToken()
+        }.onSuccess {
+            _hasGithubToken.value = true
+            _message.value = context.getString(R.string.settings_github_token_saved)
+        }.onFailure { error ->
+            if (error is GithubException.Unauthorized) {
+                githubRepository.setToken(null)
+                _hasGithubToken.value = false
+                _message.value = context.getString(R.string.settings_github_token_invalid)
+            } else {
+                // A network/rate-limit failure does not mean the token is bad.
+                _hasGithubToken.value = true
+                _message.value = context.getString(R.string.settings_github_token_saved)
+            }
+        }
+        _githubTokenBusy.value = false
+    }
+
+    fun clearGithubToken() = viewModelScope.launch {
+        githubRepository.setToken(null)
+        _hasGithubToken.value = false
+        _message.value = context.getString(R.string.settings_github_token_cleared)
+    }
 
     // --- RuStore certificate pins (manual refresh) ---
 

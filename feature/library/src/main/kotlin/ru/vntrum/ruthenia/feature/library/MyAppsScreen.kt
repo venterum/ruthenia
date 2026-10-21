@@ -96,6 +96,7 @@ fun MyAppsScreen(
     animatedVisibilityScope: AnimatedVisibilityScope,
     onBack: () -> Unit,
     onAppClick: (String) -> Unit,
+    onAddGithub: () -> Unit,
     viewModel: LibraryViewModel = hiltViewModel(),
 ) {
     val library by viewModel.library.collectAsStateWithLifecycle()
@@ -164,6 +165,14 @@ fun MyAppsScreen(
                         Icon(
                             painter = painterResource(R.drawable.ic_arrow_back),
                             contentDescription = stringResource(R.string.common_back),
+                        )
+                    }
+                },
+                actions = {
+                    IconButton(onClick = onAddGithub) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_add),
+                            contentDescription = stringResource(R.string.github_add_action),
                         )
                     }
                 },

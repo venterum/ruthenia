@@ -150,6 +150,7 @@
     <string name="library_import_cancel">Cancel</string>
 
     <string name="source_rustore">RuStore</string>
+    <string name="source_github">GitHub</string>
     <string name="source_gplay">Google Play</string>
     <string name="source_sideload">manually</string>
     <string name="source_other">another source</string>
@@ -158,11 +159,41 @@
     <string name="message_updates_none">No updates.</string>
     <string name="message_updates_one">An update is available for 1 app.</string>
     <string name="message_updates_many">Updates are available for %1$d apps.</string>
-    <string name="message_updates_check_failed">Couldn\'t check for updates — the catalog didn\'t respond.</string>
+    <string name="message_updates_check_failed">Couldn\'t check for updates — the sources didn\'t respond.</string>
     <string name="message_updates_downloading">Updates are downloading in the background.</string>
     <string name="message_installed">%1$s: installed.</string>
     <string name="message_import_none">No installed apps were found in the RuStore catalog.</string>
     <string name="message_import_result">Added: %1$d, records updated: %2$d. All of them are in the RuStore catalog.</string>
     <string name="message_import_checked">Total checked: %1$d.</string>
     <string name="message_import_cancelled">Import cancelled.</string>
+
+    <string name="github_add_action">Add from GitHub</string>
+    <string name="github_title">Add from GitHub</string>
+    <string name="github_url_hint">owner/repo or https://github.com/owner/repo</string>
+    <string name="github_find">Find repository</string>
+    <string name="github_repo_hint">Public repository. For a private one, add a token in settings.</string>
+    <string name="github_include_prereleases">Show pre-releases</string>
+    <string name="github_releases_title">Releases</string>
+    <string name="github_assets_title">APK assets</string>
+    <string name="github_no_releases">This repository has no releases yet.</string>
+    <string name="github_prerelease">pre-release</string>
+    <string name="github_asset_size">%1$.1f MB</string>
+    <string name="github_warning_title">Install from GitHub</string>
+    <string name="github_warning_text">GitHub releases are not reviewed by RuStore. Only install APKs from repositories you trust. The app verifies the package, digest and signature, but cannot guarantee that the code is safe.</string>
+    <string name="github_warning_continue">Continue</string>
+    <string name="github_install">Download and install</string>
+    <string name="github_install_running">Downloading APK…</string>
+    <string name="github_downloading_percent">Downloaded %1$d%%</string>
+    <string name="github_install_ready">The APK is downloaded and ready to install.</string>
+    <string name="github_open_details">Open app details</string>
+    <string name="github_cancel">Cancel</string>
+    <string name="github_token_missing">Private repositories require a GitHub token. Add one in settings.</string>
+    <string name="github_token_settings">Open GitHub settings</string>
+    <string name="github_error_invalid_url">Enter owner/repo or a github.com link.</string>
+    <string name="github_error_auth">GitHub rejected the token. Check it in settings.</string>
+    <string name="github_error_rate_limit">GitHub is rate-limiting requests. Try later or add a token.</string>
+    <string name="github_error_not_found">Repository or release not found. A private repository requires a token.</string>
+    <string name="github_error_no_apk">The selected release has no APK asset.</string>
+    <string name="github_error_network">Couldn\'t reach GitHub.</string>
+    <string name="github_error_generic">Couldn\'t load data from GitHub.</string>
 </resources>

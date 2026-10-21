@@ -26,24 +26,30 @@ data class InstalledApp(
     val source: AppSource = AppSource.UNKNOWN,
     /** Whether the app was found in the RuStore catalog: without it an update is impossible. */
     val inCatalog: Boolean = false,
+    /** GitHub repository this package is linked to, if any. */
+    val github: GithubLink? = null,
 ) {
 
     /**
-     * Update status. If the app is not in the RuStore catalog there is nothing
-     * to compare versions with — regardless of the other fields the status is
-     * `UNKNOWN`.
+     * Update status. GitHub links use their release tag/release id; an app that
+     * is not in the RuStore catalog and has no GitHub link has nothing to
+     * compare versions with.
      */
     val status: UpdateStatus
-        get() = if (!inCatalog) {
-            UpdateStatus.UNKNOWN
-        } else {
-            VersionComparator.status(
+        get() = when {
+            github != null -> github.status(installedVersionName)
+            !inCatalog -> UpdateStatus.UNKNOWN
+            else -> VersionComparator.status(
                 installedVersionCode = installedVersionCode,
                 installedVersionName = installedVersionName,
                 latestVersionCode = latestVersionCode,
                 latestVersionName = latestVersionName,
             )
         }
+
+    /** Version key for "hide update" and download requests. */
+    val updateVersionKey: String?
+        get() = github?.updateKey ?: latestVersionCode?.toString() ?: latestVersionName
 }
 
 /**
@@ -55,7 +61,7 @@ data class InstalledApp(
  */
 fun InstalledApp.isUpdateIgnored(ignored: Set<String>): Boolean {
     if (packageName in ignored) return true
-    val version = latestVersionCode ?: return false
+    val version = updateVersionKey ?: return false
     return AppSettings.ignoredUpdateKey(packageName, version) in ignored
 }
 
@@ -70,7 +76,7 @@ fun InstalledApp.isVisibleForCounters(settings: AppSettings): Boolean = when (so
     else -> true
 }
 
-internal fun InstalledAppEntity.toModel(): InstalledApp = InstalledApp(
+internal fun InstalledAppEntity.toModel(github: GithubLink? = null): InstalledApp = InstalledApp(
     packageName = packageName,
     appId = appId,
     name = name,
@@ -85,4 +91,5 @@ internal fun InstalledAppEntity.toModel(): InstalledApp = InstalledApp(
     lastInstalledAt = lastInstalledAt,
     source = source,
     inCatalog = inCatalog,
+    github = github,
 )

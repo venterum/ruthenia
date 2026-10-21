@@ -42,6 +42,7 @@ include(
     ":app",
     ":macrobenchmark",
     ":core:security",
+    ":core:github",
     ":core:network",
     ":core:data",
     ":core:installer",

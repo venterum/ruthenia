@@ -33,6 +33,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonGroup
@@ -46,6 +47,7 @@ import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
@@ -71,6 +73,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
@@ -109,6 +113,9 @@ fun SettingsScreen(
 ) {
     val settings by viewModel.settings.collectAsStateWithLifecycle()
     val shizukuStatus by viewModel.shizukuStatus.collectAsStateWithLifecycle()
+    val hasGithubToken by viewModel.hasGithubToken.collectAsStateWithLifecycle()
+    val githubTokenBusy by viewModel.githubTokenBusy.collectAsStateWithLifecycle()
+    var githubToken by rememberSaveable { mutableStateOf("") }
     val certificateStatus by viewModel.certificateStatus.collectAsStateWithLifecycle()
     val certificateBusy by viewModel.certificateBusy.collectAsStateWithLifecycle()
     val collectionsBusy by viewModel.collectionsBusy.collectAsStateWithLifecycle()
@@ -576,8 +583,56 @@ fun SettingsScreen(
             }
 
             SettingsGroup(
-                title = stringResource(R.string.settings_section_privacy),
+                title = stringResource(R.string.settings_section_github),
                 modifier = Modifier.animatedEntrance(index = 8),
+            ) {
+                ListItem(
+                    headlineContent = { Text(stringResource(R.string.settings_github_token)) },
+                    supportingContent = { Text(stringResource(R.string.settings_github_token_desc)) },
+                    trailingContent = {
+                        if (githubTokenBusy) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(20.dp),
+                                strokeWidth = 2.dp,
+                            )
+                        } else if (hasGithubToken) {
+                            TextButton(onClick = viewModel::clearGithubToken) {
+                                Text(stringResource(R.string.settings_github_token_remove))
+                            }
+                        }
+                    },
+                    colors = transparentListItemColors(),
+                )
+
+                Column(
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    OutlinedTextField(
+                        value = githubToken,
+                        onValueChange = { githubToken = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        placeholder = { Text(stringResource(R.string.settings_github_token_hint)) },
+                        singleLine = true,
+                        visualTransformation = PasswordVisualTransformation(),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                        enabled = !githubTokenBusy,
+                    )
+                    TextButton(
+                        onClick = {
+                            viewModel.saveGithubToken(githubToken)
+                            githubToken = ""
+                        },
+                        enabled = githubToken.isNotBlank() && !githubTokenBusy,
+                    ) {
+                        Text(stringResource(R.string.settings_github_token_save))
+                    }
+                }
+            }
+
+            SettingsGroup(
+                title = stringResource(R.string.settings_section_privacy),
+                modifier = Modifier.animatedEntrance(index = 9),
             ) {
                 ListItem(
                     headlineContent = { Text(stringResource(R.string.settings_privacy_what)) },
@@ -600,7 +655,7 @@ fun SettingsScreen(
 
             SettingsGroup(
                 title = stringResource(R.string.settings_section_about),
-                modifier = Modifier.animatedEntrance(index = 9),
+                modifier = Modifier.animatedEntrance(index = 10),
             ) {
                 ListItem(
                     headlineContent = { Text(stringResource(R.string.settings_about_name)) },

@@ -61,7 +61,7 @@ class UpdateNotifications @Inject constructor(
                     .setContentText(
                         versionTransition(
                             installed = app.installedVersionName,
-                            latest = app.latestVersionName,
+                            latest = app.github?.latestVersionName ?: app.latestVersionName,
                         ),
                     )
                     .setGroup(GROUP_KEY)

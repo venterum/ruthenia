@@ -108,6 +108,31 @@ class ApkDownloader @Inject constructor(
         }
     }
 
+    /**
+     * Moves a completed download from a temporary source key to the real
+     * package directory. Used by the GitHub first-install resolver, where the
+     * package name is unknown until the APK has been inspected.
+     */
+    suspend fun rekey(fromKey: String, toPackageName: String) = withContext(Dispatchers.IO) {
+        if (fromKey == toPackageName) return@withContext
+        val first = if (fromKey < toPackageName) fromKey else toPackageName
+        val second = if (fromKey < toPackageName) toPackageName else fromKey
+        packageLock(first).withLock {
+            packageLock(second).withLock {
+                val from = File(context.cacheDir, "$DOWNLOAD_DIR/$fromKey")
+                if (!from.isDirectory) return@withLock
+                val to = File(context.cacheDir, "$DOWNLOAD_DIR/$toPackageName")
+                to.deleteRecursively()
+                to.parentFile?.mkdirs()
+                if (!from.renameTo(to)) {
+                    from.copyRecursively(to, overwrite = true)
+                    from.deleteRecursively()
+                }
+            }
+        }
+        Unit
+    }
+
     /** Deletes temporary files after installation. */
     suspend fun clear(packageName: String) = withContext(Dispatchers.IO) {
         packageLock(packageName).withLock {
@@ -142,20 +167,21 @@ class ApkDownloader @Inject constructor(
 
         if (!source.url.endsWith(".zip", ignoreCase = true)) {
             // The link already points at an APK.
-            val code = downloadToFile(apkFile, source.url, onBytes)
+            val code = downloadToFile(apkFile, source.url, source.headers, onBytes)
             if (code != null) {
                 apkFile.forget()
                 throw InstallException.DownloadFailed(source.url, code)
             }
             apkFile.requireSize(source.size, source.url)
             apkFile.requireZipHeader(source.url)
+            apkFile.requireSha256(source)
             return apkFile
         }
 
         // RuStore usually serves a .zip container with a ready .apk next to it.
         val directApkUrl = source.url.toApkUrl()
         val directValid = try {
-            val directCode = downloadToFile(apkFile, directApkUrl, onBytes)
+            val directCode = downloadToFile(apkFile, directApkUrl, source.headers, onBytes)
             directCode == null && runCatching { apkFile.requireZipHeader(directApkUrl) }.isSuccess
         } catch (_: InstallException.InvalidApk) {
             // An HTML error page can be served with HTTP 200; try the container.
@@ -166,11 +192,12 @@ class ApkDownloader @Inject constructor(
 
         // Fallback: download the container and unpack its single APK.
         val container = File(directory, "container_$index.zip")
-        val code = downloadToFile(container, source.url, onBytes)
+        val code = downloadToFile(container, source.url, source.headers, onBytes)
         if (code == null) {
-            // The catalog provided an explicit size for this URL — verify it before unpacking.
+            // The source provided an explicit size/digest for this URL — verify it before unpacking.
             container.requireSize(source.size, source.url)
             container.requireZipHeader(source.url)
+            container.requireSha256(source)
             return extractSingleApk(container, apkFile, source.url)
         }
         container.forget()
@@ -185,6 +212,7 @@ class ApkDownloader @Inject constructor(
     private suspend fun downloadToFile(
         target: File,
         url: String,
+        headers: Map<String, String>,
         onBytes: (Long) -> Unit,
     ): Int? {
         val marker = File(target.parentFile, target.name + MARKER_SUFFIX)
@@ -197,6 +225,7 @@ class ApkDownloader @Inject constructor(
         }
 
         val request = Request.Builder().url(url).apply {
+            headers.forEach { (name, value) -> header(name, value) }
             if (offset > 0) header("Range", "bytes=$offset-")
         }.build()
 
@@ -360,6 +389,30 @@ internal fun File.requireSize(expected: Long?, sourceUrl: String) {
  * Checks the ZIP local-file header before handing a file to the installer.
  * A CDN error page served with HTTP 200 does not look like an APK at all.
  */
+/**
+ * Verifies an optional SHA-256 digest from the source (GitHub provides one).
+ * The digest is computed in chunks so large APKs are not loaded into memory.
+ */
+internal fun File.requireSha256(source: ApkSource) {
+    val expected = source.sha256?.lowercase() ?: return
+    val actual = runCatching {
+        java.security.MessageDigest.getInstance("SHA-256").apply {
+            inputStream().use { input ->
+                val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+                while (true) {
+                    val read = input.read(buffer)
+                    if (read < 0) break
+                    update(buffer, 0, read)
+                }
+            }
+        }.digest().joinToString("") { "%02x".format(it) }
+    }.getOrNull()
+
+    if (actual != expected) {
+        throw InstallException.DigestMismatch(source.url, expected)
+    }
+}
+
 internal fun File.requireZipHeader(sourceUrl: String) {
     val header = ByteArray(2)
     val read = runCatching {

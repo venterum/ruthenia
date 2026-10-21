@@ -74,6 +74,7 @@ import com.vntrum.ruthenia.feature.catalog.CollectionScreen
 import com.vntrum.ruthenia.feature.catalog.CollectionViewModel
 import com.vntrum.ruthenia.feature.catalog.GamesScreen
 import com.vntrum.ruthenia.feature.catalog.SearchScreen
+import com.vntrum.ruthenia.feature.library.GithubAddScreen
 import com.vntrum.ruthenia.feature.library.LibraryScreen
 import com.vntrum.ruthenia.feature.library.MyAppsScreen
 import com.vntrum.ruthenia.feature.library.UpdatesScreen
@@ -93,6 +94,7 @@ object RutheniaRoutes {
     const val COLLECTION = "collection/{sectionId}"
     const val LIBRARY_APPS = "library/apps"
     const val LIBRARY_UPDATES = "library/updates"
+    const val GITHUB_ADD = "github/add"
     const val ARG_PACKAGE_NAME = "packageName"
     const val APP_DETAILS = "app/{$ARG_PACKAGE_NAME}"
 
@@ -287,6 +289,21 @@ fun RutheniaApp(viewModel: MainViewModel = hiltViewModel()) {
                         animatedVisibilityScope = this,
                         onBack = { navController.popBackStack() },
                         onAppClick = { navController.navigate(RutheniaRoutes.appDetails(it)) },
+                        onAddGithub = { navController.navigate(RutheniaRoutes.GITHUB_ADD) },
+                    )
+                }
+            }
+
+            composable(RutheniaRoutes.GITHUB_ADD) {
+                NavScreen {
+                    GithubAddScreen(
+                        onBack = { navController.popBackStack() },
+                        onReady = { packageName ->
+                            navController.navigate(RutheniaRoutes.appDetails(packageName)) {
+                                popUpTo(RutheniaRoutes.GITHUB_ADD) { inclusive = true }
+                            }
+                        },
+                        onOpenSettings = { navController.navigate(RutheniaRoutes.SETTINGS) },
                     )
                 }
             }

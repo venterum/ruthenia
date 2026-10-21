@@ -162,6 +162,7 @@
     <string name="library_import_cancel">Прервать</string>
 
     <string name="source_rustore">RuStore</string>
+    <string name="source_github">GitHub</string>
     <string name="source_gplay">Google Play</string>
     <string name="source_sideload">вручную</string>
     <string name="source_other">другой источник</string>
@@ -170,11 +171,41 @@
     <string name="message_updates_none">Обновлений нет.</string>
     <string name="message_updates_one">Доступно обновление для 1 приложения.</string>
     <string name="message_updates_many">Доступны обновления для %1$d приложений.</string>
-    <string name="message_updates_check_failed">Не удалось проверить обновления — каталог не ответил.</string>
+    <string name="message_updates_check_failed">Не удалось проверить обновления — источники не ответили.</string>
     <string name="message_updates_downloading">Обновления скачиваются в фоне.</string>
     <string name="message_installed">%1$s: установлено.</string>
     <string name="message_import_none">В каталоге RuStore не нашлось установленных приложений.</string>
     <string name="message_import_result">Добавлено: %1$d, обновлено записей: %2$d. Все они есть в каталоге RuStore.</string>
     <string name="message_import_checked">Проверено всего: %1$d.</string>
     <string name="message_import_cancelled">Импорт прерван.</string>
+
+    <string name="github_add_action">Добавить из GitHub</string>
+    <string name="github_title">Добавить из GitHub</string>
+    <string name="github_url_hint">owner/repo или https://github.com/owner/repo</string>
+    <string name="github_find">Найти репозиторий</string>
+    <string name="github_repo_hint">Публичный репозиторий. Для приватного добавьте токен в настройках.</string>
+    <string name="github_include_prereleases">Показывать пре-релизы</string>
+    <string name="github_releases_title">Релизы</string>
+    <string name="github_assets_title">APK в релизе</string>
+    <string name="github_no_releases">В репозитории пока нет релизов.</string>
+    <string name="github_prerelease">пре-релиз</string>
+    <string name="github_asset_size">%1$.1f МБ</string>
+    <string name="github_warning_title">Установка из GitHub</string>
+    <string name="github_warning_text">GitHub-релизы не проверяются RuStore. Устанавливайте APK только из репозиториев, которым доверяете. Приложение проверит пакет, digest и подпись, но не может гарантировать безопасность кода.</string>
+    <string name="github_warning_continue">Продолжить</string>
+    <string name="github_install">Скачать и установить</string>
+    <string name="github_install_running">Скачивание APK…</string>
+    <string name="github_downloading_percent">Скачано %1$d%%</string>
+    <string name="github_install_ready">APK скачан и готов к установке.</string>
+    <string name="github_open_details">Открыть карточку</string>
+    <string name="github_cancel">Отменить</string>
+    <string name="github_token_missing">Для приватных репозиториев нужен токен GitHub. Добавьте его в настройках.</string>
+    <string name="github_token_settings">Открыть настройки GitHub</string>
+    <string name="github_error_invalid_url">Укажите owner/repo или ссылку на github.com.</string>
+    <string name="github_error_auth">GitHub отклонил токен. Проверьте его в настройках.</string>
+    <string name="github_error_rate_limit">GitHub временно ограничил запросы. Попробуйте позже или добавьте токен.</string>
+    <string name="github_error_not_found">Репозиторий или релиз не найден. Для приватного репозитория нужен токен.</string>
+    <string name="github_error_no_apk">В выбранном релизе нет APK-файла.</string>
+    <string name="github_error_network">Не удалось связаться с GitHub.</string>
+    <string name="github_error_generic">Не удалось загрузить данные GitHub.</string>
 </resources>

@@ -42,6 +42,7 @@ Thanks for your interest in the project! Here is a short guide on how you can he
 | Module | Responsibility |
 |--------|----------------|
 | `:core:security` | Certificate trust, SPKI pins, manual certificate refresh |
+| `:core:github` | GitHub API, release/asset parsing, optional encrypted token |
 | `:core:network` | RuStore API, DTOs, session signature |
 | `:core:data` | Room, DataStore, repositories, backup |
 | `:core:installer` | APK download, signature/size verification, PackageInstaller, Shizuku |

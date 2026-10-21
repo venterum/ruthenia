@@ -7,6 +7,7 @@ Features
 • Download and install, including multi-APK/split builds, in one install session.
 • Download manager with pause/resume, retry, recovery actions and download history.
 • Android 16+ Live Updates for active download progress on the lock screen and status bar.
+• Add public GitHub repositories as an app source; private repositories are supported with an optional encrypted token.
 • Library with "up to date / update available" status.
 • Background update checks via WorkManager with a grouped notification.
 • Hide individual updates and "Update all".
@@ -16,7 +17,7 @@ Features
 
 Privacy
 • No analytics, crash reporting or ads — none of them are in the dependencies.
-• Network access only to RuStore API and CDN domains (plus Mintsifry\'s official CA host on a manual certificate refresh).
+• Network access only to RuStore API/CDN domains, explicitly added GitHub repositories, and Mintsifry\'s official CA host during a manual certificate refresh.
 • deviceId is random, regenerated on every launch and never stored.
 • The installed apps list is read locally and only after you tap "Find my apps".
 • An update is installed only when the downloaded APK signature matches the installed app.
